@@ -207,6 +207,8 @@ without `MONGODB_URI` and an https-only `CORS_ORIGINS`.
 ## 10. Known limits of what is built today
 
 - Rate limiting is in memory, correct for one instance only.
-- The lead repository has been tested only with a fake. The Mongoose model has schema tests but has **not** been exercised against a real MongoDB in this environment (no Docker daemon available).
+- Repositories (leads, users, sessions, tokens) are tested with in-memory fakes. A MongoDB integration test exists (`mongo.integration.test.ts`, runs when `MONGODB_TEST_URI` is set, wired into CI) but has **not** been run in the authoring environment (no database or Docker available).
+- Sprint 1 auth is built (ADR-0004): argon2id via Node crypto, hashed session ids with rotation and reuse detection, lockout backoff, one-time email tokens, guardian consent, audit events, own-data export and delete. No email provider is configured: the mailer only logs (dev links; nothing in production).
+- Admin TOTP, the breached-password check and the purge job for soft-deleted accounts are not built.
 - Lead notification to admins (email) is not built. Leads are stored and wait for the admin console (Sprint 5), so until then someone must query the database.
-- The frontend forms still do not post to the API; wiring is Sprint 1.
+- The six website forms post to `/api/v1/leads` through `frontend/src/lib/leads.ts`. There are no account screens yet.

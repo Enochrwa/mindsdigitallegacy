@@ -3,6 +3,12 @@ import { ConfigError, loadEnv } from "./config/env.js";
 import { createLogger } from "./core/logger.js";
 import { closeDb, connectDb, isDbReady } from "./db/connect.js";
 import { createMongoLeadRepository } from "./modules/leads/leads.repository.js";
+import { createPasswordHasher } from "./core/security/password.js";
+import { createMongoAuditLog } from "./modules/audit/audit.js";
+import { createMongoAuthTokenRepository } from "./modules/auth/authTokens.mongo.js";
+import { createLogMailer } from "./modules/auth/mailer.js";
+import { createMongoSessionRepository } from "./modules/sessions/sessions.mongo.js";
+import { createMongoUserRepository } from "./modules/users/users.mongo.js";
 
 const SHUTDOWN_GRACE_MS = 10_000;
 
@@ -21,6 +27,12 @@ async function main(): Promise<void> {
     env,
     logger,
     leadRepository: createMongoLeadRepository(),
+    users: createMongoUserRepository(),
+    sessions: createMongoSessionRepository(),
+    authTokens: createMongoAuthTokenRepository(),
+    audit: createMongoAuditLog(),
+    mailer: createLogMailer(logger, env.WEB_BASE_URL, env.NODE_ENV === "production"),
+    hasher: createPasswordHasher(),
     isDbReady,
   });
 

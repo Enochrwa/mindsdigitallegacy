@@ -3,6 +3,14 @@ import { loadEnv } from "../config/env.js";
 import { createLogger } from "../core/logger.js";
 import type { NewLead } from "../modules/leads/leads.model.js";
 import type { LeadRepository } from "../modules/leads/leads.repository.js";
+import { createPasswordHasher } from "../core/security/password.js";
+import {
+  memoryAudit,
+  memoryAuthTokens,
+  memoryMailer,
+  memorySessions,
+  memoryUsers,
+} from "./memory.js";
 
 /** Test-only helpers. Excluded from the production build (see tsconfig.build.json). */
 
@@ -12,6 +20,7 @@ interface Options {
   env?: Record<string, string>;
   dbReady?: boolean;
   repository?: LeadRepository;
+  now?: () => Date;
 }
 
 export function buildTestApp(options: Options = {}) {
@@ -28,13 +37,25 @@ export function buildTestApp(options: Options = {}) {
       return Promise.resolve();
     },
   };
+  const users = memoryUsers();
+  const sessions = memorySessions();
+  const audit = memoryAudit();
+  const mailer = memoryMailer();
   const app = createApp({
     env,
     logger: createLogger(env),
     leadRepository: repository,
+    users,
+    sessions,
+    authTokens: memoryAuthTokens(),
+    audit,
+    mailer,
+    // Cheap parameters keep tests fast; production uses DEFAULT_ARGON2.
+    hasher: createPasswordHasher({ memoryKiB: 64, passes: 1, parallelism: 1 }),
+    ...(options.now === undefined ? {} : { now: options.now }),
     isDbReady: () => options.dbReady ?? true,
   });
-  return { app, env, stored };
+  return { app, env, stored, users, sessions, audit, mailer };
 }
 
 export const validContact = {

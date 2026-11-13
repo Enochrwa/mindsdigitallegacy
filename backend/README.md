@@ -18,13 +18,13 @@ Without `MONGODB_URI` the API still starts and `/api/v1/ready` returns 503.
 
 ## Scripts
 
-| Script                  | What it does                                                    |
-| ----------------------- | --------------------------------------------------------------- |
-| `npm run dev`           | Watch mode with `.env` loaded                                   |
-| `npm run check`         | Typecheck, lint, format check, tests (what CI runs)             |
-| `npm test`              | Vitest + Supertest, no database needed                          |
-| `npm run build`         | Compile to `dist/` (tests and fixtures excluded)                |
-| `npm run audit:prod`    | Fails on high-severity advisories in production dependencies    |
+| Script               | What it does                                                 |
+| -------------------- | ------------------------------------------------------------ |
+| `npm run dev`        | Watch mode with `.env` loaded                                |
+| `npm run check`      | Typecheck, lint, format check, tests (what CI runs)          |
+| `npm test`           | Vitest + Supertest, no database needed                       |
+| `npm run build`      | Compile to `dist/` (tests and fixtures excluded)             |
+| `npm run audit:prod` | Fails on high-severity advisories in production dependencies |
 
 ## API (v1)
 
@@ -44,12 +44,12 @@ JSON only. Required for every kind: `kind`, `fullName`, `email`, `consent: true`
 `website` is a honeypot: leave it out of the visible form (hidden from users, and ignored by assistive
 technology), because any value makes the submission be silently discarded.
 
-| `kind`                                    | Extra fields                                                                         |
-| ----------------------------------------- | ------------------------------------------------------------------------------------ |
-| `contact`                                 | `message` (10–2000 chars)                                                            |
-| `service_request`                         | `service`, `message`, optional `budget`, `organization`                              |
-| `partner_inquiry`                         | `partnerType`, `message`                                                             |
-| `course_interest`, `internship_interest`  | `interest`, `ageBracket` (`under_16` or `16_plus`), `guardianContact` if under 16    |
+| `kind`                                   | Extra fields                                                                      |
+| ---------------------------------------- | --------------------------------------------------------------------------------- |
+| `contact`                                | `message` (10–2000 chars)                                                         |
+| `service_request`                        | `service`, `message`, optional `budget`, `organization`                           |
+| `partner_inquiry`                        | `partnerType`, `message`                                                          |
+| `course_interest`, `internship_interest` | `interest`, `ageBracket` (`under_16` or `16_plus`), `guardianContact` if under 16 |
 
 Response: `201 { "status": "received" }`, identical for stored and discarded submissions.
 

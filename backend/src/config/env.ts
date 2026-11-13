@@ -51,6 +51,10 @@ const envSchema = z
     BODY_LIMIT_KB: z.coerce.number().int().min(1).max(256).default(16),
     RATE_LIMIT_GENERAL_PER_MINUTE: z.coerce.number().int().min(1).default(120),
     RATE_LIMIT_LEADS_PER_HOUR: z.coerce.number().int().min(1).default(20),
+    /** Public URL of the web app, used in email links. Must be https in production. */
+    WEB_BASE_URL: originSchema.default("http://localhost:8080"),
+    /** Public auth endpoints (register, login, reset) per client IP per 15 minutes. */
+    RATE_LIMIT_AUTH_PER_15MIN: z.coerce.number().int().min(1).default(20),
     /** Retention for contact and interest records. Confirm the final period with counsel. */
     LEAD_RETENTION_DAYS: z.coerce.number().int().min(30).max(3650).default(730),
   })
@@ -61,6 +65,13 @@ const envSchema = z
     }
     if (env.CORS_ORIGINS.length === 0) {
       ctx.addIssue({ code: "custom", path: ["CORS_ORIGINS"], message: "required in production" });
+    }
+    if (!env.WEB_BASE_URL.startsWith("https://")) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["WEB_BASE_URL"],
+        message: "must use https in production",
+      });
     }
     if (env.CORS_ORIGINS.some((origin) => !origin.startsWith("https://"))) {
       ctx.addIssue({

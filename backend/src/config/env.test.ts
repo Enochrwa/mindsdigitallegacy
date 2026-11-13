@@ -43,6 +43,7 @@ describe("loadEnv", () => {
       NODE_ENV: "production",
       MONGODB_URI: "mongodb://db.internal:27017/mdl",
       CORS_ORIGINS: "https://app.example.rw",
+      WEB_BASE_URL: "https://app.example.rw",
     };
 
     it("accepts a complete configuration", () => {
@@ -55,6 +56,12 @@ describe("loadEnv", () => {
 
     it("requires at least one CORS origin", () => {
       expect(() => loadEnv({ ...valid, CORS_ORIGINS: "" })).toThrow(/CORS_ORIGINS/);
+    });
+
+    it("requires an https web base url", () => {
+      expect(() => loadEnv({ ...valid, WEB_BASE_URL: "http://app.example.rw" })).toThrow(
+        /WEB_BASE_URL/,
+      );
     });
 
     it("requires https origins", () => {
