@@ -32,13 +32,20 @@
 | Research, gap analysis, HLD, LLD, threat model, ADRs | Done (this commit) |
 | Backend foundation: config, logging, security headers, CORS, rate limits, error model, health | Done, tested |
 | Leads API with consent, age rule, honeypot, retention TTL | Done, tested |
-| CI: backend (Node 24 and 26), frontend, audit, CodeQL, gitleaks, dependency review | Written; first run on GitHub pending |
+| Repo split into `frontend/`, `backend/`, common root; per-part CI workflows and Dependabot (ADR-0007) | Done |
+| CI: backend (Node 24 and 26, plus MongoDB integration job), frontend, audit, CodeQL, gitleaks, dependency review | Written; GitHub run results not yet confirmed |
 | Dependabot, CODEOWNERS, PR template, SECURITY.md | Done |
 | **Founders:** enable branch protection on `main`, 2FA everywhere, enable private vulnerability reporting and secret scanning | To do |
 | **Founders:** answer the open decisions in `01-research-and-gap-analysis.md` section 11 | To do |
 | **Founders:** RDB name search, domain, social handles, YouTube channel | To do |
 
 ## Sprint 1 — Accounts, consent, and the first live form
+
+> Status on branch `feat/sprint-1-accounts-consent`: backend auth, sessions, consent, guardian flow, audit,
+> self-service export and delete are built and tested with fakes; the MongoDB integration test is written but
+> has only been run where a database exists (CI). Frontend: typed API client, all six forms wired, privacy
+> notice page. **Not built yet:** account screens (register, login, verify, reset), email provider and
+> SPF/DKIM/DMARC, breached-password check, TOTP for admins (Sprint 5).
 
 **Goal:** a person can register safely, and the existing site's forms reach the database.
 

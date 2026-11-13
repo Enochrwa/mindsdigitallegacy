@@ -13,11 +13,27 @@ import { createHealthRouter } from "./modules/health/health.routes.js";
 import { createLeadsRouter } from "./modules/leads/leads.routes.js";
 import { createLeadService } from "./modules/leads/leads.service.js";
 import type { LeadRepository } from "./modules/leads/leads.repository.js";
+import type { PasswordHasher } from "./core/security/password.js";
+import type { AuditLog } from "./modules/audit/audit.js";
+import { createAuthRouter } from "./modules/auth/auth.routes.js";
+import { createAuthService } from "./modules/auth/auth.service.js";
+import type { AuthTokenRepository } from "./modules/auth/authTokens.js";
+import type { Mailer } from "./modules/auth/mailer.js";
+import type { SessionRepository } from "./modules/sessions/sessions.types.js";
+import { createUsersRouter } from "./modules/users/users.routes.js";
+import type { UserRepository } from "./modules/users/users.repository.js";
 
 export interface AppDeps {
   env: Env;
   logger: Logger;
   leadRepository: LeadRepository;
+  users: UserRepository;
+  sessions: SessionRepository;
+  authTokens: AuthTokenRepository;
+  audit: AuditLog;
+  mailer: Mailer;
+  hasher: PasswordHasher;
+  now?: () => Date;
   isDbReady: () => boolean;
 }
 
@@ -32,7 +48,8 @@ export interface AppDeps {
  *  5. content-type check, size-limited JSON parser, unsafe-key rejection
  *  6. routes, then 404 and the central error handler
  */
-export function createApp({ env, logger, leadRepository, isDbReady }: AppDeps): Express {
+export function createApp(deps: AppDeps): Express {
+  const { env, logger, leadRepository, isDbReady } = deps;
   const app = express();
 
   app.disable("x-powered-by");
@@ -84,6 +101,39 @@ export function createApp({ env, logger, leadRepository, isDbReady }: AppDeps): 
     createLeadsRouter({
       service: leadService,
       limiter: createLimiter({ windowMs: 60 * 60_000, limit: env.RATE_LIMIT_LEADS_PER_HOUR }),
+    }),
+  );
+
+  const production = env.NODE_ENV === "production";
+  // `__Host-` cookies must be Secure, so the prefix is used only where HTTPS is guaranteed.
+  const cookie = { name: production ? "__Host-mdl_sid" : "mdl_sid", secure: production };
+  const auth = createAuthService({
+    users: deps.users,
+    sessions: deps.sessions,
+    tokens: deps.authTokens,
+    audit: deps.audit,
+    mailer: deps.mailer,
+    hasher: deps.hasher,
+    ...(deps.now === undefined ? {} : { now: deps.now }),
+  });
+  app.use(
+    "/api/v1/auth",
+    createAuthRouter({
+      auth,
+      cookie,
+      limiter: createLimiter({ windowMs: 15 * 60_000, limit: env.RATE_LIMIT_AUTH_PER_15MIN }),
+    }),
+  );
+  app.use(
+    "/api/v1/users",
+    createUsersRouter({
+      auth,
+      users: deps.users,
+      sessions: deps.sessions,
+      audit: deps.audit,
+      hasher: deps.hasher,
+      cookie,
+      ...(deps.now === undefined ? {} : { now: deps.now }),
     }),
   );
 

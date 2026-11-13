@@ -28,18 +28,18 @@ or GitHub Action; a stolen laptop; and a hosting or provider outage.
 
 | # | Threat | Control | Status |
 |---|---|---|---|
-| S1 | Credential stuffing, brute force | argon2id, throttling, generic errors, breached-password check, admin TOTP | Sprint 1 |
+| S1 | Credential stuffing, brute force | argon2id, throttling, generic errors, breached-password check, admin TOTP | argon2id, lockout backoff, per-IP limit, generic errors **built, tested**; breached-password check and TOTP pending |
 | S2 | Session theft via XSS | httpOnly cookies, strict CSP, no tokens in storage, output encoding by React | Designed; CSP Sprint 0/2 |
-| S3 | Session fixation / replay | Rotation on login and privilege change; reuse revokes the family | Sprint 1 |
+| S3 | Session fixation / replay | Rotation on login and privilege change; reuse revokes the family | **Built, tested** (new session on login, rotation after 24 h, replay revokes family) |
 | T1 | NoSQL operator injection | Strict Zod schemas, `rejectUnsafeKeys`, Mongoose `sanitizeFilter`, simple query parser | **Built, tested** |
 | T2 | Prototype pollution | Forbidden keys rejected, depth and node limits | **Built, tested** |
 | T3 | Mass assignment (setting `roles`, `status`) | Strict schemas reject unknown fields; roles never accepted from clients | **Built (leads), pattern for the rest** |
-| T4 | CSRF | SameSite=Lax, Origin allow-list check, JSON-only, custom header on authenticated mutations | Origin and JSON-only **built, tested**; header Sprint 1 |
-| R1 | Admin denies an action | Append-only audit events with actor, request id, outcome | Sprint 1 |
+| T4 | CSRF | SameSite=Lax, Origin allow-list check, JSON-only, custom header on authenticated mutations | Origin and JSON-only **built, tested**; header **built, tested** |
+| R1 | Admin denies an action | Append-only audit events with actor, request id, outcome | **Built** for auth and account events; admin actions Sprint 5 |
 | I1 | Leaking stack traces and internals | Generic 500, no framework header, errors never echo input | **Built, tested** |
 | I2 | PII in logs | Redaction of auth headers, cookies, email, phone, tokens; log path only, never query or body | **Built** |
-| I3 | IDOR (reading another user's data) | Object-level checks in services, tested with cross-user attempts | Sprint 1 onward |
-| I4 | Account enumeration | Identical responses and timing for existing and new emails | Pattern **built** (leads); auth Sprint 1 |
+| I3 | IDOR (reading another user's data) | Object-level checks in services, tested with cross-user attempts | Policy function and tests **built**; repeat for every new owned resource |
+| I4 | Account enumeration | Identical responses and timing for existing and new emails | **Built, tested** for register, login, reset (timing equalised by hashing in both branches; not measured) |
 | I5 | Database exposed to the internet | Private network only, auth enabled, TLS, no public port; compose binds to 127.0.0.1 | Compose **built**; production Sprint 0 ops |
 | D1 | Request floods | Edge rate limiting and WAF, app limits, body size cap, request and header timeouts | App-level **built, tested**; edge Sprint 0 ops |
 | D2 | Slowloris | `headersTimeout`, `requestTimeout`, `keepAliveTimeout` | **Built** |
@@ -110,6 +110,9 @@ or GitHub Action; a stolen laptop; and a hosting or provider outage.
 - The compiled server was started as a real process: production with an `http://` origin refuses to boot,
   security headers are present, injection and form-post and bad-origin requests were rejected, and SIGTERM
   shuts it down cleanly.
+- Sprint 1 (branch `feat/sprint-1-accounts-consent`): 130 backend tests pass on Node 26 with the new auth code. Mutation
+  check: removing the CSRF header check, session-reuse revocation, lockout, reset session revocation, the
+  authorisation policy, or the inactive-account check each made a test fail.
 - Not verified: behaviour against a real MongoDB, the Docker image build (no Docker daemon here; stages were
   simulated locally), CodeQL and dependency review (need a public repo or Advanced Security), and every GitHub Actions
   workflow run (they have not run on GitHub yet).

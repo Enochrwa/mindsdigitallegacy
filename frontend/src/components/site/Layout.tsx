@@ -64,7 +64,7 @@ export function SiteFooter() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-primary-foreground/10 py-5 text-center text-xs text-primary-foreground/60">© {new Date().getFullYear()} Minds Digital Legacy (MDL). Kigali, Rwanda.</div>
+      <div className="border-t border-primary-foreground/10 py-5 text-center text-xs text-primary-foreground/60">© {new Date().getFullYear()} Minds Digital Legacy (MDL). Kigali, Rwanda. · <Link to="/privacy" className="underline hover:text-accent">Privacy notice</Link></div>
     </footer>
   );
 }

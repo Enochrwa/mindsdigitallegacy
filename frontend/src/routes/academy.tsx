@@ -13,7 +13,7 @@ export const Route = createFileRoute("/academy")({
       </section>
       <section className="bg-muted py-16"><div className="container-mdl max-w-3xl">
         <SectionTitle eyebrow="Enroll" title="Register for a course" />
-        <LeadForm title="Course registration" submitLabel="Register" fields={[...contactBasics, { name: "course", label: "Course", type: "select", options: allCourses, required: true }, { name: "mode", label: "Preferred mode", type: "select", options: ["In person", "Online", "Weekend"], required: true }, { name: "level", label: "Current level", type: "select", options: ["Beginner", "Intermediate", "Advanced"] }, { name: "notes", label: "Anything we should know?", type: "textarea" }]} />
+        <LeadForm form="academy" title="Course registration" submitLabel="Register" fields={[...contactBasics, { name: "course", label: "Course", type: "select", options: allCourses, required: true }, { name: "mode", label: "Preferred mode", type: "select", options: ["In person", "Online", "Weekend"], required: true }, { name: "level", label: "Current level", type: "select", options: ["Beginner", "Intermediate", "Advanced"] }, { name: "notes", label: "Anything we should know?", type: "textarea" }]} />
       </div></section>
     </>
   ),

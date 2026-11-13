@@ -9,7 +9,7 @@ export const Route = createFileRoute("/careers")({
       <PageHero eyebrow="Careers" title="Build a digital legacy with us" text="We look for trainers, developers, designers and support specialists who care about practical impact." />
       <section className="container-mdl max-w-3xl py-16">
         <SectionTitle eyebrow="Open application" title="No listed roles right now — tell us about you" />
-        <LeadForm title="Career interest" submitLabel="Send" fields={[...contactBasics, { name: "area", label: "Area of interest", type: "select", options: departments, required: true }, { name: "portfolio", label: "LinkedIn / portfolio link" }, { name: "about", label: "Your experience", type: "textarea", required: true }]} />
+        <LeadForm form="careers" title="Career interest" submitLabel="Send" fields={[...contactBasics, { name: "area", label: "Area of interest", type: "select", options: departments, required: true }, { name: "portfolio", label: "LinkedIn / portfolio link" }, { name: "about", label: "Your experience", type: "textarea", required: true }]} />
       </section>
     </>
   ),

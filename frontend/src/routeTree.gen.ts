@@ -17,6 +17,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CorporateRouteImport } from './routes/corporate'
 import { Route as InternshipsRouteImport } from './routes/internships'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SectorsRouteImport } from './routes/sectors'
 import { Route as ServicesRouteImport } from './routes/services'
 
@@ -60,6 +61,11 @@ const PortfolioRoute = PortfolioRouteImport.update({
   path: '/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SectorsRoute = SectorsRouteImport.update({
   id: '/sectors',
   path: '/sectors',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/corporate': typeof CorporateRoute
   '/internships': typeof InternshipsRoute
   '/portfolio': typeof PortfolioRoute
+  '/privacy': typeof PrivacyRoute
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
 }
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/corporate': typeof CorporateRoute
   '/internships': typeof InternshipsRoute
   '/portfolio': typeof PortfolioRoute
+  '/privacy': typeof PrivacyRoute
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
 }
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/corporate': typeof CorporateRoute
   '/internships': typeof InternshipsRoute
   '/portfolio': typeof PortfolioRoute
+  '/privacy': typeof PrivacyRoute
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
 }
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/corporate'
     | '/internships'
     | '/portfolio'
+    | '/privacy'
     | '/sectors'
     | '/services'
   fileRoutesByTo: FileRoutesByTo
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/corporate'
     | '/internships'
     | '/portfolio'
+    | '/privacy'
     | '/sectors'
     | '/services'
   id:
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/corporate'
     | '/internships'
     | '/portfolio'
+    | '/privacy'
     | '/sectors'
     | '/services'
   fileRoutesById: FileRoutesById
@@ -156,6 +168,7 @@ export interface RootRouteChildren {
   CorporateRoute: typeof CorporateRoute
   InternshipsRoute: typeof InternshipsRoute
   PortfolioRoute: typeof PortfolioRoute
+  PrivacyRoute: typeof PrivacyRoute
   SectorsRoute: typeof SectorsRoute
   ServicesRoute: typeof ServicesRoute
 }
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sectors': {
       id: '/sectors'
       path: '/sectors'
@@ -244,6 +264,7 @@ const rootRouteChildren: RootRouteChildren = {
   CorporateRoute: CorporateRoute,
   InternshipsRoute: InternshipsRoute,
   PortfolioRoute: PortfolioRoute,
+  PrivacyRoute: PrivacyRoute,
   SectorsRoute: SectorsRoute,
   ServicesRoute: ServicesRoute,
 }
