@@ -30,3 +30,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets and local environment (never commit; commit only *.example files)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+service-account*.json
+
+# Test and coverage output
+coverage
+.vitest-cache
+
+# Backend build output
+backend/dist

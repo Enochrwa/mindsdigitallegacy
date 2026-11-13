@@ -24,3 +24,17 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Platform architecture
+
+This repository holds the whole Minds Digital Legacy platform.
+
+| Part | Location | Notes |
+|---|---|---|
+| Website and learner portal (TanStack Start, React 19) | repo root | Lovable-synced; do not move it (see `docs/adr/0001`) |
+| API (Node 26 LTS, Express 5, TypeScript, MongoDB) | [`backend/`](backend/README.md) | Security-hardened, tested |
+| Design, research, threat model, sprint plan | [`docs/`](docs/README.md) | Start with `docs/README.md` |
+| CI, security scanning, Dependabot | `.github/` | Actions pinned to commit SHAs |
+
+Run the API locally: see [`backend/README.md`](backend/README.md). Report security issues as described in
+[`SECURITY.md`](SECURITY.md).
