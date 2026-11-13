@@ -55,6 +55,16 @@ const envSchema = z
     WEB_BASE_URL: originSchema.default("http://localhost:8080"),
     /** Public auth endpoints (register, login, reset) per client IP per 15 minutes. */
     RATE_LIMIT_AUTH_PER_15MIN: z.coerce.number().int().min(1).default(20),
+    /** `log` only logs (development). `brevo` or `resend` send real mail (docs/06-third-party-providers.md). */
+    EMAIL_PROVIDER: z.enum(["log", "brevo", "resend"]).default("log"),
+    EMAIL_API_KEY: z.string().min(10).optional(),
+    EMAIL_FROM: z.email().optional(),
+    EMAIL_FROM_NAME: z.string().min(1).max(60).default("Minds Digital Legacy"),
+    /** Checks new passwords against the Have I Been Pwned range API (fails open if unreachable). */
+    PASSWORD_BREACH_CHECK: z
+      .enum(["true", "false"])
+      .default("true")
+      .transform((value) => value === "true"),
     /** Retention for contact and interest records. Confirm the final period with counsel. */
     LEAD_RETENTION_DAYS: z.coerce.number().int().min(30).max(3650).default(730),
   })
@@ -65,6 +75,13 @@ const envSchema = z
     }
     if (env.CORS_ORIGINS.length === 0) {
       ctx.addIssue({ code: "custom", path: ["CORS_ORIGINS"], message: "required in production" });
+    }
+    if (env.EMAIL_PROVIDER !== "log" && (!env.EMAIL_API_KEY || !env.EMAIL_FROM)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["EMAIL_API_KEY"],
+        message: "EMAIL_API_KEY and EMAIL_FROM are required for the chosen provider",
+      });
     }
     if (!env.WEB_BASE_URL.startsWith("https://")) {
       ctx.addIssue({

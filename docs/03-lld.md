@@ -43,31 +43,31 @@ PII is marked **(PII)**.
 
 ### `leads` (built)
 
-| Field | Type | Notes |
-|---|---|---|
-| kind | enum | contact, service_request, partner_inquiry, course_interest, internship_interest |
-| fullName, email **(PII)**, phone **(PII)**, organization | string | email lower-cased |
-| message, service, budget, partnerType, interest | string | kind-specific, length-capped |
-| ageBracket, guardianContact **(PII)** | enum, string | guardian required when under_16 |
-| consent | `{ privacyNoticeVersion, acceptedAt }` | required |
-| status | enum | new, contacted, closed |
-| retainUntil | date | **TTL index** (expireAfterSeconds 0): records delete themselves |
+| Field                                                    | Type                                   | Notes                                                                           |
+| -------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------- |
+| kind                                                     | enum                                   | contact, service_request, partner_inquiry, course_interest, internship_interest |
+| fullName, email **(PII)**, phone **(PII)**, organization | string                                 | email lower-cased                                                               |
+| message, service, budget, partnerType, interest          | string                                 | kind-specific, length-capped                                                    |
+| ageBracket, guardianContact **(PII)**                    | enum, string                           | guardian required when under_16                                                 |
+| consent                                                  | `{ privacyNoticeVersion, acceptedAt }` | required                                                                        |
+| status                                                   | enum                                   | new, contacted, closed                                                          |
+| retainUntil                                              | date                                   | **TTL index** (expireAfterSeconds 0): records delete themselves                 |
 
 Indexes: `createdAt`, `{kind,status,createdAt}`, `{email,createdAt}`, TTL on `retainUntil`.
 
 ### `users` (Sprint 1)
 
-| Field | Notes |
-|---|---|
-| email **(PII)** | unique, lower-cased; verified flag and `emailVerifiedAt` |
-| passwordHash | argon2id; never selected by default (`select: false`) |
-| displayName **(PII)**, phone **(PII, optional)** | |
-| roles | subset of learner, intern, supervisor, admin. Never writable from public endpoints |
-| ageBracket, guardian `{ contact, consentAt, method }` | under-16 learners are inactive until guardian consent is recorded |
-| consents | array of `{ type: service \| marketing, noticeVersion, at, withdrawnAt? }`; marketing is separate and off by default |
-| failedLogins, lockedUntil | throttling state |
-| totp `{ secretEnc, enabledAt }` | admins only; secret encrypted with an app-level key |
-| deletedAt | soft-delete marker; a purge job removes data after the grace period |
+| Field                                                 | Notes                                                                                                                |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| email **(PII)**                                       | unique, lower-cased; verified flag and `emailVerifiedAt`                                                             |
+| passwordHash                                          | argon2id; never selected by default (`select: false`)                                                                |
+| displayName **(PII)**, phone **(PII, optional)**      |                                                                                                                      |
+| roles                                                 | subset of learner, intern, supervisor, admin. Never writable from public endpoints                                   |
+| ageBracket, guardian `{ contact, consentAt, method }` | under-16 learners are inactive until guardian consent is recorded                                                    |
+| consents                                              | array of `{ type: service \| marketing, noticeVersion, at, withdrawnAt? }`; marketing is separate and off by default |
+| failedLogins, lockedUntil                             | throttling state                                                                                                     |
+| totp `{ secretEnc, enabledAt }`                       | admins only; secret encrypted with an app-level key                                                                  |
+| deletedAt                                             | soft-delete marker; a purge job removes data after the grace period                                                  |
 
 ### `sessions` (Sprint 1)
 
@@ -189,15 +189,15 @@ Each job is idempotent and logs counts, not personal data.
 
 ## 8. Testing strategy
 
-| Layer | Tool | Rule |
-|---|---|---|
-| Unit | Vitest | Pure functions (validation, referral checks, policy) |
-| HTTP | Vitest + Supertest against the real middleware stack with fake repositories | Every security control has a test that fails when the control is removed (verified by mutation in Sprint 0) |
-| Model | Vitest, no database | Schema validation, index definitions |
-| Integration | Vitest against a throwaway MongoDB in CI (service container) | Unique indexes, TTL index presence, transactions, query behaviour. **Added in Sprint 1**; not present today |
-| End to end | Playwright | Register, verify, unlock, watch, apply. Added in Sprint 5 |
-| Accessibility | axe in Playwright | No serious violations on key pages |
-| Security | `npm audit`, CodeQL, gitleaks, dependency review | On every PR |
+| Layer         | Tool                                                                        | Rule                                                                                                        |
+| ------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Unit          | Vitest                                                                      | Pure functions (validation, referral checks, policy)                                                        |
+| HTTP          | Vitest + Supertest against the real middleware stack with fake repositories | Every security control has a test that fails when the control is removed (verified by mutation in Sprint 0) |
+| Model         | Vitest, no database                                                         | Schema validation, index definitions                                                                        |
+| Integration   | Vitest against a throwaway MongoDB in CI (service container)                | Unique indexes, TTL index presence, transactions, query behaviour. **Added in Sprint 1**; not present today |
+| End to end    | Playwright                                                                  | Register, verify, unlock, watch, apply. Added in Sprint 5                                                   |
+| Accessibility | axe in Playwright                                                           | No serious violations on key pages                                                                          |
+| Security      | `npm audit`, CodeQL, gitleaks, dependency review                            | On every PR                                                                                                 |
 
 ## 9. Configuration reference (built)
 
@@ -208,7 +208,7 @@ without `MONGODB_URI` and an https-only `CORS_ORIGINS`.
 
 - Rate limiting is in memory, correct for one instance only.
 - Repositories (leads, users, sessions, tokens) are tested with in-memory fakes. A MongoDB integration test exists (`mongo.integration.test.ts`, runs when `MONGODB_TEST_URI` is set, wired into CI) but has **not** been run in the authoring environment (no database or Docker available).
-- Sprint 1 auth is built (ADR-0004): argon2id via Node crypto, hashed session ids with rotation and reuse detection, lockout backoff, one-time email tokens, guardian consent, audit events, own-data export and delete. No email provider is configured: the mailer only logs (dev links; nothing in production).
-- Admin TOTP, the breached-password check and the purge job for soft-deleted accounts are not built.
+- Sprint 1 auth is built (ADR-0004): argon2id via Node crypto, hashed session ids with rotation and reuse detection, lockout backoff, one-time email tokens, guardian consent, audit events, own-data export and delete. Email goes through `EMAIL_PROVIDER` (`log`, `brevo` or `resend`; see docs/06); the HTTP adapters are unit-tested but have not been run against the live services. New passwords are checked against the Have I Been Pwned range API (fails open).
+- Admin TOTP and the purge job for soft-deleted accounts are not built.
 - Lead notification to admins (email) is not built. Leads are stored and wait for the admin console (Sprint 5), so until then someone must query the database.
-- The six website forms post to `/api/v1/leads` through `frontend/src/lib/leads.ts`. There are no account screens yet.
+- The six website forms post to `/api/v1/leads` through `frontend/src/lib/leads.ts`. Account screens (register, sign in, verify, guardian consent, forgot and reset password, account page) exist; they have unit and routing tests but no browser end-to-end test yet.

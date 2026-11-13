@@ -12,14 +12,22 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AcademyRouteImport } from './routes/academy'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CorporateRouteImport } from './routes/corporate'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as GuardianConsentRouteImport } from './routes/guardian-consent'
 import { Route as InternshipsRouteImport } from './routes/internships'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResendVerificationRouteImport } from './routes/resend-verification'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SectorsRouteImport } from './routes/sectors'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,6 +42,11 @@ const AboutRoute = AboutRouteImport.update({
 const AcademyRoute = AcademyRouteImport.update({
   id: '/academy',
   path: '/academy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CareersRoute = CareersRouteImport.update({
@@ -51,9 +64,24 @@ const CorporateRoute = CorporateRouteImport.update({
   path: '/corporate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuardianConsentRoute = GuardianConsentRouteImport.update({
+  id: '/guardian-consent',
+  path: '/guardian-consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InternshipsRoute = InternshipsRouteImport.update({
   id: '/internships',
   path: '/internships',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortfolioRoute = PortfolioRouteImport.update({
@@ -66,6 +94,21 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResendVerificationRoute = ResendVerificationRouteImport.update({
+  id: '/resend-verification',
+  path: '/resend-verification',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SectorsRoute = SectorsRouteImport.update({
   id: '/sectors',
   path: '/sectors',
@@ -76,46 +119,75 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/academy': typeof AcademyRoute
+  '/account': typeof AccountRoute
   '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/guardian-consent': typeof GuardianConsentRoute
   '/internships': typeof InternshipsRoute
+  '/login': typeof LoginRoute
   '/portfolio': typeof PortfolioRoute
   '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
+  '/resend-verification': typeof ResendVerificationRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
+  '/verify-email': typeof VerifyEmailRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/academy': typeof AcademyRoute
+  '/account': typeof AccountRoute
   '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/guardian-consent': typeof GuardianConsentRoute
   '/internships': typeof InternshipsRoute
+  '/login': typeof LoginRoute
   '/portfolio': typeof PortfolioRoute
   '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
+  '/resend-verification': typeof ResendVerificationRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
+  '/verify-email': typeof VerifyEmailRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/academy': typeof AcademyRoute
+  '/account': typeof AccountRoute
   '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/guardian-consent': typeof GuardianConsentRoute
   '/internships': typeof InternshipsRoute
+  '/login': typeof LoginRoute
   '/portfolio': typeof PortfolioRoute
   '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
+  '/resend-verification': typeof ResendVerificationRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
+  '/verify-email': typeof VerifyEmailRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -123,54 +195,86 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/academy'
+    | '/account'
     | '/careers'
     | '/contact'
     | '/corporate'
+    | '/forgot-password'
+    | '/guardian-consent'
     | '/internships'
+    | '/login'
     | '/portfolio'
     | '/privacy'
+    | '/register'
+    | '/resend-verification'
+    | '/reset-password'
     | '/sectors'
     | '/services'
+    | '/verify-email'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/academy'
+    | '/account'
     | '/careers'
     | '/contact'
     | '/corporate'
+    | '/forgot-password'
+    | '/guardian-consent'
     | '/internships'
+    | '/login'
     | '/portfolio'
     | '/privacy'
+    | '/register'
+    | '/resend-verification'
+    | '/reset-password'
     | '/sectors'
     | '/services'
+    | '/verify-email'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/academy'
+    | '/account'
     | '/careers'
     | '/contact'
     | '/corporate'
+    | '/forgot-password'
+    | '/guardian-consent'
     | '/internships'
+    | '/login'
     | '/portfolio'
     | '/privacy'
+    | '/register'
+    | '/resend-verification'
+    | '/reset-password'
     | '/sectors'
     | '/services'
+    | '/verify-email'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AcademyRoute: typeof AcademyRoute
+  AccountRoute: typeof AccountRoute
   CareersRoute: typeof CareersRoute
   ContactRoute: typeof ContactRoute
   CorporateRoute: typeof CorporateRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  GuardianConsentRoute: typeof GuardianConsentRoute
   InternshipsRoute: typeof InternshipsRoute
+  LoginRoute: typeof LoginRoute
   PortfolioRoute: typeof PortfolioRoute
   PrivacyRoute: typeof PrivacyRoute
+  RegisterRoute: typeof RegisterRoute
+  ResendVerificationRoute: typeof ResendVerificationRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SectorsRoute: typeof SectorsRoute
   ServicesRoute: typeof ServicesRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -196,6 +300,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcademyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/careers': {
       id: '/careers'
       path: '/careers'
@@ -217,11 +328,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorporateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guardian-consent': {
+      id: '/guardian-consent'
+      path: '/guardian-consent'
+      fullPath: '/guardian-consent'
+      preLoaderRoute: typeof GuardianConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/internships': {
       id: '/internships'
       path: '/internships'
       fullPath: '/internships'
       preLoaderRoute: typeof InternshipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portfolio': {
@@ -238,6 +370,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resend-verification': {
+      id: '/resend-verification'
+      path: '/resend-verification'
+      fullPath: '/resend-verification'
+      preLoaderRoute: typeof ResendVerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sectors': {
       id: '/sectors'
       path: '/sectors'
@@ -252,6 +405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -259,14 +419,22 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AcademyRoute: AcademyRoute,
+  AccountRoute: AccountRoute,
   CareersRoute: CareersRoute,
   ContactRoute: ContactRoute,
   CorporateRoute: CorporateRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  GuardianConsentRoute: GuardianConsentRoute,
   InternshipsRoute: InternshipsRoute,
+  LoginRoute: LoginRoute,
   PortfolioRoute: PortfolioRoute,
   PrivacyRoute: PrivacyRoute,
+  RegisterRoute: RegisterRoute,
+  ResendVerificationRoute: ResendVerificationRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SectorsRoute: SectorsRoute,
   ServicesRoute: ServicesRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -20,14 +20,14 @@ multi-tenant institutional portals.
 
 ## 2. Constraints that shape the design
 
-| Constraint | Source | Design response |
-|---|---|---|
-| Few smartphones, expensive data | ILO diagnostic | Lean pages, lazy video, no autoplay, SSR for first paint |
-| Personal data must be stored in Rwanda (or authorised abroad) | Law 058/2021 | Rwanda-hosted database for PII; configurable DB URL (ADR-0003) |
-| Under-16 users need guardian consent | Law 058/2021 | Age gate and guardian-consent flow from day one |
-| Two founders, part-time, small budget | Brief | One repo, boring tech, managed where lawful, strong CI instead of process |
-| Existing frontend | Repo | Lives in `frontend/`, with `backend/` and `docs/` beside it; root holds common files (ADR-0007) |
-| MERN requested | Brief | Mongo, Express 5, React 19 (TanStack Start), Node 26 LTS; TypeScript everywhere |
+| Constraint                                                    | Source         | Design response                                                                                 |
+| ------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
+| Few smartphones, expensive data                               | ILO diagnostic | Lean pages, lazy video, no autoplay, SSR for first paint                                        |
+| Personal data must be stored in Rwanda (or authorised abroad) | Law 058/2021   | Rwanda-hosted database for PII; configurable DB URL (ADR-0003)                                  |
+| Under-16 users need guardian consent                          | Law 058/2021   | Age gate and guardian-consent flow from day one                                                 |
+| Two founders, part-time, small budget                         | Brief          | One repo, boring tech, managed where lawful, strong CI instead of process                       |
+| Existing frontend                                             | Repo           | Lives in `frontend/`, with `backend/` and `docs/` beside it; root holds common files (ADR-0007) |
+| MERN requested                                                | Brief          | Mongo, Express 5, React 19 (TanStack Start), Node 26 LTS; TypeScript everywhere                 |
 
 ## 3. System context
 
@@ -48,14 +48,14 @@ flowchart LR
 
 ## 4. Containers and responsibilities
 
-| Container | Tech | Responsibility | Never does |
-|---|---|---|---|
-| Web app | TanStack Start, React 19, Tailwind, shadcn/ui | Rendering, SEO, forms, learner dashboard, admin UI | Holds secrets; trusts its own validation |
-| API | Node 26, Express 5, TypeScript, Zod, Mongoose | All business rules, auth, validation, authorisation, audit | Serves HTML; stores secrets in code |
-| Database | MongoDB 8 replica set | System of record | Is reachable from the internet |
-| Email | Transactional provider (to select, see open items) | Verification, reset, notifications | Sends marketing without consent |
-| Video | YouTube (unlisted videos, privacy-enhanced embeds) | Hosting and streaming | Enforces access control |
-| CDN/WAF | Cloudflare | TLS, caching, bot and DDoS filtering | Replaces app-level authorisation |
+| Container | Tech                                               | Responsibility                                             | Never does                               |
+| --------- | -------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------- |
+| Web app   | TanStack Start, React 19, Tailwind, shadcn/ui      | Rendering, SEO, forms, learner dashboard, admin UI         | Holds secrets; trusts its own validation |
+| API       | Node 26, Express 5, TypeScript, Zod, Mongoose      | All business rules, auth, validation, authorisation, audit | Serves HTML; stores secrets in code      |
+| Database  | MongoDB 8 replica set                              | System of record                                           | Is reachable from the internet           |
+| Email     | Transactional provider (to select, see open items) | Verification, reset, notifications                         | Sends marketing without consent          |
+| Video     | YouTube (unlisted videos, privacy-enhanced embeds) | Hosting and streaming                                      | Enforces access control                  |
+| CDN/WAF   | Cloudflare                                         | TLS, caching, bot and DDoS filtering                       | Replaces app-level authorisation         |
 
 ## 5. Bounded contexts (backend modules)
 
@@ -158,11 +158,11 @@ applying does not guarantee a place, matching the proposal.
 
 ## 8. Deployment topology
 
-| Environment | Frontend | API and DB | Data allowed |
-|---|---|---|---|
-| Local | `bun dev` | `docker compose` Mongo bound to localhost | Synthetic only |
-| Staging | Cloudflare preview | Small VM or container, non-production DB | Synthetic only, never real PII |
-| Production | Cloudflare | Rwanda-hosted VMs or containers; MongoDB replica set in Rwanda | Real data |
+| Environment | Frontend           | API and DB                                                     | Data allowed                   |
+| ----------- | ------------------ | -------------------------------------------------------------- | ------------------------------ |
+| Local       | `bun dev`          | `docker compose` Mongo bound to localhost                      | Synthetic only                 |
+| Staging     | Cloudflare preview | Small VM or container, non-production DB                       | Synthetic only, never real PII |
+| Production  | Cloudflare         | Rwanda-hosted VMs or containers; MongoDB replica set in Rwanda | Real data                      |
 
 Recommended hosting for production (to confirm on price and SLA): a Rwanda IaaS provider such as TrAC's
 My.cloud, with MongoDB self-managed as a three-node replica set, TLS, encrypted volumes and tested backups.
@@ -170,28 +170,28 @@ Atlas Cape Town may be used **only** for non-personal data unless NCSA authorisa
 
 ## 9. Technology choices (summary)
 
-| Concern | Choice | Why |
-|---|---|---|
-| Language | TypeScript (strict) end to end | One language for the team, fewer runtime bugs |
-| API framework | Express 5 | Familiar, stable, async error handling built in |
-| Validation | Zod, strict schemas | Rejects unknown fields; one source of truth for types |
-| ODM | Mongoose 9 | Schema-level constraints on top of Zod |
-| Auth | Server-side sessions in httpOnly cookies (ADR-0004) | Revocable; no tokens in browser storage |
-| Passwords | argon2id (Sprint 1) | Modern memory-hard hash |
-| Logging | pino | Fast, structured, supports redaction |
-| Tests | Vitest and Supertest | Same runner as the frontend |
-| CI | GitHub Actions, SHA-pinned | Supply-chain hardening |
+| Concern       | Choice                                              | Why                                                   |
+| ------------- | --------------------------------------------------- | ----------------------------------------------------- |
+| Language      | TypeScript (strict) end to end                      | One language for the team, fewer runtime bugs         |
+| API framework | Express 5                                           | Familiar, stable, async error handling built in       |
+| Validation    | Zod, strict schemas                                 | Rejects unknown fields; one source of truth for types |
+| ODM           | Mongoose 9                                          | Schema-level constraints on top of Zod                |
+| Auth          | Server-side sessions in httpOnly cookies (ADR-0004) | Revocable; no tokens in browser storage               |
+| Passwords     | argon2id (Sprint 1)                                 | Modern memory-hard hash                               |
+| Logging       | pino                                                | Fast, structured, supports redaction                  |
+| Tests         | Vitest and Supertest                                | Same runner as the frontend                           |
+| CI            | GitHub Actions, SHA-pinned                          | Supply-chain hardening                                |
 
 ## 10. Top risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
-| Unlawful storage of personal data outside Rwanda | Medium | High | ADR-0003; launch gate in the sprint plan |
-| Referral gate is gamed or too steep | High | Medium | Verified signups only, anti-abuse, configurable threshold, A/B test |
-| Interns or partners over-promised (reputation, legal) | Medium | High | "No guarantee" wording, supervisor required before acceptance |
-| Two-person bus factor | High | High | Docs in repo, CI as safety net, secrets in a manager, shared access to all accounts |
-| Scope creep across four pillars | High | High | Sprint plan stages; non-goals list; "decline work we cannot deliver" rule |
-| Supply-chain compromise via npm or Actions | Medium | High | Lockfiles, `npm ci`, SHA-pinned Actions, Dependabot with cooldown, audit in CI |
+| Risk                                                  | Likelihood | Impact | Mitigation                                                                          |
+| ----------------------------------------------------- | ---------- | ------ | ----------------------------------------------------------------------------------- |
+| Unlawful storage of personal data outside Rwanda      | Medium     | High   | ADR-0003; launch gate in the sprint plan                                            |
+| Referral gate is gamed or too steep                   | High       | Medium | Verified signups only, anti-abuse, configurable threshold, A/B test                 |
+| Interns or partners over-promised (reputation, legal) | Medium     | High   | "No guarantee" wording, supervisor required before acceptance                       |
+| Two-person bus factor                                 | High       | High   | Docs in repo, CI as safety net, secrets in a manager, shared access to all accounts |
+| Scope creep across four pillars                       | High       | High   | Sprint plan stages; non-goals list; "decline work we cannot deliver" rule           |
+| Supply-chain compromise via npm or Actions            | Medium     | High   | Lockfiles, `npm ci`, SHA-pinned Actions, Dependabot with cooldown, audit in CI      |
 
 ## 11. Decision log
 

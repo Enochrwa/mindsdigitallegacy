@@ -13,6 +13,7 @@ import { createHealthRouter } from "./modules/health/health.routes.js";
 import { createLeadsRouter } from "./modules/leads/leads.routes.js";
 import { createLeadService } from "./modules/leads/leads.service.js";
 import type { LeadRepository } from "./modules/leads/leads.repository.js";
+import type { BreachChecker } from "./core/security/breach.js";
 import type { PasswordHasher } from "./core/security/password.js";
 import type { AuditLog } from "./modules/audit/audit.js";
 import { createAuthRouter } from "./modules/auth/auth.routes.js";
@@ -33,6 +34,7 @@ export interface AppDeps {
   audit: AuditLog;
   mailer: Mailer;
   hasher: PasswordHasher;
+  breach: BreachChecker;
   now?: () => Date;
   isDbReady: () => boolean;
 }
@@ -114,6 +116,7 @@ export function createApp(deps: AppDeps): Express {
     audit: deps.audit,
     mailer: deps.mailer,
     hasher: deps.hasher,
+    breach: deps.breach,
     ...(deps.now === undefined ? {} : { now: deps.now }),
   });
   app.use(

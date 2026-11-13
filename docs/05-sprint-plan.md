@@ -27,27 +27,28 @@
 
 **Goal:** a safe base that both of you can build on.
 
-| Item | State |
-|---|---|
-| Research, gap analysis, HLD, LLD, threat model, ADRs | Done (this commit) |
-| Backend foundation: config, logging, security headers, CORS, rate limits, error model, health | Done, tested |
-| Leads API with consent, age rule, honeypot, retention TTL | Done, tested |
-| Repo split into `frontend/`, `backend/`, common root; per-part CI workflows and Dependabot (ADR-0007) | Done |
-| CI: backend (Node 24 and 26, plus MongoDB integration job), frontend, audit, CodeQL, gitleaks, dependency review | Written; GitHub run results not yet confirmed |
-| Dependabot, CODEOWNERS, PR template, SECURITY.md | Done |
-| **Founders:** enable branch protection on `main`, 2FA everywhere, enable private vulnerability reporting and secret scanning | To do |
-| **Founders:** answer the open decisions in `01-research-and-gap-analysis.md` section 11 | To do |
-| **Founders:** RDB name search, domain, social handles, YouTube channel | To do |
+| Item                                                                                                                         | State                                         |
+| ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Research, gap analysis, HLD, LLD, threat model, ADRs                                                                         | Done (this commit)                            |
+| Backend foundation: config, logging, security headers, CORS, rate limits, error model, health                                | Done, tested                                  |
+| Leads API with consent, age rule, honeypot, retention TTL                                                                    | Done, tested                                  |
+| Repo split into `frontend/`, `backend/`, common root; per-part CI workflows and Dependabot (ADR-0007)                        | Done                                          |
+| CI: backend (Node 24 and 26, plus MongoDB integration job), frontend, audit, CodeQL, gitleaks, dependency review             | Written; GitHub run results not yet confirmed |
+| Dependabot, CODEOWNERS, PR template, SECURITY.md                                                                             | Done                                          |
+| **Founders:** enable branch protection on `main`, 2FA everywhere, enable private vulnerability reporting and secret scanning | To do                                         |
+| **Founders:** answer the open decisions in `01-research-and-gap-analysis.md` section 11                                      | To do                                         |
+| **Founders:** RDB name search, domain, social handles, YouTube channel                                                       | To do                                         |
 
 ## Sprint 1 — Accounts, consent, and the first live form
 
-> Status on branch `feat/sprint-1-accounts-consent`: backend auth, sessions, consent, guardian flow, audit,
-> self-service export and delete are built and tested with fakes; the MongoDB integration test is written but
-> has only been run where a database exists (CI). Frontend: typed API client, all six forms wired, privacy
-> notice page. **Not built yet:** account screens (register, login, verify, reset), email provider and
-> SPF/DKIM/DMARC, breached-password check, TOTP for admins (Sprint 5).
-
-**Goal:** a person can register safely, and the existing site's forms reach the database.
+> Status: backend auth, sessions, consent, guardian flow, audit, export and delete are built (merged). Added on
+> `feat/account-screens-and-providers`: account screens (register, sign in, verify email, guardian consent,
+> forgot and reset password, resend verification, account page with consent, export and delete), a Brevo and
+> Resend email adapter, a resend-verification endpoint, and the Have I Been Pwned breached-password check.
+> **Still open:** choosing and configuring the email provider and sender domain (SPF, DKIM, DMARC) and sending a
+> real test mail (the adapters are unit-tested but untested against the live providers); running the MongoDB
+> integration test in CI; admin TOTP (Sprint 5, needs the admin console); the purge job for deleted accounts;
+> a browser-level test of the new screens (Sprint 5 Playwright).
 
 - Auth: registration, email verification, login, logout, password reset, session rotation (ADR-0004)
 - Users, roles, consent records, age bracket, guardian-consent flow for under 16
@@ -120,13 +121,13 @@ SMS verification; organisation accounts for schools and employers; native app.
 2. Motion and visual polish beyond the performance budget
 3. Ambassador codes (keep the main referral path)
 4. Funnel dashboard detail (keep raw counts)
-Never cut: consent and age handling, authentication hardening, audit log, backups, the launch gate.
+   Never cut: consent and age handling, authentication hardening, audit log, backups, the launch gate.
 
 ## Risks to the schedule
 
-| Risk | Response |
-|---|---|
-| Legal steps (RDB, NCSA) take longer than coding | Start Sprint 0 founder tasks today; build against synthetic data meanwhile |
-| Email deliverability to Rwandan providers | Test several mailbox providers in Sprint 1; keep a fallback of phone verification in the backlog |
-| Founder availability drops | The plan degrades by cutting scope in the order above, not by skipping the launch gate |
-| YouTube changes embed behaviour | Keep video IDs in the database and the facade layer thin so the host can be swapped (ADR-0005) |
+| Risk                                            | Response                                                                                         |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Legal steps (RDB, NCSA) take longer than coding | Start Sprint 0 founder tasks today; build against synthetic data meanwhile                       |
+| Email deliverability to Rwandan providers       | Test several mailbox providers in Sprint 1; keep a fallback of phone verification in the backlog |
+| Founder availability drops                      | The plan degrades by cutting scope in the order above, not by skipping the launch gate           |
+| YouTube changes embed behaviour                 | Keep video IDs in the database and the facade layer thin so the host can be swapped (ADR-0005)   |
