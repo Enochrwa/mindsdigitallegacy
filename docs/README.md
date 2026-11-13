@@ -9,7 +9,7 @@ Read in this order.
 | 03 | [Low-level design](03-lld.md) | Data model, API conventions, authentication, frontend and referral algorithm in implementable detail |
 | 04 | [Security and threat model](04-security-and-threat-model.md) | What can go wrong, what stops it, what is verified, and what is still open |
 | 05 | [Sprint plan](05-sprint-plan.md) | What gets built in what order, the launch gate, and what to cut first |
-| ADR | [Decision records](adr/) | Why the repo, referral, hosting, auth, video and toolchain choices were made |
+| ADR | [Decision records](adr/) | Why the repo layout, referral, hosting, auth, video and toolchain choices were made |
 
 Documents are drafts for the founders to challenge. Where a document says "to confirm" or "not verified",
 it means exactly that. Change a decision by adding a new ADR, not by editing an accepted one.

@@ -1,12 +1,12 @@
 # 03 — Low-Level Design (LLD)
 
-> Status: **Draft v0.1** · 2026-11-13 · Builds on `02-hld.md` and ADR-0001 to 0006.
+> Status: **Draft v0.1** · 2026-11-13 · Builds on `02-hld.md` and ADR-0001 to 0007.
 > Sections marked **(built)** exist in code today. Everything else is design for the sprints in `05-sprint-plan.md`.
 
 ## 1. Repository layout
 
 ```
-/                          Frontend (TanStack Start, React 19, Tailwind, shadcn/ui). Lovable-synced. (built)
+frontend/                  Frontend (TanStack Start, React 19, Tailwind, shadcn/ui). (built)
   src/routes/              File-based routes: home, about, academy, internships, services, ...
   src/components/site/     Site components (LeadForm, ...)
 backend/                   API (built: foundation + leads)
@@ -155,7 +155,7 @@ Start in `Content-Security-Policy-Report-Only` for one sprint.
 **Design direction ("breathtaking"):** performance is part of the experience on low-data phones. Rich
 motion and visuals must respect `prefers-reduced-motion`, load lazily, and stay inside the page budget in the HLD.
 Concrete design tokens, type scale, and motion rules are a Sprint 5 deliverable with the founders' brand
-colours; the existing Lovable styling is the starting point.
+colours; the existing styling is the starting point.
 
 ## 6. Referral algorithm (Sprint 3, ADR-0002)
 

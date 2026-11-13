@@ -5,6 +5,7 @@
 
 # Security-sensitive paths: always reviewed by a second person once the team has one.
 /.github/               @Enochrwa
+/frontend/             @Enochrwa
 /backend/src/core/      @Enochrwa
 /backend/src/config/    @Enochrwa
 /backend/Dockerfile     @Enochrwa
