@@ -1,0 +1,52 @@
+# Local development only. Not a production deployment (production runs on Rwanda-hosted
+# infrastructure with a replica set, TLS and least-privilege database users; see docs/adr/0003).
+#
+# Usage:  cp .env.example .env   (set your own MONGO_PASSWORD)   then   docker compose up --build
+#
+# Both services publish ports on 127.0.0.1 only, so nothing is reachable from other machines.
+
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:?set MONGO_USER in .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?set MONGO_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mdl-mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: "4000"
+      LOG_LEVEL: info
+      # Local-only: uses the root user. Production must use a dedicated least-privilege user.
+      MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/mdl?authSource=admin
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+    ports:
+      - "127.0.0.1:4000:4000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  mdl-mongo-data:

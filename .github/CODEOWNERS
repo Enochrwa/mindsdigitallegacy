@@ -1,0 +1,12 @@
+# Code owners are requested automatically on pull requests. Add the co-founder's GitHub handle to
+# each line once they have access, and enable "Require review from Code Owners" in branch protection.
+
+*                       @Enochrwa
+
+# Security-sensitive paths: always reviewed by a second person once the team has one.
+/.github/               @Enochrwa
+/backend/src/core/      @Enochrwa
+/backend/src/config/    @Enochrwa
+/backend/Dockerfile     @Enochrwa
+/docs/adr/              @Enochrwa
+/docs/04-security-and-threat-model.md @Enochrwa

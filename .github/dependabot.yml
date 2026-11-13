@@ -1,0 +1,51 @@
+version: 2
+
+# Weekly update PRs. `cooldown` delays brand-new releases by a few days, which gives the
+# community time to catch a compromised package before it reaches this repo (it does not delay
+# security updates). Grouped minor/patch PRs keep the review load manageable for a small team.
+updates:
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Africa/Kigali"
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 3
+    groups:
+      backend-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Africa/Kigali"
+    open-pull-requests-limit: 3
+    cooldown:
+      default-days: 3
+    groups:
+      frontend-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Africa/Kigali"
+    cooldown:
+      default-days: 3
+
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Africa/Kigali"
