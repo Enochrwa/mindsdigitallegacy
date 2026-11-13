@@ -26,7 +26,7 @@ multi-tenant institutional portals.
 | Personal data must be stored in Rwanda (or authorised abroad) | Law 058/2021 | Rwanda-hosted database for PII; configurable DB URL (ADR-0003) |
 | Under-16 users need guardian consent | Law 058/2021 | Age gate and guardian-consent flow from day one |
 | Two founders, part-time, small budget | Brief | One repo, boring tech, managed where lawful, strong CI instead of process |
-| Existing Lovable-synced frontend | Repo | Keep it at the repo root; add `backend/` and `docs/` beside it (ADR-0001) |
+| Existing frontend | Repo | Lives in `frontend/`, with `backend/` and `docs/` beside it; root holds common files (ADR-0007) |
 | MERN requested | Brief | Mongo, Express 5, React 19 (TanStack Start), Node 26 LTS; TypeScript everywhere |
 
 ## 3. System context

@@ -38,10 +38,10 @@ states, and the application flows must say "applying does not guarantee a place"
 
 ## 2. What already exists in the repository
 
-The repo was not empty. It holds a **TanStack Start (React 19) site connected to Lovable** and targeting
-Cloudflare Workers (Bun lockfile, Tailwind, shadcn/ui). Routes already exist for home, about, academy,
-internships, services, sectors, corporate, careers, partners, contact, and the MDL brand pages. `AGENTS.md`
-warns that pushes sync into Lovable and history must not be rewritten.
+The repo was not empty. It held a **TanStack Start (React 19) site** (originally generated with a hosted
+site builder; since detached, see ADR-0007) targeting Cloudflare Workers (Bun lockfile, Tailwind, shadcn/ui). Routes already exist for home, about, academy,
+internships, services, sectors, corporate, careers, partners, contact, and the MDL brand pages. The
+frontend now lives in `frontend/`.
 
 Key gap found by reading the code: **the forms do not submit anywhere** (`LeadForm` states online
 submission is not connected). The marketing surface is built; the product behind it (API, accounts,
@@ -50,7 +50,7 @@ academy, referrals, internship pipeline) does not exist yet. That is the first t
 Baseline health at the start of this work: `bun install --frozen-lockfile` OK, `vitest` 1/1 passing,
 production build OK, ESLint reports 131 Prettier-formatting errors and 7 fast-refresh warnings but **0
 non-formatting errors**. CI therefore checks lint with the formatting rule disabled until a deliberate
-format-only commit is made (see ADR-0001).
+format-only commit is made (see ADR-0007).
 
 ## 3. Market facts for Rwanda
 

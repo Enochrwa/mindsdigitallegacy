@@ -1,6 +1,6 @@
 # ADR-0001: Keep the Lovable frontend at the repo root; add `backend/` and `docs/` beside it
 
-- Status: Accepted (reversible)
+- Status: Superseded by ADR-0007 (kept as history)
 - Date: 2026-11-13
 
 ## Context

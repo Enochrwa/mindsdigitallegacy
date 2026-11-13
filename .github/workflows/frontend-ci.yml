@@ -3,9 +3,9 @@ name: Frontend CI
 on:
   push:
     branches: [main]
-    paths-ignore: ["backend/**", "docs/**", "**/*.md"]
+    paths: ["frontend/**", ".github/workflows/frontend-ci.yml"]
   pull_request:
-    paths-ignore: ["backend/**", "docs/**", "**/*.md"]
+    paths: ["frontend/**", ".github/workflows/frontend-ci.yml"]
 
 permissions:
   contents: read
@@ -19,6 +19,9 @@ jobs:
     name: Lint, test, build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -27,9 +30,11 @@ jobs:
         with:
           bun-version: 1.4.4
       - run: bun install --frozen-lockfile --ignore-scripts
-      # The Lovable-generated code has Prettier formatting drift (131 formatting-only errors).
-      # Real lint rules are enforced; formatting is excluded until a deliberate format-only commit
-      # (ADR-0001). Do not reformat generated files in feature PRs.
+      - name: Typecheck
+        run: bunx tsc --noEmit
+      # The existing code has Prettier formatting drift (131 formatting-only errors).
+      # Real lint rules are enforced; formatting is excluded until a deliberate format-only commit.
+      # Do not reformat unrelated files in feature PRs.
       - name: Lint (formatting rule excluded)
         run: |
           bunx eslint . --rule 'prettier/prettier: off'
