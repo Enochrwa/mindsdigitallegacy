@@ -14,8 +14,12 @@ const registration = {
   privacyNoticeVersion: "2026-11",
 } as const;
 
+const breachedList = new Set(["a breached passphrase"]);
+const breach = { isBreached: (p: string) => Promise.resolve(breachedList.has(p)) };
+
 function setup(opts: { now?: () => Date; env?: Record<string, string> } = {}) {
   const ctx = buildTestApp({
+    breach,
     env: { RATE_LIMIT_AUTH_PER_15MIN: "1000", ...opts.env },
     ...(opts.now === undefined ? {} : { now: opts.now }),
   });
@@ -107,6 +111,49 @@ describe("registration", () => {
     });
     expect(JSON.stringify(t.audit.events)).not.toContain("ada@example.rw");
     expect(JSON.stringify(t.audit.events)).not.toContain(PASSWORD);
+  });
+});
+
+describe("breached passwords", () => {
+  it("rejects a breached password at registration and at reset", async () => {
+    const t = setup();
+    const res = await t.register({ password: "a breached passphrase" });
+    expect(res.status).toBe(400);
+    expect(JSON.stringify(res.body)).toContain("data breach");
+    expect(t.users.all.size).toBe(0);
+
+    await t.register();
+    await t.verify();
+    await t.api.post("/api/v1/auth/password/forgot").send({ email: registration.email });
+    const token = t.tokenOf("reset");
+    const bad = await t.api
+      .post("/api/v1/auth/password/reset")
+      .send({ token, password: "a breached passphrase" });
+    expect(bad.status).toBe(400);
+    // The link survives, so the person can pick another password.
+    expect(
+      (
+        await t.api
+          .post("/api/v1/auth/password/reset")
+          .send({ token, password: "a clean long passphrase" })
+      ).status,
+    ).toBe(200);
+  });
+});
+
+describe("resend verification", () => {
+  it("sends a new link only to unverified accounts, with an identical answer for everyone", async () => {
+    const t = setup();
+    await t.register();
+    const send = (email: string) => t.api.post("/api/v1/auth/verify-email/resend").send({ email });
+    const known = await send(registration.email);
+    const unknown = await send("nobody@example.rw");
+    expect(known.status).toBe(202);
+    expect(unknown.body).toEqual(known.body);
+    expect(t.mailer.sent.filter((m) => m.kind === "verify")).toHaveLength(2);
+    await t.verify();
+    await send(registration.email);
+    expect(t.mailer.sent.filter((m) => m.kind === "verify")).toHaveLength(2);
   });
 });
 

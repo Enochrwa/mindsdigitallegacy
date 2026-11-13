@@ -3,6 +3,8 @@ import { loadEnv } from "../config/env.js";
 import { createLogger } from "../core/logger.js";
 import type { NewLead } from "../modules/leads/leads.model.js";
 import type { LeadRepository } from "../modules/leads/leads.repository.js";
+import { noBreachCheck } from "../core/security/breach.js";
+import type { BreachChecker } from "../core/security/breach.js";
 import { createPasswordHasher } from "../core/security/password.js";
 import {
   memoryAudit,
@@ -21,6 +23,7 @@ interface Options {
   dbReady?: boolean;
   repository?: LeadRepository;
   now?: () => Date;
+  breach?: BreachChecker;
 }
 
 export function buildTestApp(options: Options = {}) {
@@ -52,6 +55,7 @@ export function buildTestApp(options: Options = {}) {
     mailer,
     // Cheap parameters keep tests fast; production uses DEFAULT_ARGON2.
     hasher: createPasswordHasher({ memoryKiB: 64, passes: 1, parallelism: 1 }),
+    breach: options.breach ?? noBreachCheck,
     ...(options.now === undefined ? {} : { now: options.now }),
     isDbReady: () => options.dbReady ?? true,
   });

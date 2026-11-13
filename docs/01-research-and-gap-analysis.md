@@ -18,7 +18,7 @@
 
 ## 1. What the proposal asks for
 
-MDL (*Empowering Digital Skills, Simplifying Your Daily Work*) is a technology company with four pillars:
+MDL (_Empowering Digital Skills, Simplifying Your Daily Work_) is a technology company with four pillars:
 
 1. **Technology Solutions**: websites, web/mobile apps, management systems, IT support, data and BI, creative services.
 2. **MDL Training Academy**: practical courses (digital foundations, Office, programming, design, digital business, IT and safety).
@@ -54,17 +54,17 @@ format-only commit is made (see ADR-0007).
 
 ## 3. Market facts for Rwanda
 
-| # | Fact | Source / caveat |
-|---|---|---|
-| 1 | Only **39%** of ICT graduates meet job-market expectations; **28%** of employers cite inadequate digital skills as a major constraint. | ILO *Rwanda Digital Employment Diagnostic* (2025), exec. summary p. viii |
-| 2 | Mobile data costs **10–20%** of per-capita income, against a global average of 5%. | Same, p. vii. The report uses "per capita income" in the summary and "GNI per capita" in section 4.a |
-| 3 | **98.8%** of people have 4G coverage, yet only **21%** of adults used the internet in the past three months. | Same, p. vii. The 21% is attributed to the Labour Force Survey (2022 or 2023 depending on the section) |
-| 4 | **64.2%** of Rwandans aged 16+ own a mobile phone and **24.8% of those** own a smartphone (about 16% of people 16+, our arithmetic). | Same, section 4.a p. 22. The summary states 24.8% without the denominator, which is easy to misread |
-| 5 | Youth unemployment: 21% of teenagers and 17.2% of the working-age population unemployed. | Same, p. viii |
-| 6 | 5.01M internet users (34.2% penetration); Facebook ad reach 1.35M, Instagram 576K, LinkedIn 570K, X 302K. WhatsApp, YouTube and TikTok are **not reported**. | DataReportal *Digital 2026: Rwanda*. Ad reach is not monthly active users |
-| 7 | The Government's National Internship Programme places graduates for 3–6 months with a stipend, and is trying to grow ICT-enabled placements with private firms (ILO and MIFOTRA, Luxembourg-funded). It cites a mismatch between employer-needed skills and formal education, and weak soft skills. | UNGM notice 268579 (call closed June 2025; no current placement numbers published) |
-| 8 | The Digital Talent Program targets **20,000 youth over two years**. It is run by IHS Towers with MINICT and the Rwanda ICT Chamber. It is free, mostly self-paced online, and gives **no** stipend, device or data allowance. | globalsouthopportunities.com summary. Dates, selection criteria and credentials are not stated |
-| 9 | Foundational free courses (freeCodeCamp, Odin Project, CS50) lack mentorship, accountability and Rwandan context. Udemy and Coursera need a card. A local option (McTaba) takes MTN MoMo and Airtel Money at roughly RWF 30,000. | mctaba.com articles. A vendor's own market guide, so treat the gap claims as one view |
+| #   | Fact                                                                                                                                                                                                                                                                                                | Source / caveat                                                                                        |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| 1   | Only **39%** of ICT graduates meet job-market expectations; **28%** of employers cite inadequate digital skills as a major constraint.                                                                                                                                                              | ILO _Rwanda Digital Employment Diagnostic_ (2025), exec. summary p. viii                               |
+| 2   | Mobile data costs **10–20%** of per-capita income, against a global average of 5%.                                                                                                                                                                                                                  | Same, p. vii. The report uses "per capita income" in the summary and "GNI per capita" in section 4.a   |
+| 3   | **98.8%** of people have 4G coverage, yet only **21%** of adults used the internet in the past three months.                                                                                                                                                                                        | Same, p. vii. The 21% is attributed to the Labour Force Survey (2022 or 2023 depending on the section) |
+| 4   | **64.2%** of Rwandans aged 16+ own a mobile phone and **24.8% of those** own a smartphone (about 16% of people 16+, our arithmetic).                                                                                                                                                                | Same, section 4.a p. 22. The summary states 24.8% without the denominator, which is easy to misread    |
+| 5   | Youth unemployment: 21% of teenagers and 17.2% of the working-age population unemployed.                                                                                                                                                                                                            | Same, p. viii                                                                                          |
+| 6   | 5.01M internet users (34.2% penetration); Facebook ad reach 1.35M, Instagram 576K, LinkedIn 570K, X 302K. WhatsApp, YouTube and TikTok are **not reported**.                                                                                                                                        | DataReportal _Digital 2026: Rwanda_. Ad reach is not monthly active users                              |
+| 7   | The Government's National Internship Programme places graduates for 3–6 months with a stipend, and is trying to grow ICT-enabled placements with private firms (ILO and MIFOTRA, Luxembourg-funded). It cites a mismatch between employer-needed skills and formal education, and weak soft skills. | UNGM notice 268579 (call closed June 2025; no current placement numbers published)                     |
+| 8   | The Digital Talent Program targets **20,000 youth over two years**. It is run by IHS Towers with MINICT and the Rwanda ICT Chamber. It is free, mostly self-paced online, and gives **no** stipend, device or data allowance.                                                                       | globalsouthopportunities.com summary. Dates, selection criteria and credentials are not stated         |
+| 9   | Foundational free courses (freeCodeCamp, Odin Project, CS50) lack mentorship, accountability and Rwandan context. Udemy and Coursera need a card. A local option (McTaba) takes MTN MoMo and Airtel Money at roughly RWF 30,000.                                                                    | mctaba.com articles. A vendor's own market guide, so treat the gap claims as one view                  |
 
 **Design implications**
 
@@ -76,14 +76,14 @@ format-only commit is made (see ADR-0007).
 
 ## 4. Competitive landscape
 
-| Player | What it does | Where MDL cannot win | Where MDL can differ |
-|---|---|---|---|
-| Digital Talent Program (state-backed) | Free, self-paced, 12 tracks, 20,000 learners | Free generic content at national scale | Supervised real projects, mentoring, a path to internships and paid work |
-| Free global courses (freeCodeCamp, Odin, CS50) | Free curricula | Breadth and brand | Local context, cohorts, accountability, Kinyarwanda/English support |
-| Udemy / Coursera | Paid catalogues | Catalogue size | MoMo payments, price in RWF, local mentors |
-| McTaba and similar local platforms | Paid, MoMo-friendly, East African focus | Existing local trust | The combined training → internship → client-project pipeline |
-| Government internship programme | Stipended 3–6 month placements | Scale and stipends | MDL can be a **host** that supplies the ICT placements the programme lacks |
-| Local software agencies | Build software for clients | Existing client relationships | Training and intern supply lowers delivery cost; MDL trains the client's staff |
+| Player                                         | What it does                                 | Where MDL cannot win                   | Where MDL can differ                                                           |
+| ---------------------------------------------- | -------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------ |
+| Digital Talent Program (state-backed)          | Free, self-paced, 12 tracks, 20,000 learners | Free generic content at national scale | Supervised real projects, mentoring, a path to internships and paid work       |
+| Free global courses (freeCodeCamp, Odin, CS50) | Free curricula                               | Breadth and brand                      | Local context, cohorts, accountability, Kinyarwanda/English support            |
+| Udemy / Coursera                               | Paid catalogues                              | Catalogue size                         | MoMo payments, price in RWF, local mentors                                     |
+| McTaba and similar local platforms             | Paid, MoMo-friendly, East African focus      | Existing local trust                   | The combined training → internship → client-project pipeline                   |
+| Government internship programme                | Stipended 3–6 month placements               | Scale and stipends                     | MDL can be a **host** that supplies the ICT placements the programme lacks     |
+| Local software agencies                        | Build software for clients                   | Existing client relationships          | Training and intern supply lowers delivery cost; MDL trains the client's staff |
 
 To investigate before the pitch (not verified): ALX Rwanda, KLab, Rwanda Coding Academy, Andela-style
 talent programmes, virtual work-experience platforms (for example Forage) as global reference models for
@@ -91,14 +91,14 @@ project-based experience.
 
 ## 5. Pains, gaps and the MDL response
 
-| Pain (evidence) | Gap | MDL response | Priority |
-|---|---|---|---|
-| Graduates lack job-ready skills (39% meet expectations) | Courses teach theory with no supervised practice | Every course ends in a reviewed project; best learners enter supervised internships | High |
-| Employers need experience; interns lack placements | Few ICT host firms (NIP is trying to recruit them) | MDL runs real client projects that interns work on under a named supervisor | High |
-| Data is expensive; few smartphones | Heavy video platforms and card-only payments exclude people | YouTube facade player (loads on tap), low-JS pages, MoMo payments later | High |
-| SMEs and schools run on manual processes | Cannot find a trusted, affordable builder | Fixed-scope pilots with training and maintenance bundled | Medium |
-| Learners lack accountability and local mentors | Self-paced courses have high drop-off | Cohorts, a supervisor/mentor per intern, progress dashboards | Medium |
-| New brand with no recognition | Needs awareness cheaply | Verified-referral unlock for free training (section 7) | High |
+| Pain (evidence)                                         | Gap                                                         | MDL response                                                                        | Priority |
+| ------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------- | -------- |
+| Graduates lack job-ready skills (39% meet expectations) | Courses teach theory with no supervised practice            | Every course ends in a reviewed project; best learners enter supervised internships | High     |
+| Employers need experience; interns lack placements      | Few ICT host firms (NIP is trying to recruit them)          | MDL runs real client projects that interns work on under a named supervisor         | High     |
+| Data is expensive; few smartphones                      | Heavy video platforms and card-only payments exclude people | YouTube facade player (loads on tap), low-JS pages, MoMo payments later             | High     |
+| SMEs and schools run on manual processes                | Cannot find a trusted, affordable builder                   | Fixed-scope pilots with training and maintenance bundled                            | Medium   |
+| Learners lack accountability and local mentors          | Self-paced courses have high drop-off                       | Cohorts, a supervisor/mentor per intern, progress dashboards                        | Medium   |
+| New brand with no recognition                           | Needs awareness cheaply                                     | Verified-referral unlock for free training (section 7)                              | High     |
 
 ### Is the idea unique?
 
@@ -111,15 +111,15 @@ why generic courses should be a growth channel, not the main product.
 
 ## 6. Legal and compliance findings (Rwanda Law No. 058/2021, per DLA Piper)
 
-| Topic | Finding | Effect on the build |
-|---|---|---|
-| Regulator and registration | National Cyber Security Authority (NCSA). Controllers and processors must register; certificate issued within 30 days | MDL must register before processing real personal data |
-| **Data residency** | Personal data **must be stored in Rwanda**; storage abroad only with a valid registration certificate authorising it. Transfers abroad only in listed cases (NCSA authorisation with safeguards, consent, contract necessity) with a written contract | **Hosting decision is a legal decision** (ADR-0003). A foreign cloud database cannot be assumed lawful |
-| Children | Under 16: parent or guardian consent required | The student-heavy audience makes this a day-one requirement: age gate, guardian-consent flow, and no marketing to under-16s |
-| Breach | Controller notifies NCSA within **48 hours** of becoming aware; processors notify the controller within 48 hours; affected people told in writing where high risk | Incident playbook with a 48-hour clock; logging that makes detection possible |
-| DPO | Required for public and private bodies and legal entities (except courts) | Appoint a data protection officer even for a small company; confirm with counsel |
-| Rights | Withdraw consent, access, rectify, restrict, erase, object, **object to direct marketing** | Self-service export/delete, marketing consent kept separate from service consent |
-| Penalties | Administrative fines RWF 2M–5M or 1% of prior-year global turnover (corporate); criminal offences including unlawful processing, sale, and re-identification; corporate criminal fine up to 5% of annual turnover | The cost of getting this wrong exceeds the cost of building it right |
+| Topic                      | Finding                                                                                                                                                                                                                                               | Effect on the build                                                                                                         |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Regulator and registration | National Cyber Security Authority (NCSA). Controllers and processors must register; certificate issued within 30 days                                                                                                                                 | MDL must register before processing real personal data                                                                      |
+| **Data residency**         | Personal data **must be stored in Rwanda**; storage abroad only with a valid registration certificate authorising it. Transfers abroad only in listed cases (NCSA authorisation with safeguards, consent, contract necessity) with a written contract | **Hosting decision is a legal decision** (ADR-0003). A foreign cloud database cannot be assumed lawful                      |
+| Children                   | Under 16: parent or guardian consent required                                                                                                                                                                                                         | The student-heavy audience makes this a day-one requirement: age gate, guardian-consent flow, and no marketing to under-16s |
+| Breach                     | Controller notifies NCSA within **48 hours** of becoming aware; processors notify the controller within 48 hours; affected people told in writing where high risk                                                                                     | Incident playbook with a 48-hour clock; logging that makes detection possible                                               |
+| DPO                        | Required for public and private bodies and legal entities (except courts)                                                                                                                                                                             | Appoint a data protection officer even for a small company; confirm with counsel                                            |
+| Rights                     | Withdraw consent, access, rectify, restrict, erase, object, **object to direct marketing**                                                                                                                                                            | Self-service export/delete, marketing consent kept separate from service consent                                            |
+| Penalties                  | Administrative fines RWF 2M–5M or 1% of prior-year global turnover (corporate); criminal offences including unlawful processing, sale, and re-identification; corporate criminal fine up to 5% of annual turnover                                     | The cost of getting this wrong exceeds the cost of building it right                                                        |
 
 Related obligations to confirm with counsel: the RDB company registration comes first, because partner
 agreements, MoMo merchant KYC and NCSA registration all need a legal entity; the **2020 Internship
@@ -193,7 +193,7 @@ plus a status-check reconciliation job so orders never stay "pending" silently.
 
 ## Sources
 
-- ILO, *Rwanda Digital Employment Diagnostic* (2025): https://www.ilo.org/sites/default/files/2025-11/Rwanda%20Digital%20Employment%20Diagnostic%20report_web.pdf
+- ILO, _Rwanda Digital Employment Diagnostic_ (2025): https://www.ilo.org/sites/default/files/2025-11/Rwanda%20Digital%20Employment%20Diagnostic%20report_web.pdf
 - Digital Talent Program summary: https://www.globalsouthopportunities.com/2026/07/11/rwanda-2/
 - DLA Piper, Rwanda data protection: https://www.dlapiperdataprotection.com/?c=RW&t=law
 - DataReportal, Digital 2026 Rwanda: https://datareportal.com/reports/digital-2026-rwanda

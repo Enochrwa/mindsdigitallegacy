@@ -38,6 +38,14 @@ export function createAuthRouter({ auth, cookie, limiter }: Deps): Router {
     res.json({ status: "verified" });
   });
 
+  router.post("/verify-email/resend", limiter, async (req, res) => {
+    await auth.resendVerification(forgotSchema.parse(req.body).email, ctx(req, res));
+    res.status(202).json({
+      status: "check_your_email",
+      message: "If this address has an unverified account, we have sent a new link.",
+    });
+  });
+
   router.post("/guardian/confirm", limiter, async (req, res) => {
     await auth.confirmGuardian(tokenSchema.parse(req.body).token, ctx(req, res));
     res.json({ status: "guardian_consent_recorded" });

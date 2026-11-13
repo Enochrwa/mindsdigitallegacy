@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import logo from "@/assets/mdl-logo.jpeg.asset.json";
 import { Button } from "@/components/ui/button";
 import { nav } from "@/lib/content";
+import { useSession } from "@/lib/session";
 
 export function Logo() {
   return (
@@ -11,6 +12,17 @@ export function Logo() {
       <span className="block h-12 w-28 overflow-hidden rounded-md bg-background">
         <img src={logo.url} alt="MDL logo" className="h-full w-full scale-[1.7] object-cover object-[50%_42%]" />
       </span>
+    </Link>
+  );
+}
+
+function AccountLink({ onClick }: { onClick?: () => void }) {
+  const session = useSession();
+  // While loading (and on the server) show the sign-in link, so markup never depends on the cookie.
+  const signedIn = session.status === "authenticated";
+  return (
+    <Link to={signedIn ? "/account" : "/login"} onClick={onClick} className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary">
+      {signedIn ? "My account" : "Sign in"}
     </Link>
   );
 }
@@ -28,7 +40,10 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="hidden lg:block"><Button asChild variant="gold"><Link to="/contact">Contact us</Link></Button></div>
+        <div className="hidden items-center gap-2 lg:flex">
+          <AccountLink />
+          <Button asChild variant="gold"><Link to="/contact">Contact us</Link></Button>
+        </div>
         <button className="lg:hidden" onClick={() => setOpen(!open)} aria-label="Toggle menu">{open ? <X /> : <Menu />}</button>
       </div>
       {open && (
@@ -36,6 +51,7 @@ export function SiteHeader() {
           {[...nav, { to: "/contact", label: "Contact" } as const].map((n) => (
             <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 font-medium hover:bg-muted">{n.label}</Link>
           ))}
+          <AccountLink onClick={() => setOpen(false)} />
         </nav>
       )}
     </header>

@@ -58,6 +58,18 @@ describe("loadEnv", () => {
       expect(() => loadEnv({ ...valid, CORS_ORIGINS: "" })).toThrow(/CORS_ORIGINS/);
     });
 
+    it("requires an API key and sender when a real email provider is chosen", () => {
+      expect(() => loadEnv({ ...valid, EMAIL_PROVIDER: "brevo" })).toThrow(/EMAIL_API_KEY/);
+      expect(
+        loadEnv({
+          ...valid,
+          EMAIL_PROVIDER: "brevo",
+          EMAIL_API_KEY: "xkeysib-0123456789",
+          EMAIL_FROM: "no-reply@example.rw",
+        }).EMAIL_PROVIDER,
+      ).toBe("brevo");
+    });
+
     it("requires an https web base url", () => {
       expect(() => loadEnv({ ...valid, WEB_BASE_URL: "http://app.example.rw" })).toThrow(
         /WEB_BASE_URL/,

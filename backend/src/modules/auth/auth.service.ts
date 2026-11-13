@@ -1,5 +1,6 @@
 import { AppError } from "../../core/errors.js";
 import { checkPassword } from "../../core/security/passwordPolicy.js";
+import type { BreachChecker } from "../../core/security/breach.js";
 import type { PasswordHasher } from "../../core/security/password.js";
 import { generateToken, hashToken, ipPrefix } from "../../core/security/tokens.js";
 import type { AuditAction, AuditLog } from "../audit/audit.js";
@@ -61,11 +62,19 @@ export interface AuthDeps {
   audit: AuditLog;
   mailer: Mailer;
   hasher: PasswordHasher;
+  breach: BreachChecker;
   now?: () => Date;
 }
 
 const invalidCredentials = (): AppError =>
   new AppError(401, "INVALID_CREDENTIALS", "Email or password is incorrect.");
+const breachedPassword = (): AppError =>
+  new AppError(400, "VALIDATION_ERROR", "Some fields are invalid.", [
+    {
+      path: "password",
+      message: "This password has appeared in a data breach. Choose a different one.",
+    },
+  ]);
 const invalidToken = (): AppError =>
   new AppError(400, "INVALID_TOKEN", "This link is invalid or has expired.");
 
@@ -78,7 +87,7 @@ function summariseUserAgent(ua: string | undefined): string {
 }
 
 export function createAuthService(deps: AuthDeps) {
-  const { users, sessions, tokens, audit, mailer, hasher } = deps;
+  const { users, sessions, tokens, audit, mailer, hasher, breach } = deps;
   const now = deps.now ?? ((): Date => new Date());
 
   // A real hash computed once, verified against when the account does not exist, so "no such user"
@@ -154,6 +163,7 @@ export function createAuthService(deps: AuthDeps) {
           { path: "password", message: problem },
         ]);
       }
+      if (await breach.isBreached(input.password)) throw breachedPassword();
       // Hash before looking the address up so both branches take similar time.
       const passwordHash = await hasher.hash(input.password);
       const at = now();
@@ -204,6 +214,15 @@ export function createAuthService(deps: AuthDeps) {
       if (userId === null) throw invalidToken();
       await users.markEmailVerified(userId, now());
       await record("auth.verify_email", ctx, "success", userId);
+    },
+
+    /** For people whose first verification mail was lost. Same answer whether or not the address exists. */
+    async resendVerification(email: string, ctx: RequestContext): Promise<void> {
+      const user = await users.findByEmail(email);
+      if (user !== null && user.deletedAt === undefined && user.emailVerifiedAt === undefined) {
+        await mailer.sendVerification(user.email, await issueToken(user.id, "verify_email"));
+      }
+      await record("auth.verify_email", ctx, "failure", user?.id, { reason: "resend_requested" });
     },
 
     async confirmGuardian(token: string, ctx: RequestContext): Promise<void> {
@@ -329,6 +348,7 @@ export function createAuthService(deps: AuthDeps) {
           { path: "password", message: problem },
         ]);
       }
+      if (await breach.isBreached(password)) throw breachedPassword();
       const userId = await tokens.consume("reset_password", tokenHash, now());
       if (userId === null) throw invalidToken();
       await users.setPasswordHash(userId, await hasher.hash(password));

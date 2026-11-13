@@ -6,6 +6,8 @@ import { createMongoLeadRepository } from "./modules/leads/leads.repository.js";
 import { createPasswordHasher } from "./core/security/password.js";
 import { createMongoAuditLog } from "./modules/audit/audit.js";
 import { createMongoAuthTokenRepository } from "./modules/auth/authTokens.mongo.js";
+import { createHibpChecker, noBreachCheck } from "./core/security/breach.js";
+import { createHttpMailer } from "./modules/auth/mailer.http.js";
 import { createLogMailer } from "./modules/auth/mailer.js";
 import { createMongoSessionRepository } from "./modules/sessions/sessions.mongo.js";
 import { createMongoUserRepository } from "./modules/users/users.mongo.js";
@@ -31,7 +33,22 @@ async function main(): Promise<void> {
     sessions: createMongoSessionRepository(),
     authTokens: createMongoAuthTokenRepository(),
     audit: createMongoAuditLog(),
-    mailer: createLogMailer(logger, env.WEB_BASE_URL, env.NODE_ENV === "production"),
+    mailer:
+      env.EMAIL_PROVIDER === "log" ||
+      env.EMAIL_API_KEY === undefined ||
+      env.EMAIL_FROM === undefined
+        ? createLogMailer(logger, env.WEB_BASE_URL, env.NODE_ENV === "production")
+        : createHttpMailer(
+            {
+              provider: env.EMAIL_PROVIDER,
+              apiKey: env.EMAIL_API_KEY,
+              fromEmail: env.EMAIL_FROM,
+              fromName: env.EMAIL_FROM_NAME,
+              webBaseUrl: env.WEB_BASE_URL,
+            },
+            logger,
+          ),
+    breach: env.PASSWORD_BREACH_CHECK ? createHibpChecker(logger) : noBreachCheck,
     hasher: createPasswordHasher(),
     isDbReady,
   });

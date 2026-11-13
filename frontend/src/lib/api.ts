@@ -102,6 +102,12 @@ export interface Profile {
   ageBracket: "under_16" | "16_plus";
   emailVerified: boolean;
   guardianConsentRecorded: boolean;
+  consents: {
+    type: "service" | "marketing";
+    noticeVersion: string;
+    at: string;
+    withdrawnAt: string | null;
+  }[];
 }
 
 export const api = {
@@ -112,6 +118,8 @@ export const api = {
   auth: {
     register: (input: RegisterInput) =>
       request<{ status: string }>("POST", "/auth/register", input),
+    resendVerification: (email: string) =>
+      request<{ status: string }>("POST", "/auth/verify-email/resend", { email }),
     verifyEmail: (token: string) =>
       request<{ status: string }>("POST", "/auth/verify-email", { token }),
     confirmGuardian: (token: string) =>
