@@ -20,6 +20,8 @@ interface Deps {
   audit: AuditLog;
   hasher: PasswordHasher;
   cookie: SessionCookieConfig;
+  /** Adds learning data to the self-service export. */
+  exportLearning?: (userId: string) => Promise<unknown>;
   now?: () => Date;
 }
 
@@ -48,6 +50,7 @@ export function createUsersRouter({
   audit,
   hasher,
   cookie,
+  exportLearning,
   now = () => new Date(),
 }: Deps): Router {
   const router = Router();
@@ -102,6 +105,7 @@ export function createUsersRouter({
     res.json({
       exportedAt: now().toISOString(),
       account: { ...profileOf(user), createdAt: user.createdAt },
+      learning: exportLearning === undefined ? undefined : await exportLearning(user.id),
     });
   });
 

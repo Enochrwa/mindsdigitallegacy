@@ -25,6 +25,10 @@ describe("App routing", () => {
     "/resend-verification",
     "/account",
     "/privacy",
+    "/courses",
+    "/courses/introduction-to-computers",
+    "/courses/introduction-to-computers/learn/what-is-a-computer",
+    "/learning",
   ])("has a page for %s", (path) => {
     const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
     expect(router.matchRoutes(path).at(-1)?.routeId).not.toBe(rootRouteId);

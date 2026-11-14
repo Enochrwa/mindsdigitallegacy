@@ -77,3 +77,10 @@ when the protection is removed.
 - Never log request bodies, headers, or query strings. Log method and path only.
 - Never put secrets in the repo, in `.env.example`, or in CI logs.
 - Interns and contractors get **synthetic data only**, never production data or credentials.
+
+## Academy (Sprint 2)
+
+- Content lives in `content/academy.json` (validated; see `docs/07-data-model.md`).
+- `npm run check:academy` validates it without a database. `npm run seed:academy` imports it into `MONGODB_URI` (idempotent; re-run after every content change).
+- `npm run dev:memory` starts an in-memory API (no MongoDB) with the content loaded, for trying the web app locally. Development only.
+- Public routes: `GET /api/v1/courses`, `GET /api/v1/courses/:slug`. Signed-in: enrol, progress, `GET /api/v1/learning`. Lesson content is released only to unlocked learners or on free-preview lessons.

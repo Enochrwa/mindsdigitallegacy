@@ -63,6 +63,8 @@ learner's record (tested); guardian-less under-16 accounts stay inactive; all fo
 
 ## Sprint 2 — Academy MVP
 
+**Status: built on `feat/sprint-2-academy`** (see the verification note at the end of this section).
+
 **Goal:** free courses with professional video, without the referral gate yet.
 
 - Courses, lessons, enrolment, progress APIs; admin seed script for the first course
@@ -70,6 +72,14 @@ learner's record (tested); guardian-less under-16 accounts stay inactive; all fo
 - CSP and security headers on the web app (report-only first), `Referrer-Policy` verified against the player
 - Verify unlisted-video embeds play on the production domain (open question from ADR-0005)
 - Performance budget measured on a throttled 3G profile; accessibility pass
+
+**Done:** courses, sections, lessons, enrolment and progress APIs; validated content file with importer and
+`npm run seed:academy`; catalogue, course, lesson (YouTube facade, transcript, resume) and "My learning" screens;
+CSP in report-only mode plus `Referrer-Policy: strict-origin-when-cross-origin`; axe scan clean on three pages.
+**Not done / not verifiable here:** unlisted-video embeds on the real domain (needs the domain and real video ids,
+the two video lessons stay draft until then); Mongo repositories exercised only by the gated integration test;
+throttled-3G run (bundle size measured, not timed); CSP enforcement (switch `REPORT_ONLY` after a clean production run);
+nonces to replace `'unsafe-inline'`; the deleted-account purge job.
 
 ## Sprint 3 — Referral growth loop
 

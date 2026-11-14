@@ -5,7 +5,13 @@ import type { Role } from "../users/users.types.js";
  * inline; they call `authorize`. Object-level rules (own data only) live here too, so each has one
  * place to read and one place to test.
  */
-export type Action = "profile:read" | "profile:update" | "profile:export" | "profile:delete";
+export type Action =
+  | "profile:read"
+  | "profile:update"
+  | "profile:export"
+  | "profile:delete"
+  | "learning:read"
+  | "learning:write";
 
 export interface Actor {
   id: string;
@@ -21,6 +27,8 @@ const OWN_DATA_ACTIONS: ReadonlySet<Action> = new Set([
   "profile:update",
   "profile:export",
   "profile:delete",
+  "learning:read",
+  "learning:write",
 ]);
 
 export function authorize(actor: Actor | undefined, action: Action, subject: Subject): boolean {

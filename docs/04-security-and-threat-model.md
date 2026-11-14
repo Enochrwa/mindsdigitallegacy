@@ -117,6 +117,13 @@ or GitHub Action; a stolen laptop; and a hosting or provider outage.
   simulated locally), CodeQL and dependency review (need a public repo or Advanced Security), and every GitHub Actions
   workflow run (they have not run on GitHub yet).
 
+### Sprint 2 additions
+
+- Lesson content (including video ids) is released only after an access check (unlocked enrolment or explicit free preview); catalogue responses are an explicit allow-list with no video ids or transcripts. Tested.
+- Progress writes are scoped to the session user; cross-user writes are refused. Tested.
+- Mongoose `sanitizeFilter` rewrote our own `$gt/$ne/$exists` operators, which would have broken token consumption and session revocation on a real database. Fixed with `trusted()` and a regression test.
+- Web app sends CSP (report-only), `Referrer-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Permissions-Policy`.
+
 ## 9. Known gaps and accepted risks
 
 1. In-memory rate limiting is per instance; many users behind one carrier IP can share a limit.

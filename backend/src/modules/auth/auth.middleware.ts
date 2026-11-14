@@ -61,3 +61,27 @@ export function authLocals(res: { locals: Record<string, unknown> }): AuthLocals
   }
   return { user, sessionToken };
 }
+
+/**
+ * Like requireAuth but never rejects: a missing or invalid session simply means "anonymous". Used by
+ * public GET routes that show more to a signed-in learner (for example free-preview lessons).
+ */
+export function optionalAuth(auth: AuthService): (cookie: SessionCookieConfig) => RequestHandler {
+  return (cookie) => async (req, res, next) => {
+    try {
+      const token = readCookie(req, cookie.name);
+      if (token !== undefined) {
+        const result = await auth.authenticate(token, contextOf(req, getRequestId(res)));
+        if (result !== null) {
+          if (result.rotated !== undefined) {
+            setSessionCookie(res, cookie, result.rotated.token, result.rotated.maxAgeSeconds);
+          }
+          res.locals["user"] = result.user;
+        }
+      }
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
+}

@@ -51,6 +51,8 @@ const envSchema = z
     BODY_LIMIT_KB: z.coerce.number().int().min(1).max(256).default(16),
     RATE_LIMIT_GENERAL_PER_MINUTE: z.coerce.number().int().min(1).default(120),
     RATE_LIMIT_LEADS_PER_HOUR: z.coerce.number().int().min(1).default(20),
+    /** Learning writes (enrol, progress) per client IP per minute. */
+    RATE_LIMIT_LEARNING_PER_MINUTE: z.coerce.number().int().min(1).default(90),
     /** Public URL of the web app, used in email links. Must be https in production. */
     WEB_BASE_URL: originSchema.default("http://localhost:8080"),
     /** Public auth endpoints (register, login, reset) per client IP per 15 minutes. */
