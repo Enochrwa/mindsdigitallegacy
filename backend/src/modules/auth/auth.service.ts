@@ -101,7 +101,7 @@ export function createAuthService(deps: AuthDeps) {
     ctx: RequestContext,
     outcome: "success" | "failure",
     actorId?: string,
-    meta?: { reason?: string; consentType?: string; granted?: boolean },
+    meta?: { reason?: string; consentType?: string; granted?: boolean; courseSlug?: string },
   ): Promise<void> {
     await audit.append({
       at: now(),

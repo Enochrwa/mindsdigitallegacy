@@ -21,6 +21,13 @@ import { createAuthService } from "./modules/auth/auth.service.js";
 import type { AuthTokenRepository } from "./modules/auth/authTokens.js";
 import type { Mailer } from "./modules/auth/mailer.js";
 import type { SessionRepository } from "./modules/sessions/sessions.types.js";
+import { createCoursesRouter } from "./modules/courses/courses.routes.js";
+import { createCoursesService } from "./modules/courses/courses.service.js";
+import type {
+  CatalogueRepository,
+  EnrolmentRepository,
+  ProgressRepository,
+} from "./modules/courses/courses.repository.js";
 import { createUsersRouter } from "./modules/users/users.routes.js";
 import type { UserRepository } from "./modules/users/users.repository.js";
 
@@ -32,6 +39,9 @@ export interface AppDeps {
   sessions: SessionRepository;
   authTokens: AuthTokenRepository;
   audit: AuditLog;
+  catalogue: CatalogueRepository;
+  enrolments: EnrolmentRepository;
+  progress: ProgressRepository;
   mailer: Mailer;
   hasher: PasswordHasher;
   breach: BreachChecker;
@@ -127,6 +137,22 @@ export function createApp(deps: AppDeps): Express {
       limiter: createLimiter({ windowMs: 15 * 60_000, limit: env.RATE_LIMIT_AUTH_PER_15MIN }),
     }),
   );
+  const courses = createCoursesService({
+    catalogue: deps.catalogue,
+    enrolments: deps.enrolments,
+    progress: deps.progress,
+    audit: deps.audit,
+    ...(deps.now === undefined ? {} : { now: deps.now }),
+  });
+  app.use(
+    "/api/v1",
+    createCoursesRouter({
+      auth,
+      courses,
+      cookie,
+      writeLimiter: createLimiter({ windowMs: 60_000, limit: env.RATE_LIMIT_LEARNING_PER_MINUTE }),
+    }),
+  );
   app.use(
     "/api/v1/users",
     createUsersRouter({
@@ -136,6 +162,7 @@ export function createApp(deps: AppDeps): Express {
       audit: deps.audit,
       hasher: deps.hasher,
       cookie,
+      exportLearning: (userId) => courses.exportLearning(userId),
       ...(deps.now === undefined ? {} : { now: deps.now }),
     }),
   );

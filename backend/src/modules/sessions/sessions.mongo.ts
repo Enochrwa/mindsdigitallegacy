@@ -1,3 +1,4 @@
+import { trusted } from "mongoose";
 import { SessionModel } from "./sessions.model.js";
 import type { Session, SessionRepository } from "./sessions.types.js";
 
@@ -53,7 +54,7 @@ export function createMongoSessionRepository(): SessionRepository {
     async revokeAllForUser(userId, exceptFamily) {
       await SessionModel.deleteMany({
         userId,
-        ...(exceptFamily === undefined ? {} : { family: { $ne: exceptFamily } }),
+        ...(exceptFamily === undefined ? {} : { family: trusted({ $ne: exceptFamily }) }),
       });
     },
   };

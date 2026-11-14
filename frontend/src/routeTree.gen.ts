@@ -19,6 +19,7 @@ import { Route as CorporateRouteImport } from './routes/corporate'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as GuardianConsentRouteImport } from './routes/guardian-consent'
 import { Route as InternshipsRouteImport } from './routes/internships'
+import { Route as LearningRouteImport } from './routes/learning'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -28,6 +29,9 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SectorsRouteImport } from './routes/sectors'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as CoursesIndexRouteImport } from './routes/courses.index'
+import { Route as CoursesSlugIndexRouteImport } from './routes/courses.$slug.index'
+import { Route as CoursesSlugLearnLessonSlugRouteImport } from './routes/courses.$slug.learn.$lessonSlug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -79,6 +83,11 @@ const InternshipsRoute = InternshipsRouteImport.update({
   path: '/internships',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LearningRoute = LearningRouteImport.update({
+  id: '/learning',
+  path: '/learning',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -124,6 +133,22 @@ const VerifyEmailRoute = VerifyEmailRouteImport.update({
   path: '/verify-email',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoursesIndexRoute = CoursesIndexRouteImport.update({
+  id: '/courses/',
+  path: '/courses/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesSlugIndexRoute = CoursesSlugIndexRouteImport.update({
+  id: '/courses/$slug/',
+  path: '/courses/$slug/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesSlugLearnLessonSlugRoute =
+  CoursesSlugLearnLessonSlugRouteImport.update({
+    id: '/courses/$slug/learn/$lessonSlug',
+    path: '/courses/$slug/learn/$lessonSlug',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -136,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/guardian-consent': typeof GuardianConsentRoute
   '/internships': typeof InternshipsRoute
+  '/learning': typeof LearningRoute
   '/login': typeof LoginRoute
   '/portfolio': typeof PortfolioRoute
   '/privacy': typeof PrivacyRoute
@@ -145,6 +171,9 @@ export interface FileRoutesByFullPath {
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/courses/': typeof CoursesIndexRoute
+  '/courses/$slug/': typeof CoursesSlugIndexRoute
+  '/courses/$slug/learn/$lessonSlug': typeof CoursesSlugLearnLessonSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -157,6 +186,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/guardian-consent': typeof GuardianConsentRoute
   '/internships': typeof InternshipsRoute
+  '/learning': typeof LearningRoute
   '/login': typeof LoginRoute
   '/portfolio': typeof PortfolioRoute
   '/privacy': typeof PrivacyRoute
@@ -166,6 +196,9 @@ export interface FileRoutesByTo {
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/courses': typeof CoursesIndexRoute
+  '/courses/$slug': typeof CoursesSlugIndexRoute
+  '/courses/$slug/learn/$lessonSlug': typeof CoursesSlugLearnLessonSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -179,6 +212,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/guardian-consent': typeof GuardianConsentRoute
   '/internships': typeof InternshipsRoute
+  '/learning': typeof LearningRoute
   '/login': typeof LoginRoute
   '/portfolio': typeof PortfolioRoute
   '/privacy': typeof PrivacyRoute
@@ -188,6 +222,9 @@ export interface FileRoutesById {
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/courses/': typeof CoursesIndexRoute
+  '/courses/$slug/': typeof CoursesSlugIndexRoute
+  '/courses/$slug/learn/$lessonSlug': typeof CoursesSlugLearnLessonSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -202,6 +239,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/guardian-consent'
     | '/internships'
+    | '/learning'
     | '/login'
     | '/portfolio'
     | '/privacy'
@@ -211,6 +249,9 @@ export interface FileRouteTypes {
     | '/sectors'
     | '/services'
     | '/verify-email'
+    | '/courses/'
+    | '/courses/$slug/'
+    | '/courses/$slug/learn/$lessonSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -223,6 +264,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/guardian-consent'
     | '/internships'
+    | '/learning'
     | '/login'
     | '/portfolio'
     | '/privacy'
@@ -232,6 +274,9 @@ export interface FileRouteTypes {
     | '/sectors'
     | '/services'
     | '/verify-email'
+    | '/courses'
+    | '/courses/$slug'
+    | '/courses/$slug/learn/$lessonSlug'
   id:
     | '__root__'
     | '/'
@@ -244,6 +289,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/guardian-consent'
     | '/internships'
+    | '/learning'
     | '/login'
     | '/portfolio'
     | '/privacy'
@@ -253,6 +299,9 @@ export interface FileRouteTypes {
     | '/sectors'
     | '/services'
     | '/verify-email'
+    | '/courses/'
+    | '/courses/$slug/'
+    | '/courses/$slug/learn/$lessonSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -266,6 +315,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   GuardianConsentRoute: typeof GuardianConsentRoute
   InternshipsRoute: typeof InternshipsRoute
+  LearningRoute: typeof LearningRoute
   LoginRoute: typeof LoginRoute
   PortfolioRoute: typeof PortfolioRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -275,6 +325,9 @@ export interface RootRouteChildren {
   SectorsRoute: typeof SectorsRoute
   ServicesRoute: typeof ServicesRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
+  CoursesIndexRoute: typeof CoursesIndexRoute
+  CoursesSlugIndexRoute: typeof CoursesSlugIndexRoute
+  CoursesSlugLearnLessonSlugRoute: typeof CoursesSlugLearnLessonSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -349,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternshipsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/learning': {
+      id: '/learning'
+      path: '/learning'
+      fullPath: '/learning'
+      preLoaderRoute: typeof LearningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -412,6 +472,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/courses/': {
+      id: '/courses/'
+      path: '/courses'
+      fullPath: '/courses/'
+      preLoaderRoute: typeof CoursesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/$slug/': {
+      id: '/courses/$slug/'
+      path: '/courses/$slug'
+      fullPath: '/courses/$slug/'
+      preLoaderRoute: typeof CoursesSlugIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/$slug/learn/$lessonSlug': {
+      id: '/courses/$slug/learn/$lessonSlug'
+      path: '/courses/$slug/learn/$lessonSlug'
+      fullPath: '/courses/$slug/learn/$lessonSlug'
+      preLoaderRoute: typeof CoursesSlugLearnLessonSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -426,6 +507,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   GuardianConsentRoute: GuardianConsentRoute,
   InternshipsRoute: InternshipsRoute,
+  LearningRoute: LearningRoute,
   LoginRoute: LoginRoute,
   PortfolioRoute: PortfolioRoute,
   PrivacyRoute: PrivacyRoute,
@@ -435,6 +517,9 @@ const rootRouteChildren: RootRouteChildren = {
   SectorsRoute: SectorsRoute,
   ServicesRoute: ServicesRoute,
   VerifyEmailRoute: VerifyEmailRoute,
+  CoursesIndexRoute: CoursesIndexRoute,
+  CoursesSlugIndexRoute: CoursesSlugIndexRoute,
+  CoursesSlugLearnLessonSlugRoute: CoursesSlugLearnLessonSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

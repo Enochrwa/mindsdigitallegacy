@@ -6,7 +6,12 @@ import type { LeadRepository } from "../modules/leads/leads.repository.js";
 import { noBreachCheck } from "../core/security/breach.js";
 import type { BreachChecker } from "../core/security/breach.js";
 import { createPasswordHasher } from "../core/security/password.js";
+import { loadAcademyContentSync } from "../modules/courses/content.load.js";
 import {
+  buildCatalogueData,
+  memoryCatalogue,
+  memoryEnrolments,
+  memoryProgress,
   memoryAudit,
   memoryAuthTokens,
   memoryMailer,
@@ -44,6 +49,8 @@ export function buildTestApp(options: Options = {}) {
   const sessions = memorySessions();
   const audit = memoryAudit();
   const mailer = memoryMailer();
+  const enrolmentRepo = memoryEnrolments();
+  const progressRepo = memoryProgress();
   const app = createApp({
     env,
     logger: createLogger(env),
@@ -52,6 +59,11 @@ export function buildTestApp(options: Options = {}) {
     sessions,
     authTokens: memoryAuthTokens(),
     audit,
+    catalogue: memoryCatalogue(
+      buildCatalogueData(loadAcademyContentSync(), new Date("2026-11-01T00:00:00Z")),
+    ),
+    enrolments: enrolmentRepo,
+    progress: progressRepo,
     mailer,
     // Cheap parameters keep tests fast; production uses DEFAULT_ARGON2.
     hasher: createPasswordHasher({ memoryKiB: 64, passes: 1, parallelism: 1 }),
@@ -59,7 +71,17 @@ export function buildTestApp(options: Options = {}) {
     ...(options.now === undefined ? {} : { now: options.now }),
     isDbReady: () => options.dbReady ?? true,
   });
-  return { app, env, stored, users, sessions, audit, mailer };
+  return {
+    app,
+    env,
+    stored,
+    users,
+    sessions,
+    audit,
+    mailer,
+    enrolments: enrolmentRepo,
+    progress: progressRepo,
+  };
 }
 
 export const validContact = {

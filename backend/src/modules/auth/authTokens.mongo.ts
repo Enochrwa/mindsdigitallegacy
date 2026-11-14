@@ -1,3 +1,4 @@
+import { trusted } from "mongoose";
 import { AuthTokenModel } from "./authTokens.js";
 import type { AuthTokenRepository } from "./authTokens.js";
 
@@ -10,15 +11,20 @@ export function createMongoAuthTokenRepository(): AuthTokenRepository {
       const doc = await AuthTokenModel.findOne({
         purpose,
         tokenHash,
-        usedAt: { $exists: false },
-        expiresAt: { $gt: now },
+        usedAt: trusted({ $exists: false }),
+        expiresAt: trusted({ $gt: now }),
       }).lean();
       return doc === null ? null : String(doc.userId);
     },
     async consume(purpose, tokenHash, now) {
       // Single atomic update: of two concurrent requests with the same token, only one matches.
       const doc = await AuthTokenModel.findOneAndUpdate(
-        { purpose, tokenHash, usedAt: { $exists: false }, expiresAt: { $gt: now } },
+        {
+          purpose,
+          tokenHash,
+          usedAt: trusted({ $exists: false }),
+          expiresAt: trusted({ $gt: now }),
+        },
         { $set: { usedAt: now } },
         { returnDocument: "before" },
       ).lean();

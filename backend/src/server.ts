@@ -2,6 +2,11 @@ import { createApp } from "./app.js";
 import { ConfigError, loadEnv } from "./config/env.js";
 import { createLogger } from "./core/logger.js";
 import { closeDb, connectDb, isDbReady } from "./db/connect.js";
+import {
+  createMongoCatalogueRepository,
+  createMongoEnrolmentRepository,
+  createMongoProgressRepository,
+} from "./modules/courses/courses.mongo.js";
 import { createMongoLeadRepository } from "./modules/leads/leads.repository.js";
 import { createPasswordHasher } from "./core/security/password.js";
 import { createMongoAuditLog } from "./modules/audit/audit.js";
@@ -33,6 +38,9 @@ async function main(): Promise<void> {
     sessions: createMongoSessionRepository(),
     authTokens: createMongoAuthTokenRepository(),
     audit: createMongoAuditLog(),
+    catalogue: createMongoCatalogueRepository(),
+    enrolments: createMongoEnrolmentRepository(),
+    progress: createMongoProgressRepository(),
     mailer:
       env.EMAIL_PROVIDER === "log" ||
       env.EMAIL_API_KEY === undefined ||

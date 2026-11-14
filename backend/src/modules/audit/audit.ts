@@ -12,7 +12,11 @@ export type AuditAction =
   | "auth.session.reuse_detected"
   | "user.consent.update"
   | "user.export"
-  | "user.delete";
+  | "user.delete"
+  | "course.enrol"
+  | "course.withdraw"
+  | "course.complete"
+  | "course.uncomplete";
 
 export interface AuditEvent {
   at: Date;
@@ -22,7 +26,8 @@ export interface AuditEvent {
   ipPrefix: string;
   outcome: "success" | "failure";
   /** Small allow-listed object. Never request bodies, emails or tokens. */
-  meta?: { reason?: string; consentType?: string; granted?: boolean } | undefined;
+  meta?:
+    { reason?: string; consentType?: string; granted?: boolean; courseSlug?: string } | undefined;
 }
 
 /** Append-only by construction: the interface has no update or delete. */

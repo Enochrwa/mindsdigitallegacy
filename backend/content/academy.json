@@ -1,0 +1,487 @@
+{
+  "categories": [
+    {
+      "slug": "computer-fundamentals",
+      "name": "Computer Fundamentals",
+      "description": "Start here: how computers work, files, typing, the internet and email.",
+      "order": 1,
+      "visible": true
+    },
+    {
+      "slug": "office-productivity",
+      "name": "Office Productivity",
+      "description": "Word, Excel and presentations for school and work.",
+      "order": 2,
+      "visible": true
+    },
+    {
+      "slug": "programming",
+      "name": "Programming",
+      "description": "Python, JavaScript, Java and C/C++ from the first line of code.",
+      "order": 3,
+      "visible": true
+    },
+    {
+      "slug": "web-and-mobile",
+      "name": "Web & Mobile Development",
+      "description": "Build websites and mobile apps with HTML, CSS, JavaScript and React.",
+      "order": 4,
+      "visible": true
+    },
+    {
+      "slug": "design-and-multimedia",
+      "name": "Design & Multimedia",
+      "description": "Graphic design, UI/UX and video editing.",
+      "order": 5,
+      "visible": true
+    },
+    {
+      "slug": "data-and-analytics",
+      "name": "Data & Analytics",
+      "description": "Excel, Power BI and Python for making sense of data.",
+      "order": 6,
+      "visible": true
+    },
+    {
+      "slug": "business-and-digital-skills",
+      "name": "Business & Digital Skills",
+      "description": "Digital marketing, entrepreneurship and running an online business.",
+      "order": 7,
+      "visible": true
+    },
+    {
+      "slug": "advanced-technology",
+      "name": "Advanced Technology",
+      "description": "Cybersecurity, cloud computing and an introduction to AI.",
+      "order": 8,
+      "visible": true
+    }
+  ],
+  "courses": [
+    {
+      "slug": "introduction-to-computers",
+      "categorySlug": "computer-fundamentals",
+      "title": "Introduction to Computers",
+      "summary": "Learn what a computer is, how its parts work together, and how to use one with confidence.",
+      "description": [
+        {
+          "type": "paragraph",
+          "text": "This short course is for anyone who has never used a computer, or who uses one but does not feel sure about it. It uses plain language and everyday examples, with no technical background needed."
+        },
+        {
+          "type": "paragraph",
+          "text": "You can read the lessons at your own pace. Each lesson takes about five to ten minutes."
+        }
+      ],
+      "level": "beginner",
+      "language": "en",
+      "status": "published",
+      "order": 1,
+      "tags": ["basics", "computers"],
+      "outcomes": [
+        "Name the main parts of a computer and what each one does",
+        "Tell hardware from software",
+        "Start, use and shut down a computer safely",
+        "Understand files, folders and storage"
+      ],
+      "audience": "Complete beginners of any age, including students and adults returning to study.",
+      "prerequisites": [],
+      "instructors": [
+        {
+          "name": "MDL Academy Team",
+          "title": "Minds Digital Legacy"
+        }
+      ],
+      "unlockPolicy": {
+        "type": "open"
+      },
+      "sections": [
+        {
+          "title": "Getting to know the computer",
+          "summary": "The parts and what they do.",
+          "lessons": [
+            {
+              "slug": "what-is-a-computer",
+              "title": "What is a computer?",
+              "summary": "A computer takes in information, processes it and gives a result.",
+              "kind": "reading",
+              "status": "published",
+              "required": true,
+              "isPreview": true,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "A computer is a machine that follows instructions. You give it information (input), it works on that information (processing), it may keep it (storage), and it shows you a result (output)."
+                },
+                {
+                  "type": "heading",
+                  "text": "Everyday examples"
+                },
+                {
+                  "type": "list",
+                  "ordered": false,
+                  "items": [
+                    "Typing a message on a phone: your fingers are the input, the screen is the output.",
+                    "Searching for a word on the internet: the computer processes your request and returns pages.",
+                    "Saving a photo: the computer stores it so you can open it later."
+                  ]
+                },
+                {
+                  "type": "note",
+                  "text": "Phones, tablets and laptops are all computers. They differ in size and how you control them, not in what they do."
+                }
+              ]
+            },
+            {
+              "slug": "hardware-and-software",
+              "title": "Hardware and software",
+              "summary": "Hardware is what you can touch. Software is the instructions that make it useful.",
+              "kind": "reading",
+              "status": "published",
+              "required": true,
+              "isPreview": false,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "Hardware is every physical part of a computer: the screen, keyboard, mouse and the parts inside. Software is the set of programs that tell the hardware what to do."
+                },
+                {
+                  "type": "heading",
+                  "text": "Common hardware"
+                },
+                {
+                  "type": "list",
+                  "ordered": false,
+                  "items": [
+                    "Monitor or screen: shows what the computer is doing",
+                    "Keyboard and mouse: let you give instructions",
+                    "Processor (CPU): does the calculations",
+                    "Memory (RAM): holds what you are working on right now",
+                    "Storage (hard disk or SSD): keeps your files when the computer is off"
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": "Common software"
+                },
+                {
+                  "type": "list",
+                  "ordered": false,
+                  "items": [
+                    "Operating system, such as Windows, Android or macOS: manages the computer",
+                    "Applications, such as a web browser or a word processor: help you do tasks"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Using a computer",
+          "summary": "Starting up, files and staying safe.",
+          "lessons": [
+            {
+              "slug": "starting-and-shutting-down",
+              "title": "Starting up and shutting down",
+              "summary": "Turn a computer on and off the right way to protect your work.",
+              "kind": "reading",
+              "status": "published",
+              "required": true,
+              "isPreview": false,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "Press the power button once and wait for the sign-in screen. Enter your password if asked. Avoid pressing buttons repeatedly while it loads."
+                },
+                {
+                  "type": "heading",
+                  "text": "To shut down properly"
+                },
+                {
+                  "type": "list",
+                  "ordered": true,
+                  "items": [
+                    "Save your work and close your programs",
+                    "Open the Start menu or the power menu",
+                    "Choose Shut down and wait for the screen to go dark"
+                  ]
+                },
+                {
+                  "type": "note",
+                  "text": "Holding the power button to switch off should be a last resort. It can damage files that were still being saved."
+                }
+              ]
+            },
+            {
+              "slug": "files-and-folders",
+              "title": "Files and folders",
+              "summary": "Keep your documents organised so you can always find them.",
+              "kind": "reading",
+              "status": "published",
+              "required": true,
+              "isPreview": false,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "A file is one item you save, such as a document, photo or song. A folder is a container that groups files, like a paper folder in a cabinet."
+                },
+                {
+                  "type": "heading",
+                  "text": "Habits that help"
+                },
+                {
+                  "type": "list",
+                  "ordered": false,
+                  "items": [
+                    "Give files clear names, such as Cv-Amina-2026 instead of Document1",
+                    "Keep related files in one folder",
+                    "Back up important files on a second device or a trusted online drive"
+                  ]
+                }
+              ]
+            },
+            {
+              "slug": "video-tour-of-the-desktop",
+              "title": "Video: a tour of the desktop",
+              "summary": "A short guided walkthrough of the desktop, taskbar and start menu.",
+              "kind": "video",
+              "status": "draft",
+              "required": false,
+              "isPreview": false,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "Add the YouTube video id and duration, then set the status to published. Until then this lesson stays hidden."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "internet-and-email",
+      "categorySlug": "computer-fundamentals",
+      "title": "Internet and Email",
+      "summary": "Search the web safely, create an email account and write a professional message.",
+      "description": [
+        {
+          "type": "paragraph",
+          "text": "Learn how the internet works at a basic level, how to find reliable information, and how to use email for school, work and applications."
+        }
+      ],
+      "level": "beginner",
+      "language": "en",
+      "status": "published",
+      "order": 2,
+      "tags": ["internet", "email", "safety"],
+      "outcomes": [
+        "Explain what the internet and a web browser are",
+        "Search effectively and judge whether a website can be trusted",
+        "Write a clear, professional email",
+        "Recognise common online scams"
+      ],
+      "audience": "Learners who can use a computer or phone and want to use the internet confidently.",
+      "prerequisites": ["introduction-to-computers"],
+      "instructors": [
+        {
+          "name": "MDL Academy Team",
+          "title": "Minds Digital Legacy"
+        }
+      ],
+      "unlockPolicy": {
+        "type": "open"
+      },
+      "sections": [
+        {
+          "title": "Finding information online",
+          "lessons": [
+            {
+              "slug": "how-the-internet-works",
+              "title": "How the internet works",
+              "summary": "The internet is a worldwide network of connected computers.",
+              "kind": "reading",
+              "status": "published",
+              "required": true,
+              "isPreview": true,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "The internet connects billions of computers so they can share information. When you open a website, your device asks another computer, called a server, to send you the page."
+                },
+                {
+                  "type": "list",
+                  "ordered": false,
+                  "items": [
+                    "A web browser, such as Chrome or Firefox, is the program you use to view websites",
+                    "A web address, such as example.com, tells the browser which server to ask",
+                    "Wi-Fi or mobile data connects your device to the internet"
+                  ]
+                }
+              ]
+            },
+            {
+              "slug": "searching-and-trusting-sources",
+              "title": "Searching and trusting sources",
+              "summary": "Find good answers and spot unreliable pages.",
+              "kind": "reading",
+              "status": "published",
+              "required": true,
+              "isPreview": false,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "Type a few specific words into a search engine rather than a long sentence. Try different words if the first search does not help."
+                },
+                {
+                  "type": "heading",
+                  "text": "Questions to ask about a website"
+                },
+                {
+                  "type": "list",
+                  "ordered": false,
+                  "items": [
+                    "Who wrote it, and can you find their name or organisation?",
+                    "When was it written or updated?",
+                    "Do other trusted sources say the same thing?",
+                    "Is it trying to sell you something or make you feel rushed?"
+                  ]
+                },
+                {
+                  "type": "note",
+                  "text": "A page that looks professional is not automatically true. Compare at least two sources for anything important."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Email",
+          "lessons": [
+            {
+              "slug": "creating-an-email-account",
+              "title": "Creating an email account",
+              "summary": "Choose a professional address and protect your account.",
+              "kind": "reading",
+              "status": "published",
+              "required": true,
+              "isPreview": false,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "An email address is like a postal address for messages. Many services offer free accounts."
+                },
+                {
+                  "type": "heading",
+                  "text": "Choosing an address"
+                },
+                {
+                  "type": "list",
+                  "ordered": false,
+                  "items": [
+                    "Use your real name, for example amina.uwase",
+                    "Avoid nicknames or numbers that look unprofessional when applying for jobs or internships"
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": "Protecting it"
+                },
+                {
+                  "type": "list",
+                  "ordered": false,
+                  "items": [
+                    "Use a long password that you do not use anywhere else",
+                    "Turn on two-step verification if the service offers it",
+                    "Never share your password, even with someone who says they are from the service"
+                  ]
+                }
+              ]
+            },
+            {
+              "slug": "writing-a-professional-email",
+              "title": "Writing a professional email",
+              "summary": "Clear subject, short message, polite ending.",
+              "kind": "reading",
+              "status": "published",
+              "required": true,
+              "isPreview": false,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "A good email is easy to read in thirty seconds."
+                },
+                {
+                  "type": "list",
+                  "ordered": true,
+                  "items": [
+                    "Subject: say what the email is about, for example Internship application: Amina Uwase",
+                    "Greeting: Dear Mr Habimana, or Hello Ms Uwase,",
+                    "Body: one request per email, in short paragraphs",
+                    "Closing: thank the reader and add your full name and phone number"
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": "Attachments"
+                },
+                {
+                  "type": "paragraph",
+                  "text": "Mention the attachment in your message and give it a clear name, such as Amina-Uwase-CV.pdf."
+                }
+              ]
+            },
+            {
+              "slug": "avoiding-scams",
+              "title": "Recognising online scams",
+              "summary": "Most scams try to rush you or ask for secrets.",
+              "kind": "reading",
+              "status": "published",
+              "required": true,
+              "isPreview": false,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "Scammers pretend to be a bank, a mobile money service, an employer or a friend. They want your money or your passwords."
+                },
+                {
+                  "type": "heading",
+                  "text": "Warning signs"
+                },
+                {
+                  "type": "list",
+                  "ordered": false,
+                  "items": [
+                    "A message says you won a prize you never entered",
+                    "Someone asks for your PIN, password or a verification code",
+                    "You are told to act immediately or lose your account",
+                    "The sender asks you to pay a fee to receive a job or an internship"
+                  ]
+                },
+                {
+                  "type": "note",
+                  "text": "Real organisations never ask for your PIN or password. If in doubt, stop and contact them using a phone number you already trust."
+                }
+              ]
+            },
+            {
+              "slug": "video-sending-your-first-email",
+              "title": "Video: sending your first email",
+              "summary": "A guided demonstration of writing and sending an email.",
+              "kind": "video",
+              "status": "draft",
+              "required": false,
+              "isPreview": false,
+              "body": [
+                {
+                  "type": "paragraph",
+                  "text": "Add the YouTube video id and duration, then set the status to published. Until then this lesson stays hidden."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

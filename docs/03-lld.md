@@ -37,6 +37,9 @@ models. A module never imports another module's model; it calls that module's se
 
 ## 3. Data model
 
+> Sprint 2 update: the full, current data dictionary is in [07-data-model.md](07-data-model.md). Where it differs from the sketch below, 07 wins.
+
+
 All collections use `timestamps` and `versionKey: false`. IDs are Mongo ObjectIds internally; public
 identifiers (referral codes, certificate IDs) are separate random values so internal IDs are never exposed.
 PII is marked **(PII)**.
