@@ -15,6 +15,9 @@ export function contextOf(req: Request, requestId: string): RequestContext {
 export interface AuthLocals {
   user: User;
   sessionToken: string;
+  sessionFamily: string;
+  /** When the second factor was last passed in this session (staff only). */
+  mfaVerifiedAt?: Date | undefined;
 }
 
 /**
@@ -46,6 +49,8 @@ export function requireAuth(auth: AuthService, cookie: SessionCookieConfig): Req
         res.locals["sessionToken"] = token;
       }
       res.locals["user"] = result.user;
+      res.locals["sessionFamily"] = result.sessionFamily;
+      res.locals["mfaVerifiedAt"] = result.mfaVerifiedAt;
       next();
     } catch (err) {
       next(err);
@@ -59,7 +64,12 @@ export function authLocals(res: { locals: Record<string, unknown> }): AuthLocals
   if (user === undefined || sessionToken === undefined) {
     throw new AppError(401, "UNAUTHENTICATED", "Please sign in.");
   }
-  return { user, sessionToken };
+  return {
+    user,
+    sessionToken,
+    sessionFamily: res.locals["sessionFamily"] as string,
+    mfaVerifiedAt: res.locals["mfaVerifiedAt"] as Date | undefined,
+  };
 }
 
 /**

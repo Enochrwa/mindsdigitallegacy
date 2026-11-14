@@ -12,6 +12,8 @@ export interface ImportReport {
   lessonsRetired: string[];
   /** Courses in the database that the file does not mention. Left untouched. */
   coursesNotInFile: string[];
+  /** Courses and categories edited in the admin console. The file does not overwrite them. */
+  skippedAdminManaged: string[];
 }
 
 const hashOf = (value: unknown): string =>
@@ -33,10 +35,18 @@ export async function importAcademyContent(
     coursesUnchanged: [],
     lessonsRetired: [],
     coursesNotInFile: [],
+    skippedAdminManaged: [],
   };
+  const adminManaged = new Set<string>();
 
   const categoryIds = new Map<string, string>();
   for (const c of prepared.categories) {
+    const current = await CategoryModel.findOne({ slug: c.slug }).lean();
+    if (current?.source === "admin") {
+      categoryIds.set(c.slug, String(current._id));
+      report.skippedAdminManaged.push(`category/${c.slug}`);
+      continue;
+    }
     const doc = await CategoryModel.findOneAndUpdate(
       { slug: c.slug },
       { $set: { name: c.name, description: c.description, order: c.order, visible: c.visible } },
@@ -51,6 +61,12 @@ export async function importAcademyContent(
     const c = course.content;
     const contentHash = hashOf({ content: c, stats: course.stats });
     const existing = await CourseModel.findOne({ slug: c.slug }).lean();
+    if (existing?.source === "admin") {
+      adminManaged.add(c.slug);
+      courseIds.set(c.slug, String(existing._id));
+      report.skippedAdminManaged.push(c.slug);
+      continue;
+    }
     const status = c.status;
     const fields = {
       categoryId: categoryIds.get(c.categorySlug),
@@ -104,6 +120,7 @@ export async function importAcademyContent(
 
   // Second pass: prerequisites reference course ids, which exist only after the first pass.
   for (const course of prepared.courses) {
+    if (adminManaged.has(course.content.slug)) continue;
     const id = courseIds.get(course.content.slug);
     const prereqs = course.content.prerequisites
       .map((slug) => courseIds.get(slug))
@@ -112,6 +129,7 @@ export async function importAcademyContent(
   }
 
   for (const course of prepared.courses) {
+    if (adminManaged.has(course.content.slug)) continue;
     const courseId = courseIds.get(course.content.slug) as string;
     const sectionIds = new Map<number, string>();
     for (const section of course.sections) {

@@ -68,12 +68,21 @@ const envSchema = z
       .default("true")
       .transform((value) => value === "true"),
     /** Retention for contact and interest records. Confirm the final period with counsel. */
+    /** Encrypts staff authenticator secrets at rest. Required in production; generate with `openssl rand -base64 32`. */
+    TOTP_ENCRYPTION_KEY: z.string().min(32).optional(),
     LEAD_RETENTION_DAYS: z.coerce.number().int().min(30).max(3650).default(730),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== "production") return;
     if (!env.MONGODB_URI) {
       ctx.addIssue({ code: "custom", path: ["MONGODB_URI"], message: "required in production" });
+    }
+    if (!env.TOTP_ENCRYPTION_KEY) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["TOTP_ENCRYPTION_KEY"],
+        message: "required in production (staff second factor)",
+      });
     }
     if (env.CORS_ORIGINS.length === 0) {
       ctx.addIssue({ code: "custom", path: ["CORS_ORIGINS"], message: "required in production" });

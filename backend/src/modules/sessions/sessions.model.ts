@@ -9,6 +9,7 @@ export const sessionSchema = new Schema(
     expiresAt: { type: Date, required: true },
     absoluteExpiresAt: { type: Date, required: true },
     rotatedAt: { type: Date },
+    mfaVerifiedAt: { type: Date },
     userAgentSummary: { type: String, maxlength: 80, default: "" },
     ipPrefix: { type: String, maxlength: 60, default: "unknown" },
   },

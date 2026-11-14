@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { paginate } from "../core/page.js";
 import type { AuditEvent, AuditLog } from "../modules/audit/audit.js";
 import type { AuthTokenRepository, TokenPurpose } from "../modules/auth/authTokens.js";
 import type { Mailer } from "../modules/auth/mailer.js";
@@ -83,6 +84,64 @@ export function memoryUsers(): UserRepository & { all: Map<string, User> } {
       get(id).deletedAt = at;
       return Promise.resolve();
     },
+    list({ q, role, status, page, pageSize }) {
+      const needle = q?.trim().toLowerCase() ?? "";
+      const rows = [...all.values()]
+        .filter((u) => {
+          if (role !== undefined && !u.roles.includes(role)) return false;
+          if (
+            needle !== "" &&
+            !u.email.startsWith(needle) &&
+            !u.displayName.toLowerCase().includes(needle)
+          )
+            return false;
+          const state = u.deletedAt
+            ? "deleted"
+            : u.suspendedAt
+              ? "suspended"
+              : u.emailVerifiedAt
+                ? "active"
+                : "unverified";
+          return status === undefined || state === status;
+        })
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return Promise.resolve(paginate(rows, { page, pageSize }));
+    },
+    setRoles(id, roles) {
+      get(id).roles = roles;
+      return Promise.resolve();
+    },
+    setSuspended(id, at, reason) {
+      const user = get(id);
+      user.suspendedAt = at;
+      user.suspendedReason = at === undefined ? undefined : reason;
+      return Promise.resolve();
+    },
+    setTotp(id, totp) {
+      get(id).totp = totp;
+      return Promise.resolve();
+    },
+    countWithRole: (role) =>
+      Promise.resolve(
+        [...all.values()].filter((u) => u.roles.includes(role) && !u.deletedAt).length,
+      ),
+    signupsByDay(since) {
+      const m = new Map<string, number>();
+      for (const u of all.values())
+        if (u.createdAt >= since) {
+          const d = u.createdAt.toISOString().slice(0, 10);
+          m.set(d, (m.get(d) ?? 0) + 1);
+        }
+      return Promise.resolve([...m].sort().map(([day, count]) => ({ day, count })));
+    },
+    countAll() {
+      const live = [...all.values()].filter((u) => !u.deletedAt);
+      return Promise.resolve({
+        total: live.length,
+        verified: live.filter((u) => u.emailVerifiedAt).length,
+        suspended: live.filter((u) => u.suspendedAt).length,
+      });
+    },
   };
 }
 
@@ -105,6 +164,10 @@ export function memorySessions(): SessionRepository & { all: Map<string, Session
     touch(id, lastUsedAt, expiresAt) {
       const s = all.get(id);
       if (s) Object.assign(s, { lastUsedAt, expiresAt });
+      return Promise.resolve();
+    },
+    setMfaVerified(family, at) {
+      for (const s of all.values()) if (s.family === family) s.mfaVerifiedAt = at;
       return Promise.resolve();
     },
     revokeFamily(family) {
@@ -157,6 +220,24 @@ export function memoryAudit(): AuditLog & { events: AuditEvent[] } {
     append(event) {
       events.push(event);
       return Promise.resolve();
+    },
+    list({ action, actorId, targetId, outcome, from, to, page, pageSize }) {
+      const rows = events
+        .map((e, i) => ({ ...e, id: String(i) }))
+        .filter(
+          (e) =>
+            (action === undefined ||
+              (action.endsWith("*")
+                ? e.action.startsWith(action.slice(0, -1))
+                : e.action === action)) &&
+            (actorId === undefined || e.actorId === actorId) &&
+            (targetId === undefined || e.meta?.targetId === targetId) &&
+            (outcome === undefined || e.outcome === outcome) &&
+            (from === undefined || e.at >= from) &&
+            (to === undefined || e.at <= to),
+        )
+        .reverse();
+      return Promise.resolve(paginate(rows, { page, pageSize }));
     },
   };
 }
@@ -243,6 +324,7 @@ export function buildCatalogueData(
       unlockPolicy: c.unlockPolicy,
       stats: course.stats,
       contentVersion: 1,
+      source: "file",
       publishedAt: c.status === "published" ? now : undefined,
       archivedAt: undefined,
       createdAt: now,
@@ -378,6 +460,43 @@ export function memoryEnrolments(): EnrolmentRepository & { all: Map<string, Enr
           Object.assign(e, { status: "active", completedAt: undefined });
       } else if (e.status === "active") Object.assign(e, { status: "completed", completedAt });
       return Promise.resolve();
+    },
+    lock(id) {
+      byId(id).access = { state: "locked" };
+      return Promise.resolve();
+    },
+    list({ courseId, userId, status, accessState, page, pageSize }) {
+      const rows = [...all.values()]
+        .filter(
+          (e) =>
+            (!courseId || e.courseId === courseId) &&
+            (!userId || e.userId === userId) &&
+            (!status || e.status === status) &&
+            (!accessState || e.access.state === accessState),
+        )
+        .sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime());
+      return Promise.resolve(paginate(rows, { page, pageSize }));
+    },
+    statsByCourse() {
+      const out: Record<
+        string,
+        { active: number; completed: number; withdrawn: number; locked: number }
+      > = {};
+      for (const e of all.values()) {
+        const b = (out[e.courseId] ??= { active: 0, completed: 0, withdrawn: 0, locked: 0 });
+        b[e.status] += 1;
+        if (e.access.state === "locked" && e.status !== "withdrawn") b.locked += 1;
+      }
+      return Promise.resolve(out);
+    },
+    enrolmentsByDay(since) {
+      const counts = new Map<string, number>();
+      for (const e of all.values())
+        if (e.enrolledAt >= since) {
+          const d = e.enrolledAt.toISOString().slice(0, 10);
+          counts.set(d, (counts.get(d) ?? 0) + 1);
+        }
+      return Promise.resolve([...counts].sort().map(([day, count]) => ({ day, count })));
     },
     unlock(id, via, at) {
       byId(id).access = { state: "unlocked", via, unlockedAt: at };

@@ -13,6 +13,7 @@
     "start": "node dist/server.js",
     "dev:memory": "tsx --env-file-if-exists=.env src/testing/devServer.ts",
     "check:academy": "tsx src/scripts/seedAcademy.ts --check",
+    "admin:grant": "tsx --env-file-if-exists=.env src/scripts/grantAdmin.ts",
     "seed:academy": "tsx --env-file-if-exists=.env src/scripts/seedAcademy.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",

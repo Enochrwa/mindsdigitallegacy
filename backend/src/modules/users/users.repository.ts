@@ -1,4 +1,14 @@
-import type { ConsentType, NewUser, User } from "./users.types.js";
+import type { Page, PageRequest } from "../../core/page.js";
+import type { ConsentType, NewUser, Role, TotpState, User } from "./users.types.js";
+
+export type UserStatus = "active" | "unverified" | "suspended" | "deleted";
+
+export interface UserListQuery extends PageRequest {
+  /** Matches the start of the email or any part of the display name, case-insensitively. */
+  q?: string | undefined;
+  role?: Role | undefined;
+  status?: UserStatus | undefined;
+}
 
 /** Persistence port for users. Implemented with MongoDB in production and in memory for HTTP tests. */
 export interface UserRepository {
@@ -21,4 +31,12 @@ export interface UserRepository {
     granted: boolean,
   ): Promise<void>;
   softDelete(id: string, at: Date): Promise<void>;
+  /** Staff operations (admin console). */
+  list(query: UserListQuery): Promise<Page<User>>;
+  setRoles(id: string, roles: Role[]): Promise<void>;
+  setSuspended(id: string, at: Date | undefined, reason?: string): Promise<void>;
+  setTotp(id: string, totp: TotpState | undefined): Promise<void>;
+  countWithRole(role: Role): Promise<number>;
+  countAll(): Promise<{ total: number; verified: number; suspended: number }>;
+  signupsByDay(since: Date): Promise<{ day: string; count: number }[]>;
 }

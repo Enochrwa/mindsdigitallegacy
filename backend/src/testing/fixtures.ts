@@ -6,6 +6,7 @@ import type { LeadRepository } from "../modules/leads/leads.repository.js";
 import { noBreachCheck } from "../core/security/breach.js";
 import type { BreachChecker } from "../core/security/breach.js";
 import { createPasswordHasher } from "../core/security/password.js";
+import { memoryGrowthDeps } from "./memory.growth.js";
 import { loadAcademyContentSync } from "../modules/courses/content.load.js";
 import {
   buildCatalogueData,
@@ -39,10 +40,15 @@ export function buildTestApp(options: Options = {}) {
     ...options.env,
   });
   const stored: NewLead[] = [];
+  const catalogueData = buildCatalogueData(
+    loadAcademyContentSync(),
+    new Date("2026-11-01T00:00:00Z"),
+  );
+  const growth = memoryGrowthDeps(catalogueData);
   const repository: LeadRepository = options.repository ?? {
     create: (lead) => {
       stored.push(lead);
-      return Promise.resolve();
+      return growth.leads.create(lead);
     },
   };
   const users = memoryUsers();
@@ -59,9 +65,13 @@ export function buildTestApp(options: Options = {}) {
     sessions,
     authTokens: memoryAuthTokens(),
     audit,
-    catalogue: memoryCatalogue(
-      buildCatalogueData(loadAcademyContentSync(), new Date("2026-11-01T00:00:00Z")),
-    ),
+    catalogue: memoryCatalogue(catalogueData),
+    catalogueAdmin: growth.catalogueAdmin,
+    leadAdmin: growth.leads,
+    referrals: growth.referrals,
+    entitlements: growth.entitlements,
+    unlockCodes: growth.unlockCodes,
+    settings: growth.settings,
     enrolments: enrolmentRepo,
     progress: progressRepo,
     mailer,
@@ -81,6 +91,8 @@ export function buildTestApp(options: Options = {}) {
     mailer,
     enrolments: enrolmentRepo,
     progress: progressRepo,
+    growth,
+    catalogueData,
   };
 }
 

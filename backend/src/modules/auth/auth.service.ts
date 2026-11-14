@@ -3,7 +3,8 @@ import { checkPassword } from "../../core/security/passwordPolicy.js";
 import type { BreachChecker } from "../../core/security/breach.js";
 import type { PasswordHasher } from "../../core/security/password.js";
 import { generateToken, hashToken, ipPrefix } from "../../core/security/tokens.js";
-import type { AuditAction, AuditLog } from "../audit/audit.js";
+import type { AuditAction, AuditLog, AuditMeta } from "../audit/audit.js";
+import { isStaff } from "./permissions.js";
 import type { SessionRepository } from "../sessions/sessions.types.js";
 import type { UserRepository } from "../users/users.repository.js";
 import { DuplicateEmailError, isActive } from "../users/users.types.js";
@@ -45,6 +46,7 @@ export interface RequestContext {
 export interface AuthenticatedSession {
   user: User;
   sessionFamily: string;
+  mfaVerifiedAt?: Date | undefined;
   /** Present when the session id was rotated; the caller must set the new cookie. */
   rotated?: { token: string; maxAgeSeconds: number };
 }
@@ -63,6 +65,14 @@ export interface AuthDeps {
   mailer: Mailer;
   hasher: PasswordHasher;
   breach: BreachChecker;
+  /**
+   * Optional side effects owned by other modules (referrals). They run after the main action has
+   * succeeded and must never make it fail, so errors are swallowed here and surface in their own logs.
+   */
+  hooks?: {
+    registered?: (user: User, referralCode: string, ctx: RequestContext) => Promise<void>;
+    activated?: (userId: string) => Promise<void>;
+  };
   now?: () => Date;
 }
 
@@ -79,7 +89,7 @@ const invalidToken = (): AppError =>
   new AppError(400, "INVALID_TOKEN", "This link is invalid or has expired.");
 
 function policyFor(user: User): (typeof SESSION_POLICY)["learner"] {
-  return user.roles.includes("admin") ? SESSION_POLICY.admin : SESSION_POLICY.learner;
+  return isStaff(user.roles) ? SESSION_POLICY.admin : SESSION_POLICY.learner;
 }
 
 function summariseUserAgent(ua: string | undefined): string {
@@ -89,6 +99,13 @@ function summariseUserAgent(ua: string | undefined): string {
 export function createAuthService(deps: AuthDeps) {
   const { users, sessions, tokens, audit, mailer, hasher, breach } = deps;
   const now = deps.now ?? ((): Date => new Date());
+  const safely = async (work: (() => Promise<void> | undefined) | undefined): Promise<void> => {
+    try {
+      await work?.();
+    } catch {
+      // Best effort: see AuthDeps.hooks.
+    }
+  };
 
   // A real hash computed once, verified against when the account does not exist, so "no such user"
   // and "wrong password" cost the same time.
@@ -101,7 +118,7 @@ export function createAuthService(deps: AuthDeps) {
     ctx: RequestContext,
     outcome: "success" | "failure",
     actorId?: string,
-    meta?: { reason?: string; consentType?: string; granted?: boolean; courseSlug?: string },
+    meta?: AuditMeta,
   ): Promise<void> {
     await audit.append({
       at: now(),
@@ -125,7 +142,13 @@ export function createAuthService(deps: AuthDeps) {
     return token;
   }
 
-  async function startSession(user: User, ctx: RequestContext, family?: string, startedAt?: Date) {
+  async function startSession(
+    user: User,
+    ctx: RequestContext,
+    family?: string,
+    startedAt?: Date,
+    mfaVerifiedAt?: Date,
+  ) {
     const policy = policyFor(user);
     const at = now();
     const token = generateToken();
@@ -143,6 +166,7 @@ export function createAuthService(deps: AuthDeps) {
       absoluteExpiresAt,
       userAgentSummary: summariseUserAgent(ctx.userAgent),
       ipPrefix: ipPrefix(ctx.ip),
+      mfaVerifiedAt,
     });
     return { token, maxAgeSeconds: Math.floor((expiresAt.getTime() - at.getTime()) / 1000) };
   }
@@ -207,6 +231,10 @@ export function createAuthService(deps: AuthDeps) {
         );
       }
       await record("auth.register", ctx, "success", user.id);
+      const code = input.referralCode;
+      if (code !== undefined && code !== "") {
+        await safely(() => deps.hooks?.registered?.(user, code, ctx));
+      }
     },
 
     async verifyEmail(token: string, ctx: RequestContext): Promise<void> {
@@ -214,6 +242,7 @@ export function createAuthService(deps: AuthDeps) {
       if (userId === null) throw invalidToken();
       await users.markEmailVerified(userId, now());
       await record("auth.verify_email", ctx, "success", userId);
+      await safely(() => deps.hooks?.activated?.(userId));
     },
 
     /** For people whose first verification mail was lost. Same answer whether or not the address exists. */
@@ -230,6 +259,7 @@ export function createAuthService(deps: AuthDeps) {
       if (userId === null) throw invalidToken();
       await users.recordGuardianConsent(userId, now(), "email_link");
       await record("auth.guardian_consent", ctx, "success", userId);
+      await safely(() => deps.hooks?.activated?.(userId));
     },
 
     async login(email: string, password: string, ctx: RequestContext): Promise<LoginResult> {
@@ -298,7 +328,8 @@ export function createAuthService(deps: AuthDeps) {
         await sessions.revokeFamily(session.family);
         return null;
       }
-      if (session.rotatedAt !== undefined) return { user, sessionFamily: session.family };
+      if (session.rotatedAt !== undefined)
+        return { user, sessionFamily: session.family, mfaVerifiedAt: session.mfaVerifiedAt };
 
       const policy = policyFor(user);
       if (at.getTime() - session.createdAt.getTime() >= SESSION_POLICY.rotateAfterMs) {
@@ -308,15 +339,21 @@ export function createAuthService(deps: AuthDeps) {
           ctx,
           session.family,
           new Date(session.absoluteExpiresAt.getTime() - policy.absoluteMs),
+          session.mfaVerifiedAt,
         );
-        return { user, sessionFamily: session.family, rotated: next };
+        return {
+          user,
+          sessionFamily: session.family,
+          rotated: next,
+          mfaVerifiedAt: session.mfaVerifiedAt,
+        };
       }
 
       const newExpiry = new Date(
         Math.min(at.getTime() + policy.idleMs, session.absoluteExpiresAt.getTime()),
       );
       await sessions.touch(session.id, at, newExpiry);
-      return { user, sessionFamily: session.family };
+      return { user, sessionFamily: session.family, mfaVerifiedAt: session.mfaVerifiedAt };
     },
 
     async logout(token: string, userId: string, ctx: RequestContext): Promise<void> {

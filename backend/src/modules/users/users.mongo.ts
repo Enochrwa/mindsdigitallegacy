@@ -1,7 +1,9 @@
+import { trusted } from "mongoose";
+import { escapeRegex } from "../../core/page.js";
 import type { UserRepository } from "./users.repository.js";
 import { UserModel } from "./users.model.js";
 import { DuplicateEmailError } from "./users.types.js";
-import type { Consent, Role, User } from "./users.types.js";
+import type { Consent, Role, TotpState, User } from "./users.types.js";
 
 interface UserDoc {
   _id: { toString(): string };
@@ -17,6 +19,14 @@ interface UserDoc {
   failedLogins?: number;
   lockedUntil?: Date | null;
   deletedAt?: Date | null;
+  suspendedAt?: Date | null;
+  suspendedReason?: string | null;
+  totp?: {
+    secretEnc?: string | null;
+    enabledAt?: Date | null;
+    recoveryHashes?: string[] | null;
+    lastStep?: number | null;
+  } | null;
   createdAt: Date;
 }
 
@@ -48,8 +58,42 @@ function toUser(doc: UserDoc): User {
     failedLogins: doc.failedLogins ?? 0,
     lockedUntil: doc.lockedUntil ?? undefined,
     deletedAt: doc.deletedAt ?? undefined,
+    suspendedAt: doc.suspendedAt ?? undefined,
+    suspendedReason: doc.suspendedReason ?? undefined,
+    totp: toTotp(doc.totp),
     createdAt: doc.createdAt,
   };
+}
+
+function toTotp(raw: UserDoc["totp"]): TotpState | undefined {
+  if (raw?.secretEnc === undefined || raw.secretEnc === null) return undefined;
+  return {
+    secretEnc: raw.secretEnc,
+    enabledAt: raw.enabledAt ?? undefined,
+    recoveryHashes: raw.recoveryHashes ?? [],
+    lastStep: raw.lastStep ?? undefined,
+  };
+}
+
+function statusFilter(status: string): Record<string, unknown> {
+  switch (status) {
+    case "deleted":
+      return { deletedAt: trusted({ $exists: true }) };
+    case "suspended":
+      return { deletedAt: trusted({ $exists: false }), suspendedAt: trusted({ $exists: true }) };
+    case "unverified":
+      return {
+        deletedAt: trusted({ $exists: false }),
+        suspendedAt: trusted({ $exists: false }),
+        emailVerifiedAt: trusted({ $exists: false }),
+      };
+    default:
+      return {
+        deletedAt: trusted({ $exists: false }),
+        suspendedAt: trusted({ $exists: false }),
+        emailVerifiedAt: trusted({ $exists: true }),
+      };
+  }
 }
 
 function isDuplicateKey(err: unknown): boolean {
@@ -122,6 +166,77 @@ export function createMongoUserRepository(): UserRepository {
     },
     async softDelete(id, at) {
       await UserModel.updateOne({ _id: id }, { $set: { deletedAt: at } });
+    },
+    async list({ q, role, status, page, pageSize }) {
+      const filter: Record<string, unknown> = {
+        ...(status === undefined ? {} : statusFilter(status)),
+      };
+      if (role !== undefined) filter["roles"] = role;
+      if (q !== undefined && q.trim() !== "") {
+        const safe = escapeRegex(q.trim());
+        filter["$or"] = [
+          { email: trusted({ $regex: `^${safe}`, $options: "i" }) },
+          { displayName: trusted({ $regex: safe, $options: "i" }) },
+        ];
+      }
+      const [docs, total] = await Promise.all([
+        UserModel.find(trusted(filter) as never)
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * pageSize)
+          .limit(pageSize)
+          .lean(),
+        UserModel.countDocuments(trusted(filter) as never),
+      ]);
+      return { items: docs.map((d) => toUser(d as unknown as UserDoc)), total, page, pageSize };
+    },
+    async setRoles(id, roles) {
+      await UserModel.updateOne({ _id: id }, { $set: { roles } });
+    },
+    async setSuspended(id, at, reason) {
+      if (at === undefined) {
+        await UserModel.updateOne({ _id: id }, { $unset: { suspendedAt: 1, suspendedReason: 1 } });
+      } else {
+        await UserModel.updateOne(
+          { _id: id },
+          {
+            $set: { suspendedAt: at, ...(reason === undefined ? {} : { suspendedReason: reason }) },
+          },
+        );
+      }
+    },
+    async setTotp(id, totp: TotpState | undefined) {
+      if (totp === undefined) await UserModel.updateOne({ _id: id }, { $unset: { totp: 1 } });
+      else await UserModel.updateOne({ _id: id }, { $set: { totp } });
+    },
+    async countWithRole(role) {
+      return UserModel.countDocuments({ roles: role, deletedAt: trusted({ $exists: false }) });
+    },
+    async signupsByDay(since) {
+      const rows = await UserModel.aggregate<{ _id: string; n: number }>([
+        { $match: { createdAt: { $gte: since } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            n: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]);
+      return rows.map((r) => ({ day: r._id, count: r.n }));
+    },
+    async countAll() {
+      const [total, verified, suspended] = await Promise.all([
+        UserModel.countDocuments({ deletedAt: trusted({ $exists: false }) }),
+        UserModel.countDocuments({
+          deletedAt: trusted({ $exists: false }),
+          emailVerifiedAt: trusted({ $exists: true }),
+        }),
+        UserModel.countDocuments({
+          deletedAt: trusted({ $exists: false }),
+          suspendedAt: trusted({ $exists: true }),
+        }),
+      ]);
+      return { total, verified, suspended };
     },
   };
 }

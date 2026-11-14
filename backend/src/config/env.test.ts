@@ -44,7 +44,14 @@ describe("loadEnv", () => {
       MONGODB_URI: "mongodb://db.internal:27017/mdl",
       CORS_ORIGINS: "https://app.example.rw",
       WEB_BASE_URL: "https://app.example.rw",
+      TOTP_ENCRYPTION_KEY: "k".repeat(40),
     };
+
+    it("requires the staff second-factor encryption key", () => {
+      const without: Record<string, string> = { ...valid };
+      delete without["TOTP_ENCRYPTION_KEY"];
+      expect(() => loadEnv(without)).toThrow(/TOTP_ENCRYPTION_KEY/);
+    });
 
     it("accepts a complete configuration", () => {
       expect(loadEnv(valid).NODE_ENV).toBe("production");

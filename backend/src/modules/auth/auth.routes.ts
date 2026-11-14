@@ -1,6 +1,6 @@
 import { Router } from "express";
 import type { RequestHandler } from "express";
-import { getRequestId } from "../../core/errors.js";
+import { AppError, getRequestId } from "../../core/errors.js";
 import { clearSessionCookie, setSessionCookie } from "../../core/http/cookies.js";
 import type { SessionCookieConfig } from "../../core/http/cookies.js";
 import { authLocals, contextOf, requireAuth } from "./auth.middleware.js";
@@ -17,15 +17,24 @@ interface Deps {
   auth: AuthService;
   cookie: SessionCookieConfig;
   limiter: RequestHandler;
+  /** Emergency switch from settings: false refuses new sign-ups. */
+  registrationOpen?: () => Promise<boolean>;
 }
 
-export function createAuthRouter({ auth, cookie, limiter }: Deps): Router {
+export function createAuthRouter({ auth, cookie, limiter, registrationOpen }: Deps): Router {
   const router = Router();
   const ctx = (req: Parameters<typeof contextOf>[0], res: Parameters<typeof getRequestId>[0]) =>
     contextOf(req, getRequestId(res));
 
   // Same response whether or not the address was already registered.
   router.post("/register", limiter, async (req, res) => {
+    if (registrationOpen !== undefined && !(await registrationOpen())) {
+      throw new AppError(
+        503,
+        "REGISTRATION_CLOSED",
+        "New sign-ups are paused for a short while. Please try again later.",
+      );
+    }
     await auth.register(registerSchema.parse(req.body), ctx(req, res));
     res.status(202).json({
       status: "check_your_email",
