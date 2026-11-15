@@ -23,7 +23,7 @@ Start with **A**. Move to **B** when you want to see real persistence.
 ```bash
 git clone https://github.com/Enochrwa/mindsdigitallegacy.git
 cd mindsdigitallegacy
-git checkout feat/sprint-3-referrals-and-admin   # skip once this branch is merged into main
+
 ```
 
 The project has two parts that run side by side: `backend/` (the API, port **4000**) and `frontend/` (the website, port **8080**). Use two terminal windows.
