@@ -39,7 +39,7 @@ npm ci
 npm run dev:memory
 ```
 
-Wait for the lines `DEV ADMIN seeded` and `IN-MEMORY DEV API`. The first one shows the admin login and a secret with the admin login and a secret (see section 4). Check it: open http://localhost:4000/api/v1/health, which should show an "ok" status.
+Wait for the lines `DEV ADMIN seeded` and `IN-MEMORY DEV API`. The first one shows the admin login and a secret (see section 4.3). Check it: open http://localhost:4000/api/v1/health, which should show an "ok" status.
 
 **Terminal 2, website**
 
