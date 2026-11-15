@@ -1,3 +1,4 @@
+import type { Page, PageRequest } from "../../core/page.js";
 import type {
   Category,
   Course,
@@ -45,6 +46,28 @@ export interface EnrolmentRepository {
   recordActivity(id: string, lessonId: string, at: Date): Promise<void>;
   setCompleted(id: string, completedAt: Date | undefined): Promise<void>;
   unlock(id: string, via: UnlockVia, at: Date): Promise<void>;
+  /** Takes access back (an unlock was revoked). Progress is kept. */
+  lock(id: string): Promise<void>;
+  /** Staff view across all learners. */
+  list(query: EnrolmentListQuery): Promise<Page<Enrolment>>;
+  /** Per course: how many learners are active, completed, withdrawn, and waiting on an unlock. */
+  statsByCourse(): Promise<Record<string, EnrolmentStats>>;
+  /** New enrolments per day since a date, for charts. */
+  enrolmentsByDay(since: Date): Promise<{ day: string; count: number }[]>;
+}
+
+export interface EnrolmentListQuery extends PageRequest {
+  courseId?: string | undefined;
+  userId?: string | undefined;
+  status?: Enrolment["status"] | undefined;
+  accessState?: "locked" | "unlocked" | undefined;
+}
+
+export interface EnrolmentStats {
+  active: number;
+  completed: number;
+  withdrawn: number;
+  locked: number;
 }
 
 export interface ProgressRepository {

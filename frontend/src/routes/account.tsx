@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { AuthShell, Field, Notice } from "@/components/auth/AuthShell";
 import { authHead, failureText, inputClass } from "@/components/auth/helpers";
@@ -141,6 +141,14 @@ function Signed({ user }: { user: Profile }) {
 
       <hr className="my-6 border-border" />
       <div className="flex flex-wrap gap-3">
+        <Button asChild variant="gold">
+          <Link to="/invite">Invite friends</Link>
+        </Button>
+        {user.roles.some((r) => ["admin", "editor", "support"].includes(r)) && (
+          <Button asChild variant="outline">
+            <Link to="/admin">Admin console</Link>
+          </Button>
+        )}
         <Button variant="outline" onClick={signOut}>
           Sign out
         </Button>

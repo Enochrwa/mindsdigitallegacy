@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -13,6 +13,7 @@ import {
   problemMap,
 } from "@/components/auth/helpers";
 import { PRIVACY_NOTICE_VERSION, api } from "@/lib/api";
+import { forgetCode, looksLikeCode, normaliseCode, recalledCode } from "@/lib/referrals";
 
 export const Route = createFileRoute("/register")({
   head: authHead("Create your account"),
@@ -29,6 +30,7 @@ const schema = z
       .max(128, "Use at most 128 characters"),
     ageBracket: z.enum(["16_plus", "under_16"], { message: "Select your age group" }),
     guardianEmail: z.string().trim().toLowerCase().max(254).optional(),
+    referralCode: z.string().trim().max(20).optional(),
     consent: z.boolean().refine((v) => v, "Please accept the privacy notice to continue"),
   })
   .superRefine((v, ctx) => {
@@ -64,7 +66,14 @@ function RegisterPage() {
     watch,
     setError: setFieldError,
     formState: { errors, isSubmitting },
+    setValue,
   } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { consent: false } });
+
+  // A shared link may have left a code in this browser. Fill it in after mount (not during server render).
+  useEffect(() => {
+    const remembered = recalledCode();
+    if (remembered) setValue("referralCode", remembered);
+  }, [setValue]);
   const under16 = watch("ageBracket") === "under_16";
 
   const onSubmit = async (values: Values) => {
@@ -77,10 +86,14 @@ function RegisterPage() {
       ...(values.ageBracket === "under_16" && values.guardianEmail
         ? { guardianEmail: values.guardianEmail }
         : {}),
+      ...(values.referralCode && looksLikeCode(values.referralCode)
+        ? { referralCode: normaliseCode(values.referralCode) }
+        : {}),
       consent: true,
       privacyNoticeVersion: PRIVACY_NOTICE_VERSION,
     });
     if (result.ok) {
+      forgetCode();
       setDone({ email: values.email, needsGuardian: values.ageBracket === "under_16" });
       return;
     }
@@ -97,6 +110,10 @@ function RegisterPage() {
         }
       }
       if (Object.keys(mapped).length > 0) return;
+    }
+    if (result.reason === "rejected" && result.code === "REGISTRATION_CLOSED") {
+      setError("New registrations are paused for now. Please try again later.");
+      return;
     }
     setError(failureText(result.reason));
   };
@@ -160,6 +177,15 @@ function RegisterPage() {
             </span>
           </Field>
         )}
+        <Field label="Invite code (optional)" error={errors.referralCode?.message}>
+          <input
+            autoComplete="off"
+            autoCapitalize="characters"
+            maxLength={20}
+            {...register("referralCode")}
+            className={`${inputClass} font-mono uppercase`}
+          />
+        </Field>
         <div>
           <label className="flex items-start gap-3 text-sm">
             <input type="checkbox" {...register("consent")} className="mt-1 h-4 w-4" />

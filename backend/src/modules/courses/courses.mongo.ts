@@ -57,6 +57,7 @@ interface CourseDoc {
   unlockPolicy: { type: "open" | "referral" | "code"; threshold?: number | null };
   stats: Course["stats"];
   contentVersion: number;
+  source?: "file" | "admin" | null;
   publishedAt?: Date | null;
   archivedAt?: Date | null;
   createdAt: Date;
@@ -116,7 +117,7 @@ interface ProgressDoc {
   completedAt?: Date | null;
 }
 
-const toCategory = (d: CategoryDoc): Category => ({
+export const toCategory = (d: CategoryDoc): Category => ({
   id: s(d._id),
   slug: d.slug,
   name: d.name,
@@ -125,7 +126,7 @@ const toCategory = (d: CategoryDoc): Category => ({
   visible: d.visible ?? true,
 });
 
-const toCourse = (d: CourseDoc): Course => ({
+export const toCourse = (d: CourseDoc): Course => ({
   id: s(d._id),
   slug: d.slug,
   categoryId: s(d.categoryId),
@@ -147,13 +148,14 @@ const toCourse = (d: CourseDoc): Course => ({
       : { type: d.unlockPolicy.type },
   stats: d.stats,
   contentVersion: d.contentVersion,
+  source: d.source ?? "file",
   publishedAt: opt(d.publishedAt),
   archivedAt: opt(d.archivedAt),
   createdAt: d.createdAt,
   updatedAt: d.updatedAt,
 });
 
-const toSection = (d: SectionDoc): Section => ({
+export const toSection = (d: SectionDoc): Section => ({
   id: s(d._id),
   courseId: s(d.courseId),
   order: d.order,
@@ -161,7 +163,7 @@ const toSection = (d: SectionDoc): Section => ({
   summary: opt(d.summary),
 });
 
-const toLesson = (d: LessonDoc): Lesson => ({
+export const toLesson = (d: LessonDoc): Lesson => ({
   id: s(d._id),
   courseId: s(d.courseId),
   sectionId: s(d.sectionId),
@@ -320,6 +322,60 @@ export function createMongoEnrolmentRepository(): EnrolmentRepository {
           { $set: { status: "completed", completedAt } },
         );
       }
+    },
+    async lock(id) {
+      await EnrolmentModel.updateOne(
+        { _id: id },
+        { $set: { "access.state": "locked" }, $unset: { "access.via": 1, "access.unlockedAt": 1 } },
+      );
+    },
+    async list({ courseId, userId, status, accessState, page, pageSize }) {
+      const filter: Record<string, unknown> = {};
+      if (courseId) filter["courseId"] = courseId;
+      if (userId) filter["userId"] = userId;
+      if (status) filter["status"] = status;
+      if (accessState) filter["access.state"] = accessState;
+      const [docs, total] = await Promise.all([
+        EnrolmentModel.find(filter)
+          .sort({ lastActivityAt: -1 })
+          .skip((page - 1) * pageSize)
+          .limit(pageSize)
+          .lean(),
+        EnrolmentModel.countDocuments(filter),
+      ]);
+      return { items: (docs as unknown as EnrolmentDoc[]).map(toEnrolment), total, page, pageSize };
+    },
+    async statsByCourse() {
+      const rows = await EnrolmentModel.aggregate<{
+        _id: { c: unknown; s: Enrolment["status"]; a: string };
+        n: number;
+      }>([
+        { $group: { _id: { c: "$courseId", s: "$status", a: "$access.state" }, n: { $sum: 1 } } },
+      ]);
+      const out: Record<
+        string,
+        { active: number; completed: number; withdrawn: number; locked: number }
+      > = {};
+      for (const r of rows) {
+        const key = String(r._id.c);
+        const bucket = (out[key] ??= { active: 0, completed: 0, withdrawn: 0, locked: 0 });
+        bucket[r._id.s] += r.n;
+        if (r._id.a === "locked" && r._id.s !== "withdrawn") bucket.locked += r.n;
+      }
+      return out;
+    },
+    async enrolmentsByDay(since) {
+      const rows = await EnrolmentModel.aggregate<{ _id: string; n: number }>([
+        { $match: { enrolledAt: { $gte: since } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$enrolledAt" } },
+            n: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]);
+      return rows.map((r) => ({ day: r._id, count: r.n }));
     },
     async unlock(id, via, at) {
       await EnrolmentModel.updateOne(

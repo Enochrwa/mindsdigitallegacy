@@ -10,6 +10,8 @@ export interface Session {
   expiresAt: Date;
   absoluteExpiresAt: Date;
   rotatedAt?: Date | undefined;
+  /** Set once the second factor is passed. Admin routes require it; carried across id rotation. */
+  mfaVerifiedAt?: Date | undefined;
   userAgentSummary: string;
   ipPrefix: string;
 }
@@ -22,6 +24,7 @@ export interface SessionRepository {
   markRotated(id: string, at: Date): Promise<void>;
   touch(id: string, lastUsedAt: Date, expiresAt: Date): Promise<void>;
   revokeFamily(family: string): Promise<void>;
+  setMfaVerified(family: string, at: Date): Promise<void>;
   /** Revokes every session of a user, optionally keeping one family (used on password reset). */
   revokeAllForUser(userId: string, exceptFamily?: string): Promise<void>;
 }

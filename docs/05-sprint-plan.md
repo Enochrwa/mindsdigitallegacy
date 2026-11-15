@@ -94,6 +94,21 @@ nonces to replace `'unsafe-inline'`; the deleted-account purge job.
 **Acceptance highlights:** self-referral, duplicate email or phone, and disposable emails never count; a rejected
 referral shows no reason to the referrer; the threshold changes without a deploy.
 
+**Status: built (Sprint 3), together with the admin console pulled forward from Sprint 5.** The A/B experiment is
+built (two thresholds assigned per code, funnel split by variant); choosing the winner needs pilot data.
+
+### Admin console pulled forward from Sprint 5
+
+Built in this sprint so there is nothing to retrofit: staff roles and a permission matrix (admin, editor, support),
+mandatory TOTP two-step verification with recovery codes, user management (roles, suspend, sessions, 2FA reset,
+manual access grants), full content management (categories, courses, sections, lessons, YouTube ids, publish rules,
+reordering), lead CRM (status, priority, assignee, tags, follow-ups, notes, overdue), referral review queue and
+codes, unlock codes, enrolments, platform settings with versioned saves, audit log, overview dashboard, CSV
+exports, and the learner referral screens. See `docs/08-admin-and-referrals.md`.
+
+**Still open from Sprint 5:** internship review (needs Sprint 4 data; the console is registry-driven, so it is one
+new module), design tokens/motion/brand pass, CI performance budget, axe checks in CI, Kinyarwanda translation.
+
 ## Sprint 4 — Internship pipeline
 
 **Goal:** supervised internships run through the platform.

@@ -15,6 +15,8 @@ export const registerSchema = z
     guardianEmail: email.optional(),
     consent: z.literal(true, "Consent to data processing is required"),
     privacyNoticeVersion: z.string().trim().min(1).max(20),
+    /** From an invitation link. Unknown or invalid codes are ignored without telling the visitor. */
+    referralCode: z.string().trim().max(20).optional(),
   })
   .refine((v) => v.ageBracket !== "under_16" || v.guardianEmail !== undefined, {
     path: ["guardianEmail"],

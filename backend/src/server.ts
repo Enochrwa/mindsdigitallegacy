@@ -7,6 +7,14 @@ import {
   createMongoEnrolmentRepository,
   createMongoProgressRepository,
 } from "./modules/courses/courses.mongo.js";
+import { createMongoCatalogueAdminRepository } from "./modules/courses/courses.admin.js";
+import { createMongoLeadAdminRepository } from "./modules/leads/leads.admin.js";
+import { createMongoReferralRepository } from "./modules/referrals/referrals.mongo.js";
+import {
+  createMongoEntitlementRepository,
+  createMongoUnlockCodeRepository,
+} from "./modules/access/access.mongo.js";
+import { createMongoSettingsRepository } from "./modules/settings/settings.mongo.js";
 import { createMongoLeadRepository } from "./modules/leads/leads.repository.js";
 import { createPasswordHasher } from "./core/security/password.js";
 import { createMongoAuditLog } from "./modules/audit/audit.js";
@@ -39,6 +47,12 @@ async function main(): Promise<void> {
     authTokens: createMongoAuthTokenRepository(),
     audit: createMongoAuditLog(),
     catalogue: createMongoCatalogueRepository(),
+    catalogueAdmin: createMongoCatalogueAdminRepository(),
+    leadAdmin: createMongoLeadAdminRepository(),
+    referrals: createMongoReferralRepository(),
+    entitlements: createMongoEntitlementRepository(),
+    unlockCodes: createMongoUnlockCodeRepository(),
+    settings: createMongoSettingsRepository(),
     enrolments: createMongoEnrolmentRepository(),
     progress: createMongoProgressRepository(),
     mailer:

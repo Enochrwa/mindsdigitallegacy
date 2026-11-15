@@ -30,11 +30,21 @@ export const userSchema = new Schema(
     failedLogins: { type: Number, default: 0 },
     lockedUntil: { type: Date },
     deletedAt: { type: Date },
+    suspendedAt: { type: Date },
+    suspendedReason: { type: String, maxlength: 200 },
+    totp: {
+      secretEnc: { type: String, maxlength: 400 },
+      enabledAt: { type: Date },
+      recoveryHashes: { type: [String], default: undefined },
+      lastStep: { type: Number },
+    },
   },
   { timestamps: true, versionKey: false },
 );
 
 userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ deletedAt: 1 }, { sparse: true });
+userSchema.index({ roles: 1 });
+userSchema.index({ createdAt: -1 });
 
 export const UserModel = model("User", userSchema);

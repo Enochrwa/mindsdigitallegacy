@@ -34,6 +34,8 @@ export const categorySchema = new Schema(
     description: { type: String, required: true, maxlength: 240 },
     order: { type: Number, required: true },
     visible: { type: Boolean, default: true },
+    /** "file": maintained by the content import. "admin": edited in the console; the import leaves it alone. */
+    source: { type: String, enum: ["file", "admin"], default: "file" },
   },
   options,
 );
@@ -81,6 +83,8 @@ export const courseSchema = new Schema(
     contentHash: { type: String, required: true, maxlength: 64 },
     publishedAt: { type: Date },
     archivedAt: { type: Date },
+    /** Once a course is edited in the console it belongs to the console: re-importing the file never overwrites it. */
+    source: { type: String, enum: ["file", "admin"], default: "file" },
   },
   options,
 );

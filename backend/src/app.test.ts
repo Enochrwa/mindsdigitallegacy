@@ -26,6 +26,7 @@ describe("security headers", () => {
         MONGODB_URI: "mongodb://db.internal:27017/mdl",
         CORS_ORIGINS: ALLOWED_ORIGIN,
         WEB_BASE_URL: ALLOWED_ORIGIN,
+        TOTP_ENCRYPTION_KEY: "k".repeat(40),
       },
     });
     const res = await request(prod.app).get("/api/v1/health");

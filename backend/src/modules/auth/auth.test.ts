@@ -225,6 +225,7 @@ describe("login", () => {
         NODE_ENV: "production",
         MONGODB_URI: "mongodb://db.internal:27017/mdl",
         WEB_BASE_URL: ALLOWED_ORIGIN,
+        TOTP_ENCRYPTION_KEY: "k".repeat(40),
       },
     });
     await t.register();

@@ -12,6 +12,7 @@ interface SessionDoc {
   expiresAt: Date;
   absoluteExpiresAt: Date;
   rotatedAt?: Date | null;
+  mfaVerifiedAt?: Date | null;
   userAgentSummary: string;
   ipPrefix: string;
 }
@@ -27,6 +28,7 @@ function toSession(doc: SessionDoc): Session {
     expiresAt: doc.expiresAt,
     absoluteExpiresAt: doc.absoluteExpiresAt,
     rotatedAt: doc.rotatedAt ?? undefined,
+    mfaVerifiedAt: doc.mfaVerifiedAt ?? undefined,
     userAgentSummary: doc.userAgentSummary,
     ipPrefix: doc.ipPrefix,
   };
@@ -50,6 +52,9 @@ export function createMongoSessionRepository(): SessionRepository {
     },
     async revokeFamily(family) {
       await SessionModel.deleteMany({ family });
+    },
+    async setMfaVerified(family, at) {
+      await SessionModel.updateMany({ family }, { $set: { mfaVerifiedAt: at } });
     },
     async revokeAllForUser(userId, exceptFamily) {
       await SessionModel.deleteMany({

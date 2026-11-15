@@ -17,6 +17,7 @@ import type {
   Language,
   Lesson,
   LessonProgress,
+  UnlockVia,
 } from "./courses.types.js";
 
 export interface CoursesDeps {
@@ -24,6 +25,8 @@ export interface CoursesDeps {
   enrolments: EnrolmentRepository;
   progress: ProgressRepository;
   audit: AuditLog;
+  /** Why this learner may open a gated course, if any grant covers it. Supplied by the access module. */
+  resolveAccess?: (userId: string, courseId: string) => Promise<UnlockVia | null>;
   now?: () => Date;
 }
 
@@ -215,16 +218,21 @@ export function createCoursesService(deps: CoursesDeps) {
       const course = await catalogue.findCourseBySlug(slug);
       if (course === null || course.status !== "published") throw notFound();
       const at = now();
-      const open = course.unlockPolicy.type === "open";
+      // Open courses need nothing; gated ones unlock if the learner already holds a covering grant
+      // (referral credit, an unlock code, or a staff grant).
+      const via: UnlockVia | null =
+        course.unlockPolicy.type === "open"
+          ? "open"
+          : ((await deps.resolveAccess?.(userId, course.id)) ?? null);
       const enrolment = await enrolments.enrol({
         userId,
         courseId: course.id,
-        access: open ? { state: "unlocked", via: "open", unlockedAt: at } : { state: "locked" },
+        access: via === null ? { state: "locked" } : { state: "unlocked", via, unlockedAt: at },
         now: at,
       });
-      // A course that became open after the learner enrolled should not keep them locked out.
-      if (open && enrolment.access.state === "locked")
-        await enrolments.unlock(enrolment.id, "open", at);
+      // A course that became open, or a grant earned before this enrolment, should not keep them locked out.
+      if (via !== null && enrolment.access.state === "locked")
+        await enrolments.unlock(enrolment.id, via, at);
       await record("course.enrol", ctx, userId, course.slug);
       const fresh = (await enrolments.find(userId, course.id)) as Enrolment;
       return enrolmentView(course, fresh, userId);

@@ -109,6 +109,8 @@ export interface Course {
   stats: CourseStats;
   /** Incremented on each content import that changes the course, so history is explainable. */
   contentVersion: number;
+  /** Where edits happen. See the course schema. */
+  source: "file" | "admin";
   publishedAt?: Date | undefined;
   archivedAt?: Date | undefined;
   createdAt: Date;

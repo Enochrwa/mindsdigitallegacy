@@ -13,12 +13,14 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AcademyRouteImport } from './routes/academy'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CorporateRouteImport } from './routes/corporate'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as GuardianConsentRouteImport } from './routes/guardian-consent'
 import { Route as InternshipsRouteImport } from './routes/internships'
+import { Route as InviteRouteImport } from './routes/invite'
 import { Route as LearningRouteImport } from './routes/learning'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
@@ -29,7 +31,20 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SectorsRouteImport } from './routes/sectors'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AdminEnrolmentsRouteImport } from './routes/admin.enrolments'
+import { Route as AdminLeadsRouteImport } from './routes/admin.leads'
+import { Route as AdminReferralsRouteImport } from './routes/admin.referrals'
+import { Route as AdminSecurityRouteImport } from './routes/admin.security'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminUnlockCodesRouteImport } from './routes/admin.unlock-codes'
 import { Route as CoursesIndexRouteImport } from './routes/courses.index'
+import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as AdminCoursesIndexRouteImport } from './routes/admin.courses.index'
+import { Route as AdminCoursesIdRouteImport } from './routes/admin.courses.$id'
+import { Route as AdminUsersIndexRouteImport } from './routes/admin.users.index'
+import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
 import { Route as CoursesSlugIndexRouteImport } from './routes/courses.$slug.index'
 import { Route as CoursesSlugLearnLessonSlugRouteImport } from './routes/courses.$slug.learn.$lessonSlug'
 
@@ -51,6 +66,11 @@ const AcademyRoute = AcademyRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CareersRoute = CareersRouteImport.update({
@@ -81,6 +101,11 @@ const GuardianConsentRoute = GuardianConsentRouteImport.update({
 const InternshipsRoute = InternshipsRouteImport.update({
   id: '/internships',
   path: '/internships',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InviteRoute = InviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LearningRoute = LearningRouteImport.update({
@@ -133,10 +158,75 @@ const VerifyEmailRoute = VerifyEmailRouteImport.update({
   path: '/verify-email',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEnrolmentsRoute = AdminEnrolmentsRouteImport.update({
+  id: '/enrolments',
+  path: '/enrolments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLeadsRoute = AdminLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReferralsRoute = AdminReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSecurityRoute = AdminSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUnlockCodesRoute = AdminUnlockCodesRouteImport.update({
+  id: '/unlock-codes',
+  path: '/unlock-codes',
+  getParentRoute: () => AdminRoute,
+} as any)
 const CoursesIndexRoute = CoursesIndexRouteImport.update({
   id: '/courses/',
   path: '/courses/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const RCodeRoute = RCodeRouteImport.update({
+  id: '/r/$code',
+  path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCoursesIndexRoute = AdminCoursesIndexRouteImport.update({
+  id: '/courses/',
+  path: '/courses/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCoursesIdRoute = AdminCoursesIdRouteImport.update({
+  id: '/courses/$id',
+  path: '/courses/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersIdRoute = AdminUsersIdRouteImport.update({
+  id: '/users/$id',
+  path: '/users/$id',
+  getParentRoute: () => AdminRoute,
 } as any)
 const CoursesSlugIndexRoute = CoursesSlugIndexRouteImport.update({
   id: '/courses/$slug/',
@@ -155,12 +245,14 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/academy': typeof AcademyRoute
   '/account': typeof AccountRoute
+  '/admin': typeof AdminRouteWithChildren
   '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/guardian-consent': typeof GuardianConsentRoute
   '/internships': typeof InternshipsRoute
+  '/invite': typeof InviteRoute
   '/learning': typeof LearningRoute
   '/login': typeof LoginRoute
   '/portfolio': typeof PortfolioRoute
@@ -171,7 +263,20 @@ export interface FileRoutesByFullPath {
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/enrolments': typeof AdminEnrolmentsRoute
+  '/admin/leads': typeof AdminLeadsRoute
+  '/admin/referrals': typeof AdminReferralsRoute
+  '/admin/security': typeof AdminSecurityRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/unlock-codes': typeof AdminUnlockCodesRoute
+  '/r/$code': typeof RCodeRoute
+  '/admin/': typeof AdminIndexRoute
   '/courses/': typeof CoursesIndexRoute
+  '/admin/courses/$id': typeof AdminCoursesIdRoute
+  '/admin/users/$id': typeof AdminUsersIdRoute
+  '/admin/courses/': typeof AdminCoursesIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
   '/courses/$slug/': typeof CoursesSlugIndexRoute
   '/courses/$slug/learn/$lessonSlug': typeof CoursesSlugLearnLessonSlugRoute
 }
@@ -186,6 +291,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/guardian-consent': typeof GuardianConsentRoute
   '/internships': typeof InternshipsRoute
+  '/invite': typeof InviteRoute
   '/learning': typeof LearningRoute
   '/login': typeof LoginRoute
   '/portfolio': typeof PortfolioRoute
@@ -196,7 +302,20 @@ export interface FileRoutesByTo {
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/enrolments': typeof AdminEnrolmentsRoute
+  '/admin/leads': typeof AdminLeadsRoute
+  '/admin/referrals': typeof AdminReferralsRoute
+  '/admin/security': typeof AdminSecurityRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/unlock-codes': typeof AdminUnlockCodesRoute
+  '/r/$code': typeof RCodeRoute
+  '/admin': typeof AdminIndexRoute
   '/courses': typeof CoursesIndexRoute
+  '/admin/courses/$id': typeof AdminCoursesIdRoute
+  '/admin/users/$id': typeof AdminUsersIdRoute
+  '/admin/courses': typeof AdminCoursesIndexRoute
+  '/admin/users': typeof AdminUsersIndexRoute
   '/courses/$slug': typeof CoursesSlugIndexRoute
   '/courses/$slug/learn/$lessonSlug': typeof CoursesSlugLearnLessonSlugRoute
 }
@@ -206,12 +325,14 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/academy': typeof AcademyRoute
   '/account': typeof AccountRoute
+  '/admin': typeof AdminRouteWithChildren
   '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/guardian-consent': typeof GuardianConsentRoute
   '/internships': typeof InternshipsRoute
+  '/invite': typeof InviteRoute
   '/learning': typeof LearningRoute
   '/login': typeof LoginRoute
   '/portfolio': typeof PortfolioRoute
@@ -222,7 +343,20 @@ export interface FileRoutesById {
   '/sectors': typeof SectorsRoute
   '/services': typeof ServicesRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/enrolments': typeof AdminEnrolmentsRoute
+  '/admin/leads': typeof AdminLeadsRoute
+  '/admin/referrals': typeof AdminReferralsRoute
+  '/admin/security': typeof AdminSecurityRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/unlock-codes': typeof AdminUnlockCodesRoute
+  '/r/$code': typeof RCodeRoute
+  '/admin/': typeof AdminIndexRoute
   '/courses/': typeof CoursesIndexRoute
+  '/admin/courses/$id': typeof AdminCoursesIdRoute
+  '/admin/users/$id': typeof AdminUsersIdRoute
+  '/admin/courses/': typeof AdminCoursesIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
   '/courses/$slug/': typeof CoursesSlugIndexRoute
   '/courses/$slug/learn/$lessonSlug': typeof CoursesSlugLearnLessonSlugRoute
 }
@@ -233,12 +367,14 @@ export interface FileRouteTypes {
     | '/about'
     | '/academy'
     | '/account'
+    | '/admin'
     | '/careers'
     | '/contact'
     | '/corporate'
     | '/forgot-password'
     | '/guardian-consent'
     | '/internships'
+    | '/invite'
     | '/learning'
     | '/login'
     | '/portfolio'
@@ -249,7 +385,20 @@ export interface FileRouteTypes {
     | '/sectors'
     | '/services'
     | '/verify-email'
+    | '/admin/audit'
+    | '/admin/enrolments'
+    | '/admin/leads'
+    | '/admin/referrals'
+    | '/admin/security'
+    | '/admin/settings'
+    | '/admin/unlock-codes'
+    | '/r/$code'
+    | '/admin/'
     | '/courses/'
+    | '/admin/courses/$id'
+    | '/admin/users/$id'
+    | '/admin/courses/'
+    | '/admin/users/'
     | '/courses/$slug/'
     | '/courses/$slug/learn/$lessonSlug'
   fileRoutesByTo: FileRoutesByTo
@@ -264,6 +413,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/guardian-consent'
     | '/internships'
+    | '/invite'
     | '/learning'
     | '/login'
     | '/portfolio'
@@ -274,7 +424,20 @@ export interface FileRouteTypes {
     | '/sectors'
     | '/services'
     | '/verify-email'
+    | '/admin/audit'
+    | '/admin/enrolments'
+    | '/admin/leads'
+    | '/admin/referrals'
+    | '/admin/security'
+    | '/admin/settings'
+    | '/admin/unlock-codes'
+    | '/r/$code'
+    | '/admin'
     | '/courses'
+    | '/admin/courses/$id'
+    | '/admin/users/$id'
+    | '/admin/courses'
+    | '/admin/users'
     | '/courses/$slug'
     | '/courses/$slug/learn/$lessonSlug'
   id:
@@ -283,12 +446,14 @@ export interface FileRouteTypes {
     | '/about'
     | '/academy'
     | '/account'
+    | '/admin'
     | '/careers'
     | '/contact'
     | '/corporate'
     | '/forgot-password'
     | '/guardian-consent'
     | '/internships'
+    | '/invite'
     | '/learning'
     | '/login'
     | '/portfolio'
@@ -299,7 +464,20 @@ export interface FileRouteTypes {
     | '/sectors'
     | '/services'
     | '/verify-email'
+    | '/admin/audit'
+    | '/admin/enrolments'
+    | '/admin/leads'
+    | '/admin/referrals'
+    | '/admin/security'
+    | '/admin/settings'
+    | '/admin/unlock-codes'
+    | '/r/$code'
+    | '/admin/'
     | '/courses/'
+    | '/admin/courses/$id'
+    | '/admin/users/$id'
+    | '/admin/courses/'
+    | '/admin/users/'
     | '/courses/$slug/'
     | '/courses/$slug/learn/$lessonSlug'
   fileRoutesById: FileRoutesById
@@ -309,12 +487,14 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AcademyRoute: typeof AcademyRoute
   AccountRoute: typeof AccountRoute
+  AdminRoute: typeof AdminRouteWithChildren
   CareersRoute: typeof CareersRoute
   ContactRoute: typeof ContactRoute
   CorporateRoute: typeof CorporateRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   GuardianConsentRoute: typeof GuardianConsentRoute
   InternshipsRoute: typeof InternshipsRoute
+  InviteRoute: typeof InviteRoute
   LearningRoute: typeof LearningRoute
   LoginRoute: typeof LoginRoute
   PortfolioRoute: typeof PortfolioRoute
@@ -325,6 +505,7 @@ export interface RootRouteChildren {
   SectorsRoute: typeof SectorsRoute
   ServicesRoute: typeof ServicesRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
+  RCodeRoute: typeof RCodeRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
   CoursesSlugIndexRoute: typeof CoursesSlugIndexRoute
   CoursesSlugLearnLessonSlugRoute: typeof CoursesSlugLearnLessonSlugRoute
@@ -358,6 +539,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/careers': {
@@ -400,6 +588,13 @@ declare module '@tanstack/react-router' {
       path: '/internships'
       fullPath: '/internships'
       preLoaderRoute: typeof InternshipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invite': {
+      id: '/invite'
+      path: '/invite'
+      fullPath: '/invite'
+      preLoaderRoute: typeof InviteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/learning': {
@@ -472,12 +667,103 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/enrolments': {
+      id: '/admin/enrolments'
+      path: '/enrolments'
+      fullPath: '/admin/enrolments'
+      preLoaderRoute: typeof AdminEnrolmentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/leads': {
+      id: '/admin/leads'
+      path: '/leads'
+      fullPath: '/admin/leads'
+      preLoaderRoute: typeof AdminLeadsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/referrals': {
+      id: '/admin/referrals'
+      path: '/referrals'
+      fullPath: '/admin/referrals'
+      preLoaderRoute: typeof AdminReferralsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/security': {
+      id: '/admin/security'
+      path: '/security'
+      fullPath: '/admin/security'
+      preLoaderRoute: typeof AdminSecurityRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/unlock-codes': {
+      id: '/admin/unlock-codes'
+      path: '/unlock-codes'
+      fullPath: '/admin/unlock-codes'
+      preLoaderRoute: typeof AdminUnlockCodesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/courses/': {
       id: '/courses/'
       path: '/courses'
       fullPath: '/courses/'
       preLoaderRoute: typeof CoursesIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/r/$code': {
+      id: '/r/$code'
+      path: '/r/$code'
+      fullPath: '/r/$code'
+      preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/courses/': {
+      id: '/admin/courses/'
+      path: '/courses'
+      fullPath: '/admin/courses/'
+      preLoaderRoute: typeof AdminCoursesIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/courses/$id': {
+      id: '/admin/courses/$id'
+      path: '/courses/$id'
+      fullPath: '/admin/courses/$id'
+      preLoaderRoute: typeof AdminCoursesIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users/': {
+      id: '/admin/users/'
+      path: '/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AdminUsersIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users/$id': {
+      id: '/admin/users/$id'
+      path: '/users/$id'
+      fullPath: '/admin/users/$id'
+      preLoaderRoute: typeof AdminUsersIdRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/courses/$slug/': {
       id: '/courses/$slug/'
@@ -496,17 +782,51 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminEnrolmentsRoute: typeof AdminEnrolmentsRoute
+  AdminLeadsRoute: typeof AdminLeadsRoute
+  AdminReferralsRoute: typeof AdminReferralsRoute
+  AdminSecurityRoute: typeof AdminSecurityRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminUnlockCodesRoute: typeof AdminUnlockCodesRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminCoursesIdRoute: typeof AdminCoursesIdRoute
+  AdminUsersIdRoute: typeof AdminUsersIdRoute
+  AdminCoursesIndexRoute: typeof AdminCoursesIndexRoute
+  AdminUsersIndexRoute: typeof AdminUsersIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditRoute: AdminAuditRoute,
+  AdminEnrolmentsRoute: AdminEnrolmentsRoute,
+  AdminLeadsRoute: AdminLeadsRoute,
+  AdminReferralsRoute: AdminReferralsRoute,
+  AdminSecurityRoute: AdminSecurityRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminUnlockCodesRoute: AdminUnlockCodesRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminCoursesIdRoute: AdminCoursesIdRoute,
+  AdminUsersIdRoute: AdminUsersIdRoute,
+  AdminCoursesIndexRoute: AdminCoursesIndexRoute,
+  AdminUsersIndexRoute: AdminUsersIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AcademyRoute: AcademyRoute,
   AccountRoute: AccountRoute,
+  AdminRoute: AdminRouteWithChildren,
   CareersRoute: CareersRoute,
   ContactRoute: ContactRoute,
   CorporateRoute: CorporateRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   GuardianConsentRoute: GuardianConsentRoute,
   InternshipsRoute: InternshipsRoute,
+  InviteRoute: InviteRoute,
   LearningRoute: LearningRoute,
   LoginRoute: LoginRoute,
   PortfolioRoute: PortfolioRoute,
@@ -517,6 +837,7 @@ const rootRouteChildren: RootRouteChildren = {
   SectorsRoute: SectorsRoute,
   ServicesRoute: ServicesRoute,
   VerifyEmailRoute: VerifyEmailRoute,
+  RCodeRoute: RCodeRoute,
   CoursesIndexRoute: CoursesIndexRoute,
   CoursesSlugIndexRoute: CoursesSlugIndexRoute,
   CoursesSlugLearnLessonSlugRoute: CoursesSlugLearnLessonSlugRoute,
