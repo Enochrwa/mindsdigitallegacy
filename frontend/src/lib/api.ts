@@ -17,11 +17,13 @@ export type ApiFailure =
   | { ok: false; reason: "validation"; problems: FieldProblem[] }
   | { ok: false; reason: "unauthenticated" | "forbidden" | "rate_limited" | "invalid_token" }
   | { ok: false; reason: "invalid_credentials" | "account_not_active" }
-  | { ok: false; reason: "network" | "unavailable" };
+  | { ok: false; reason: "network" | "unavailable" }
+  /** Any other refusal the caller may want to react to (409 conflict, 404, 422, 503 …). `code` is the API's error code. */
+  | { ok: false; reason: "rejected"; status: number; code: string; problems: FieldProblem[] };
 
 export type ApiResult<T> = { ok: true; data: T } | ApiFailure;
 
-type Method = "GET" | "POST" | "PUT" | "DELETE";
+type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface ErrorEnvelope {
   error?: { code?: string; details?: unknown };
@@ -39,6 +41,8 @@ function problemsOf(details: unknown): FieldProblem[] {
 function failureFor(status: number, body: ErrorEnvelope): ApiFailure {
   const code = body.error?.code;
   if (status === 400 && code === "INVALID_TOKEN") return { ok: false, reason: "invalid_token" };
+  if (status === 400 && code === "INVALID_CODE")
+    return { ok: false, reason: "rejected", status, code, problems: [] };
   if (status === 400)
     return { ok: false, reason: "validation", problems: problemsOf(body.error?.details) };
   if (status === 401 && code === "INVALID_CREDENTIALS")
@@ -46,8 +50,26 @@ function failureFor(status: number, body: ErrorEnvelope): ApiFailure {
   if (status === 401) return { ok: false, reason: "unauthenticated" };
   if (status === 403 && code === "ACCOUNT_NOT_ACTIVE")
     return { ok: false, reason: "account_not_active" };
+  if (status === 403 && (code === "MFA_REQUIRED" || code === "MFA_SETUP_REQUIRED"))
+    return {
+      ok: false,
+      reason: "rejected",
+      status,
+      code,
+      problems: [],
+    };
   if (status === 403) return { ok: false, reason: "forbidden" };
   if (status === 429) return { ok: false, reason: "rate_limited" };
+  if (status >= 400 && status < 500 && typeof code === "string")
+    return {
+      ok: false,
+      reason: "rejected",
+      status,
+      code,
+      problems: problemsOf(body.error?.details),
+    };
+  if (status === 503 && code === "REGISTRATION_CLOSED")
+    return { ok: false, reason: "rejected", status, code, problems: [] };
   return { ok: false, reason: "unavailable" };
 }
 
@@ -91,6 +113,7 @@ export interface RegisterInput {
   displayName: string;
   ageBracket: "under_16" | "16_plus";
   guardianEmail?: string;
+  referralCode?: string;
   consent: true;
   privacyNoticeVersion: string;
 }

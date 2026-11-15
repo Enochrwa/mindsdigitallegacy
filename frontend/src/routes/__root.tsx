@@ -1,4 +1,5 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { referralApi } from "@/lib/referrals";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -129,6 +130,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <AnnouncementBanner />
       <SiteHeader />
       <main className="min-h-[60vh]">
         <Outlet />
@@ -136,5 +138,26 @@ function RootComponent() {
       <SiteFooter />
       <Toaster />
     </QueryClientProvider>
+  );
+}
+
+/** Staff-controlled notice (maintenance, new intake). Plain text only, so nothing it contains is ever interpreted as markup. */
+function AnnouncementBanner() {
+  const site = useQuery({
+    queryKey: ["site"],
+    enabled: typeof window !== "undefined",
+    staleTime: 60_000,
+    retry: false,
+    queryFn: async () => {
+      const r = await referralApi.site();
+      return r.ok ? r.data : null;
+    },
+  });
+  const message = site.data?.announcement;
+  if (!message) return null;
+  return (
+    <div role="status" className="bg-primary px-4 py-2 text-center text-sm text-primary-foreground">
+      {message}
+    </div>
   );
 }

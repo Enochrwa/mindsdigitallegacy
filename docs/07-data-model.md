@@ -111,9 +111,22 @@ userId, courseId, lessonId (unique with userId), status `in_progress` \| `comple
 
 Personal: `enrolments`, `lessonprogresses` (user-linked). Included in `GET /users/me/export`. Must be purged with the user after the grace period (the purge job is still to be built; tracked in the sprint plan).
 
-## 8. Planned extensions (designed to fit without migration pain)
+## 8. Sprint 3 collections and changes
 
-- Referral invites and verified signups (Sprint 3): feeds `enrolments.access.via = "referral"`.
+| Collection | Purpose | Notes |
+| --- | --- | --- |
+| `referralcodes` | One code per learner (8 chars, no look-alike characters) | `assignedThreshold` pins the A/B variant; `status` active/disabled |
+| `referrals` | One row per invitee | Unique on invitee. Status pending/qualified/needs_review/rejected/revoked plus an internal reason the referrer never sees |
+| `referralevents` | Append-only funnel log | visit, attributed, qualified, needs_review, rejected, approved, revoked, unlocked, each with variant |
+| `entitlements` | Why someone has free access | scope all/course, via referral/code/admin, revocable. Courses unlock and re-lock from this |
+| `unlockcodes`, `unlockredemptions` | Ambassador, partner and promo codes | Atomic use counting; one redemption per person per code |
+| `settings` | Single versioned document | Optimistic concurrency (`STALE_SETTINGS`) |
+
+Changed: `users` (roles support/editor, `suspendedAt`, encrypted `totp`), `sessions` (`mfaVerifiedAt`), `leads`
+(pipeline fields, notes), `courses`/`categories` (`source` file or admin), `audit` (new actions, indexes).
+
+## 9. Planned extensions (designed to fit without migration pain)
+
 - Quizzes and certificates: new collections keyed by lessonId / enrolmentId.
 - Instructors as a collection: replace the embedded array with refs.
 - Content revisions: store a snapshot per `contentVersion` if editorial history is needed.

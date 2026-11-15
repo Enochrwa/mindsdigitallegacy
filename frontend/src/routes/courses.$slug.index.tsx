@@ -185,8 +185,10 @@ function CoursePage() {
                 </p>
                 {locked ? (
                   <p role="status" className="text-sm">
-                    This course unlocks when you complete the sharing step. We are finishing that
-                    feature.
+                    This course is locked. {unlockHint(c.unlockPolicy)}{" "}
+                    <Link to="/invite" className="font-medium text-primary underline">
+                      Invite friends or enter a code
+                    </Link>
                   </p>
                 ) : target ? (
                   <Button asChild variant="gold" className="w-full">
@@ -228,4 +230,11 @@ function CoursePage() {
       </div>
     </>
   );
+}
+
+function unlockHint(policy: { type: "open" | "referral" | "code"; threshold?: number }): string {
+  if (policy.type === "referral")
+    return `It opens when ${policy.threshold ?? 3} friends join with your link.`;
+  if (policy.type === "code") return "It opens with an unlock code from a school or partner.";
+  return "";
 }

@@ -10,6 +10,7 @@ Read in this order.
 | 04  | [Security and threat model](04-security-and-threat-model.md) | What can go wrong, what stops it, what is verified, and what is still open                                                                  |
 | 05  | [Sprint plan](05-sprint-plan.md)                             | What gets built in what order, the launch gate, and what to cut first                                                                       |
 | 07  | [Data model](07-data-model.md) | Data dictionary: collections, fields, lifecycles, invariants, data-quality rules |
+| 08  | [Admin console, access and referrals](08-admin-and-referrals.md) | Staff roles, two-step verification, access model, referral rules, admin API |
 | 06  | [Third-party providers](06-third-party-providers.md)         | Which email, storage, hosting, database and operations services to use, free tiers, and what each means for the data-location rule          |
 | ADR | [Decision records](adr/)                                     | Why the repo layout, referral, hosting, auth, video and toolchain choices were made                                                         |
 
