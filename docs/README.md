@@ -8,7 +8,8 @@ Read in this order.
 | 02  | [High-level design](02-hld.md)                                   | What are the parts of the system, how do they fit, and what are the main flows and risks?                                                   |
 | 03  | [Low-level design](03-lld.md)                                    | Data model, API conventions, authentication, frontend and referral algorithm in implementable detail                                        |
 | 04  | [Security and threat model](04-security-and-threat-model.md)     | What can go wrong, what stops it, what is verified, and what is still open                                                                  |
-| 05  | [Sprint plan](05-sprint-plan.md)                                 | What gets built in what order, the launch gate, and what to cut first                                                                       |
+| 05  | [Sprint plan](05-sprint-plan.md)                                 | Verified status, calendar, founder track, launch gate, risks, and what to cut first                                                         |
+| 10  | [Sprint backlog](10-sprint-backlog.md)                           | Story-level work for Sprints 4 to 7: estimates, acceptance criteria, repo review findings, growth rules                                     |
 | 07  | [Data model](07-data-model.md)                                   | Data dictionary: collections, fields, lifecycles, invariants, data-quality rules                                                            |
 | 08  | [Admin console, access and referrals](08-admin-and-referrals.md) | Staff roles, two-step verification, access model, referral rules, admin API                                                                 |
 | 09  | [Run it locally](09-local-setup.md)                              | Clone, configure, run and click through the product on your computer                                                                        |
