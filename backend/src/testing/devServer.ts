@@ -31,7 +31,7 @@ if (process.env["NODE_ENV"] === "production") {
 }
 const env = loadEnv({
   NODE_ENV: "development",
-  CORS_ORIGINS: process.env["CORS_ORIGINS"] ?? "http://localhost:8080",
+  CORS_ORIGINS: process.env["CORS_ORIGINS"] ?? "http://localhost:3000",
   RATE_LIMIT_AUTH_PER_15MIN: "1000",
 });
 const logger = createLogger(env);

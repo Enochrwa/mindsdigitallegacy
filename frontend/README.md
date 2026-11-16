@@ -5,7 +5,7 @@ Website and learner portal. TanStack Start (React 19), Vite, Tailwind 4, shadcn/
 ```sh
 cd frontend
 bun install --ignore-scripts
-bun run dev      # http://localhost:8080
+bun run dev      # http://localhost:3000
 bun run test
 bun run build    # Nitro, Cloudflare module preset, output in .output/
 ```

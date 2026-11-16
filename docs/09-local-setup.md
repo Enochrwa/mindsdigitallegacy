@@ -26,7 +26,7 @@ cd mindsdigitallegacy
 
 ```
 
-The project has two parts that run side by side: `backend/` (the API, port **4000**) and `frontend/` (the website, port **8080**). Use two terminal windows.
+The project has two parts that run side by side: `backend/` (the API, port **4000**) and `frontend/` (the website, port **3000**). Use two terminal windows.
 
 ## 2. Path A: quick trial, no database
 
@@ -50,7 +50,7 @@ bun install
 bun run dev
 ```
 
-Open **http://localhost:8080**.
+Open **http://localhost:3000**.
 
 Everything lives in memory: stop and start the API and all accounts vanish (the dev admin is re-created). No emails are sent; links appear in Terminal 1 (section 3).
 
@@ -75,17 +75,17 @@ Use `npm run dev` instead of `npm run dev:memory`. No Docker? Install MongoDB Co
 
 ### Email links (verification, password reset)
 
-With `EMAIL_PROVIDER=log` nothing is emailed. Look in the **API terminal** for a line containing `"link":"http://localhost:8080/verify-email?token=..."` and open that link in your browser.
+With `EMAIL_PROVIDER=log` nothing is emailed. Look in the **API terminal** for a line containing `"link":"http://localhost:3000/verify-email?token=..."` and open that link in your browser.
 
 ### 4.1 Learner journey
 
-1. Open http://localhost:8080/register and create an account (password 10+ characters, tick consent).
+1. Open http://localhost:3000/register and create an account (password 10+ characters, tick consent).
 2. Open the verification link from the API terminal. Then sign in at `/login`.
 3. Browse **Courses**, open a course and start a lesson. Open courses can be started straight away.
 
 ### 4.2 Referral loop (the free-training unlock)
 
-1. As learner 1, open **My account, Invite friends** (`/invite`). Copy your invite link (it looks like `http://localhost:8080/r/ABCD2345`).
+1. As learner 1, open **My account, Invite friends** (`/invite`). Copy your invite link (it looks like `http://localhost:3000/r/ABCD2345`).
 2. Open that link in a **private/incognito window**. Create account "friend 1", then open its verification link from the API terminal.
 3. Repeat with two more different emails. Real, distinct addresses are needed: the same mailbox with `+tags`, disposable domains such as `mailinator.com`, and your own other accounts do **not** count.
 4. Refresh `/invite` as learner 1: the meter moves to "3 of 3" and training unlocks.
@@ -93,7 +93,7 @@ With `EMAIL_PROVIDER=log` nothing is emailed. Look in the **API terminal** for a
 
 ### 4.3 Admin console
 
-**Path A:** sign in at `/login` as `admin@example.rw` with password `correct horse battery`. The API terminal prints the **DEV ADMIN** secret. Add that secret to an authenticator app (Google Authenticator, Authy, 1Password: choose "enter a setup key", type: time-based), or generate codes with any TOTP tool. Then open **http://localhost:8080/admin** and enter the 6-digit code.
+**Path A:** sign in at `/login` as `admin@example.rw` with password `correct horse battery`. The API terminal prints the **DEV ADMIN** secret. Add that secret to an authenticator app (Google Authenticator, Authy, 1Password: choose "enter a setup key", type: time-based), or generate codes with any TOTP tool. Then open **http://localhost:3000/admin** and enter the 6-digit code.
 
 **Path B:** there is no seeded admin, on purpose. Make yourself one:
 
@@ -137,9 +137,9 @@ All settings are documented line by line in `backend/.env.example` and `frontend
 
 | Symptom                                                                | Fix                                                                                                                                          |
 | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Website loads but sign-in or data fails, browser console mentions CORS | `CORS_ORIGINS` in `backend/.env` must include the exact address in your browser bar (`http://localhost:8080`). Restart the API after editing |
+| Website loads but sign-in or data fails, browser console mentions CORS | `CORS_ORIGINS` in `backend/.env` must include the exact address in your browser bar (`http://localhost:3000`). Restart the API after editing |
 | "Too many requests"                                                    | Wait 15 minutes, restart the API (path A), or raise `RATE_LIMIT_AUTH_PER_15MIN`                                                              |
-| Port already in use                                                    | Another app uses 4000 or 8080. Change `PORT` (and `VITE_API_BASE_URL`) or stop the other app                                                 |
+| Port already in use                                                    | Another app uses 4000 or 3000. Change `PORT` (and `VITE_API_BASE_URL`) or stop the other app                                                 |
 | `/api/v1/ready` returns 503                                            | The API cannot reach MongoDB: is `docker compose ps` healthy, does `MONGODB_URI` match `MONGO_PASSWORD`?                                     |
 | Courses list is empty (path B)                                         | Run `npm run seed:academy`                                                                                                                   |
 | Verification email never arrives                                       | Expected locally: read the link from the API terminal                                                                                        |

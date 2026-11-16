@@ -54,7 +54,7 @@ const envSchema = z
     /** Learning writes (enrol, progress) per client IP per minute. */
     RATE_LIMIT_LEARNING_PER_MINUTE: z.coerce.number().int().min(1).default(90),
     /** Public URL of the web app, used in email links. Must be https in production. */
-    WEB_BASE_URL: originSchema.default("http://localhost:8080"),
+    WEB_BASE_URL: originSchema.default("http://localhost:3000"),
     /** Public auth endpoints (register, login, reset) per client IP per 15 minutes. */
     RATE_LIMIT_AUTH_PER_15MIN: z.coerce.number().int().min(1).default(20),
     /** `log` only logs (development). `brevo` or `resend` send real mail (docs/06-third-party-providers.md). */

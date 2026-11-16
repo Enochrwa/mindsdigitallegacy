@@ -30,7 +30,7 @@ export default defineConfig(({ command, mode }) => {
     optimizeDeps: {
       include: ["react", "react-dom", "react-dom/client", "react/jsx-runtime", "react/jsx-dev-runtime"],
     },
-    server: { host: "::", port: 8080 },
+    server: { host: "::", port: 3000 },
     plugins: [
       tailwindcss(),
       tsConfigPaths({ projects: ["./tsconfig.json"] }),
