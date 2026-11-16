@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
+import { PasswordField } from "@/components/auth/PasswordField";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -26,9 +27,14 @@ function LoginPage() {
   const [error, setError] = useState<{ text: string; inactive: boolean } | null>(null);
   const {
     register,
+    watch,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<Values>({ resolver: zodResolver(schema) });
+
+  const [typedEmail, typedPassword] = [watch("email"), watch("password")];
+  const progress =
+    0.1 + (typedEmail?.includes("@") ? 0.35 : 0) + ((typedPassword?.length ?? 0) >= 10 ? 0.45 : 0);
 
   const onSubmit = async (values: Values) => {
     setError(null);
@@ -51,19 +57,22 @@ function LoginPage() {
   };
 
   return (
-    <AuthShell eyebrow="Account" title="Sign in">
+    <AuthShell
+      eyebrow="Welcome back"
+      title="Sign in"
+      text="Pick up your courses where you left off."
+      progress={progress}
+    >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Field label="Email" error={errors.email?.message}>
           <input type="email" autoComplete="email" {...register("email")} className={inputClass} />
         </Field>
-        <Field label="Password" error={errors.password?.message}>
-          <input
-            type="password"
-            autoComplete="current-password"
-            {...register("password")}
-            className={inputClass}
-          />
-        </Field>
+        <PasswordField
+          label="Password"
+          autoComplete="current-password"
+          error={errors.password?.message}
+          {...register("password")}
+        />
         {error && (
           <Notice kind="error">
             {error.text}{" "}

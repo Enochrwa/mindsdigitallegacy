@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
+import { PasswordField } from "@/components/auth/PasswordField";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -44,9 +45,13 @@ function ResetPassword() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     setError: setFieldError,
     formState: { errors, isSubmitting },
   } = useForm<Values>({ resolver: zodResolver(schema) });
+
+  const newPassword = watch("password");
 
   // Keep the token out of the address bar and browser history once it has been read.
   useEffect(() => {
@@ -99,25 +104,24 @@ function ResetPassword() {
   return (
     <AuthShell eyebrow="Account" title="Choose a new password">
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-        <Field label="New password" error={errors.password?.message}>
-          <input
-            type="password"
-            autoComplete="new-password"
-            {...register("password")}
-            className={inputClass}
-          />
-          <span className="mt-1 block text-xs font-normal text-muted-foreground">
-            {PASSWORD_HINT}
-          </span>
-        </Field>
-        <Field label="Repeat the new password" error={errors.confirm?.message}>
-          <input
-            type="password"
-            autoComplete="new-password"
-            {...register("confirm")}
-            className={inputClass}
-          />
-        </Field>
+        <PasswordField
+          label="New password"
+          autoComplete="new-password"
+          meter
+          value={newPassword ?? ""}
+          onSuggest={(v) => {
+            setValue("password", v, { shouldValidate: true, shouldDirty: true });
+            setValue("confirm", v, { shouldValidate: true, shouldDirty: true });
+          }}
+          error={errors.password?.message}
+          {...register("password")}
+        />
+        <PasswordField
+          label="Repeat the new password"
+          autoComplete="new-password"
+          error={errors.confirm?.message}
+          {...register("confirm")}
+        />
         {error && (
           <Notice kind="error">
             {error}{" "}

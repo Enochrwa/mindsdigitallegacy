@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { PasswordField } from "@/components/auth/PasswordField";
 import { Button } from "@/components/ui/button";
 import { AuthShell, Field, Notice } from "@/components/auth/AuthShell";
 import { authHead, failureText, inputClass } from "@/components/auth/helpers";
@@ -169,15 +170,12 @@ function Signed({ user }: { user: Profile }) {
             This deactivates your account now and removes your data after a grace period. Enter your
             password to confirm.
           </p>
-          <Field label="Password">
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={inputClass}
-            />
-          </Field>
+          <PasswordField
+            label="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
           <div className="flex gap-3">
             <Button
               variant="destructive"

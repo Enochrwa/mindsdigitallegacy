@@ -1,20 +1,22 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import logo from "@/assets/mdl-logo.jpeg.asset.json";
+import { Mark } from "@/components/brand/Mark";
+import { Pattern } from "@/components/brand/Pattern";
 import { Button } from "@/components/ui/button";
 import { nav } from "@/lib/content";
 import { useSession } from "@/lib/session";
 
-export function Logo() {
+export function Logo({ onDark = false }: { onDark?: boolean }) {
   return (
-    <Link to="/" className="flex items-center" aria-label="Minds Digital Legacy home">
-      <span className="block h-12 w-28 overflow-hidden rounded-md bg-background">
-        <img
-          src={logo.url}
-          alt="MDL logo"
-          className="h-full w-full scale-[1.7] object-cover object-[50%_42%]"
-        />
+    <Link to="/" className="group flex items-center gap-2.5" aria-label="Minds Digital Legacy home">
+      <Mark size={34} className="transition-transform duration-300 group-hover:rotate-90" />
+      <span
+        className={`font-display text-[0.95rem] font-semibold leading-none tracking-tight ${onDark ? "text-primary-foreground" : "text-primary"}`}
+      >
+        Minds Digital
+        <br />
+        <span className="text-accent">Legacy</span>
       </span>
     </Link>
   );
@@ -28,7 +30,7 @@ function AccountLink({ onClick }: { onClick?: () => void }) {
     <Link
       to={signedIn ? "/account" : "/login"}
       onClick={onClick}
-      className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary"
+      className="rounded-lg px-3 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:text-primary"
     >
       {signedIn ? "My account" : "Sign in"}
     </Link>
@@ -38,7 +40,7 @@ function AccountLink({ onClick }: { onClick?: () => void }) {
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-md">
       <div className="container-mdl flex h-16 items-center justify-between gap-4">
         <Logo />
         <nav className="hidden items-center gap-1 lg:flex">
@@ -46,8 +48,11 @@ export function SiteHeader() {
             <Link
               key={n.to}
               to={n.to}
-              className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary"
-              activeProps={{ className: "text-primary font-semibold" }}
+              className="rounded-lg px-2.5 py-2 text-sm font-medium text-foreground/75 transition-colors hover:text-primary"
+              activeProps={{
+                className:
+                  "text-primary font-semibold underline decoration-accent decoration-2 underline-offset-[10px]",
+              }}
             >
               {n.label}
             </Link>
@@ -85,18 +90,17 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="bg-primary text-primary-foreground">
+      <div className="zigzag-edge rotate-180 text-primary" aria-hidden="true" />
       <div className="container-mdl grid gap-10 py-14 md:grid-cols-4">
         <div className="md:col-span-2">
-          <p className="font-display text-2xl font-bold">
-            Minds Digital <span className="text-accent">Legacy</span>
-          </p>
-          <p className="mt-3 max-w-sm text-primary-foreground/70">
+          <Logo onDark />
+          <p className="mt-5 max-w-sm text-primary-foreground/70">
             Empowering Digital Skills, Simplifying Your Daily Work.
           </p>
         </div>
         <div>
-          <p className="eyebrow mb-3">Explore</p>
-          <ul className="space-y-2 text-sm text-primary-foreground/80">
+          <p className="font-display text-sm font-semibold text-accent">Explore</p>
+          <ul className="mt-4 space-y-2.5 text-sm text-primary-foreground/80">
             {nav.slice(0, 4).map((n) => (
               <li key={n.to}>
                 <Link to={n.to} className="hover:text-accent">
@@ -107,8 +111,8 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <p className="eyebrow mb-3">Get involved</p>
-          <ul className="space-y-2 text-sm text-primary-foreground/80">
+          <p className="font-display text-sm font-semibold text-accent">Get involved</p>
+          <ul className="mt-4 space-y-2.5 text-sm text-primary-foreground/80">
             {nav.slice(4).map((n) => (
               <li key={n.to}>
                 <Link to={n.to} className="hover:text-accent">
@@ -125,7 +129,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-primary-foreground/10 py-5 text-center text-xs text-primary-foreground/60">
-        © {new Date().getFullYear()} Minds Digital Legacy (MDL). Kigali, Rwanda. ·{" "}
+        © {new Date().getFullYear()} Minds Digital Legacy (MDL). Kigali, Rwanda.{" "}
         <Link to="/privacy" className="underline hover:text-accent">
           Privacy notice
         </Link>
@@ -144,11 +148,21 @@ export function PageHero({
   text: string;
 }) {
   return (
-    <section className="bg-primary text-primary-foreground">
-      <div className="container-mdl py-16 md:py-20">
+    <section className="relative overflow-hidden bg-primary text-primary-foreground">
+      <div
+        className="absolute inset-y-0 right-0 hidden w-1/2 md:block"
+        style={{
+          maskImage: "linear-gradient(to right, transparent, black 70%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent, black 70%)",
+        }}
+        aria-hidden="true"
+      >
+        <Pattern interactive cell={44} progress={0.22} />
+      </div>
+      <div className="container-mdl relative py-16 md:py-24">
         <p className="eyebrow">{eyebrow}</p>
-        <h1 className="mt-3 max-w-3xl text-4xl font-bold md:text-5xl">{title}</h1>
-        <p className="mt-4 max-w-2xl text-lg text-primary-foreground/75">{text}</p>
+        <h1 className="animate-rise mt-4 max-w-3xl text-4xl md:text-5xl">{title}</h1>
+        <p className="mt-5 max-w-2xl text-lg text-primary-foreground/75">{text}</p>
       </div>
     </section>
   );
@@ -166,8 +180,8 @@ export function SectionTitle({
   return (
     <div className="mb-10 max-w-2xl">
       <p className="eyebrow">{eyebrow}</p>
-      <h2 className="mt-2 text-3xl font-bold text-primary md:text-4xl">{title}</h2>
-      {text && <p className="mt-3 text-muted-foreground">{text}</p>}
+      <h2 className="mt-3 text-3xl text-primary md:text-4xl">{title}</h2>
+      {text && <p className="mt-4 text-muted-foreground">{text}</p>}
     </div>
   );
 }

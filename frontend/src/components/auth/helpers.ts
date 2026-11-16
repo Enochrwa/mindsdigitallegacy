@@ -1,7 +1,6 @@
 import type { FieldProblem } from "@/lib/api";
 
-export const inputClass =
-  "mt-1 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-ring/30";
+export const inputClass = "auth-input mt-1.5";
 
 /** Head metadata shared by account pages: not indexed, and no Referer so token links cannot leak. */
 export const authHead = (title: string) => () => ({
