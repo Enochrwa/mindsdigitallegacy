@@ -63,8 +63,10 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-gold-bright: var(--gold-bright);
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --color-rust: var(--rust);
+  --color-paper: var(--paper);
   --shadow-card: var(--shadow-card);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -77,16 +79,18 @@
 }
 
 :root {
-  --radius: 0.5rem;
-  --background: oklch(1 0 0);
+  --radius: 0.625rem;
+  --rust: oklch(0.54 0.17 33);
+  --paper: oklch(0.97 0.012 85);
+  --background: oklch(0.992 0.003 250);
   --foreground: oklch(0.255 0.05 258);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.255 0.05 258);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.255 0.05 258);
-  --primary: oklch(0.29 0.09 258);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.35 0.1 257);
+  --primary: oklch(0.25 0.085 264);
+  --primary-foreground: oklch(0.99 0.003 250);
+  --secondary: oklch(0.33 0.1 262);
   --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.977 0.006 250);
   --muted-foreground: oklch(0.54 0.03 255);
@@ -103,7 +107,7 @@
   --chart-3: oklch(0.35 0.1 257);
   --chart-4: oklch(0.83 0.16 80);
   --chart-5: oklch(0.54 0.03 255);
-  --sidebar: oklch(0.29 0.09 258);
+  --sidebar: oklch(0.25 0.085 264);
   --sidebar-foreground: oklch(1 0 0);
   --sidebar-primary: oklch(0.77 0.16 75);
   --sidebar-primary-foreground: oklch(0.255 0.05 258);
@@ -161,24 +165,115 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
   h1,
   h2,
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+    font-weight: 600;
+  }
+  h3,
+  h4 {
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
   }
 }
+
 @utility container-mdl {
   width: 100%;
   max-width: 80rem;
   margin-inline: auto;
   padding-inline: 1.25rem;
 }
+
+/* Small lead-in above a heading. A stepped diamond marks it, so it needs no capitals or tracking. */
 @utility eyebrow {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--accent);
+  &::before {
+    content: "";
+    width: 0.6rem;
+    height: 0.6rem;
+    background: currentColor;
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  }
+}
+
+/* The imigongo edge: a zigzag band used where one section meets the next. */
+@utility zigzag-edge {
+  height: 14px;
+  background:
+    linear-gradient(135deg, var(--primary) 25%, transparent 25%) -7px 0,
+    linear-gradient(225deg, var(--primary) 25%, transparent 25%) -7px 0;
+  background-size: 14px 14px;
+}
+
+@utility auth-input {
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1.5px solid var(--input);
+  background: var(--background);
+  padding: 0.8rem 0.95rem;
+  font-size: 1rem;
+  line-height: 1.3;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  &::placeholder {
+    color: oklch(0.7 0.02 255);
+  }
+  &:hover {
+    border-color: oklch(0.8 0.03 255);
+  }
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px oklch(0.77 0.16 75 / 28%);
+  }
+  &[aria-invalid="true"] {
+    border-color: var(--destructive);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@utility animate-rise {
+  animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }

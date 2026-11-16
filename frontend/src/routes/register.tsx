@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react";
+import { PasswordField } from "@/components/auth/PasswordField";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { AuthShell, Field, Notice } from "@/components/auth/AuthShell";
-import {
-  PASSWORD_HINT,
-  authHead,
-  failureText,
-  inputClass,
-  problemMap,
-} from "@/components/auth/helpers";
+import { authHead, failureText, inputClass, problemMap } from "@/components/auth/helpers";
 import { PRIVACY_NOTICE_VERSION, api } from "@/lib/api";
 import { forgetCode, looksLikeCode, normaliseCode, recalledCode } from "@/lib/referrals";
 
@@ -75,6 +70,21 @@ function RegisterPage() {
     if (remembered) setValue("referralCode", remembered);
   }, [setValue]);
   const under16 = watch("ageBracket") === "under_16";
+  const password = watch("password");
+  const [name, mail, age, consent] = [
+    watch("displayName"),
+    watch("email"),
+    watch("ageBracket"),
+    watch("consent"),
+  ];
+  // Each finished part lights more of the pattern, so the form shows how close it is to done.
+  const progress =
+    0.08 +
+    ((name?.trim().length ?? 0) >= 2 ? 0.17 : 0) +
+    (mail?.includes("@") && mail.includes(".") ? 0.17 : 0) +
+    ((password?.length ?? 0) >= 10 ? 0.25 : 0) +
+    (age ? 0.15 : 0) +
+    (consent ? 0.18 : 0);
 
   const onSubmit = async (values: Values) => {
     setError(null);
@@ -140,9 +150,10 @@ function RegisterPage() {
 
   return (
     <AuthShell
-      eyebrow="Account"
+      eyebrow="Join MDL"
       title="Create your account"
       text="Free learning starts with a verified account."
+      progress={progress}
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Field label="Full name" error={errors.displayName?.message}>
@@ -151,17 +162,16 @@ function RegisterPage() {
         <Field label="Email" error={errors.email?.message}>
           <input type="email" autoComplete="email" {...register("email")} className={inputClass} />
         </Field>
-        <Field label="Password" error={errors.password?.message}>
-          <input
-            type="password"
-            autoComplete="new-password"
-            {...register("password")}
-            className={inputClass}
-          />
-          <span className="mt-1 block text-xs font-normal text-muted-foreground">
-            {PASSWORD_HINT}
-          </span>
-        </Field>
+        <PasswordField
+          label="Password"
+          autoComplete="new-password"
+          meter
+          value={password ?? ""}
+          personal={[watch("displayName") ?? "", (watch("email") ?? "").split("@")[0] ?? ""]}
+          onSuggest={(v) => setValue("password", v, { shouldValidate: true, shouldDirty: true })}
+          error={errors.password?.message}
+          {...register("password")}
+        />
         <Field label="Age group" error={errors.ageBracket?.message}>
           <select defaultValue="" {...register("ageBracket")} className={inputClass}>
             <option value="">Select…</option>
