@@ -9,6 +9,7 @@ import { rejectUnsafeKeys } from "./core/http/rejectUnsafeKeys.js";
 import { requestId } from "./core/http/requestId.js";
 import { requireJson } from "./core/http/requireJson.js";
 import { corsPolicy, noStore, originGuard, securityHeaders } from "./core/http/security.js";
+import { createCspRouter } from "./modules/csp/csp.routes.js";
 import { createHealthRouter } from "./modules/health/health.routes.js";
 import { createLeadsRouter } from "./modules/leads/leads.routes.js";
 import { createLeadService } from "./modules/leads/leads.service.js";
@@ -113,6 +114,15 @@ export function createApp(deps: AppDeps): Express {
   app.use(noStore);
 
   app.use("/api/v1", createHealthRouter({ isDbReady }));
+
+  // Browser CSP reports: own parser, own tight limit, before the general guards (see csp.routes.ts).
+  app.use(
+    "/api/v1/csp-report",
+    createCspRouter({
+      logger,
+      limiter: createLimiter({ windowMs: 60_000, limit: env.RATE_LIMIT_CSP_REPORTS_PER_MINUTE }),
+    }),
+  );
 
   app.use(createLimiter({ windowMs: 60_000, limit: env.RATE_LIMIT_GENERAL_PER_MINUTE }));
   app.use(originGuard(env.CORS_ORIGINS));

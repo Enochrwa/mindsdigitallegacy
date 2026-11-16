@@ -32,11 +32,8 @@ jobs:
       - run: bun install --frozen-lockfile --ignore-scripts
       - name: Typecheck
         run: bunx tsc --noEmit
-      # The existing code has Prettier formatting drift (131 formatting-only errors).
-      # Real lint rules are enforced; formatting is excluded until a deliberate format-only commit.
-      # Do not reformat unrelated files in feature PRs.
-      - name: Lint (formatting rule excluded)
-        run: |
-          bunx eslint . --rule 'prettier/prettier: off'
+      # Formatting is enforced like any other lint rule. Run `bun run format` before committing.
+      - name: Lint (warnings are errors)
+        run: bunx eslint . --max-warnings 0
       - run: bun run test
       - run: bun run build

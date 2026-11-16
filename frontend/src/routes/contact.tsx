@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import { PageHero } from "@/components/site/Layout";
-import { LeadForm, contactBasics } from "@/components/site/LeadForm";
+import { LeadForm } from "@/components/site/LeadForm";
+import { contactBasics } from "@/components/site/leadFields";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [

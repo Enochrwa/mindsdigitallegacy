@@ -71,6 +71,12 @@ const envSchema = z
     /** Encrypts staff authenticator secrets at rest. Required in production; generate with `openssl rand -base64 32`. */
     TOTP_ENCRYPTION_KEY: z.string().min(32).optional(),
     LEAD_RETENTION_DAYS: z.coerce.number().int().min(30).max(3650).default(730),
+    /** Per-client cap on browser CSP violation reports. */
+    RATE_LIMIT_CSP_REPORTS_PER_MINUTE: z.coerce.number().int().min(1).max(600).default(30),
+    /** Days between an account deletion request and permanent removal of its data. Confirm with counsel. */
+    ACCOUNT_PURGE_GRACE_DAYS: z.coerce.number().int().min(1).max(365).default(30),
+    /** Minutes between in-process purge runs. 0 disables the timer (use `npm run purge:accounts` from cron). */
+    ACCOUNT_PURGE_INTERVAL_MINUTES: z.coerce.number().int().min(0).max(1440).default(60),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== "production") return;

@@ -48,7 +48,8 @@ export type AuditAction =
   | "admin.unlock_code.update"
   | "admin.enrolment.access"
   | "admin.settings.update"
-  | "admin.export";
+  | "admin.export"
+  | "system.account.purge";
 
 export interface AuditEvent {
   at: Date;

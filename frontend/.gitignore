@@ -13,3 +13,5 @@ dist-ssr
 !.env.example
 coverage
 .vitest-cache
+playwright-report
+test-results

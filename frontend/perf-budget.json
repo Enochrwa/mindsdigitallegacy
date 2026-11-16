@@ -1,0 +1,6 @@
+{
+  "_comment": "Gzip sizes in KB for the production build (.output/public). Measured 2026-11-16: largest JS chunk 110, CSS 16, total 386. Budgets leave about 35% headroom; raise one only with a reason in the PR.",
+  "maxJsChunkKb": 150,
+  "maxCssKb": 30,
+  "maxTotalKb": 520
+}

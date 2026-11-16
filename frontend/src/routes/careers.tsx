@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero, SectionTitle } from "@/components/site/Layout";
-import { LeadForm, contactBasics } from "@/components/site/LeadForm";
+import { LeadForm } from "@/components/site/LeadForm";
+import { contactBasics } from "@/components/site/leadFields";
 import { departments } from "@/lib/content";
 export const Route = createFileRoute("/careers")({
   head: () => ({
