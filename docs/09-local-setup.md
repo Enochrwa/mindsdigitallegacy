@@ -155,3 +155,17 @@ All settings are documented line by line in `backend/.env.example` and `frontend
 - Never commit `.env`. It is git-ignored; keep it that way.
 - The path A admin account and secret are for local use only. They do not exist in production builds.
 - Do not use real learners' personal data in a local or Atlas test database.
+
+## Trying the internship programme locally
+
+With `npm run dev:memory` (API) and `bun run dev` (web) running:
+
+1. Sign in as the dev admin (second step needed), open **Admin console > Internships**.
+2. Create two accounts through the normal sign-up page (verification links print in the API console).
+3. Under **Users**, give one account the **Supervisor** role. That person is signed out and must sign in again.
+4. In **Internships > Postings**, create a posting, pick the supervisor, set places, and publish it.
+5. As the other account, open **Internships**, apply, then follow the status under **My internships**.
+6. As staff, review the application (**Applications > Review**), make an offer, then place the intern after they accept.
+7. As the supervisor, open **Supervisor view** from the account page to give feedback.
+
+Settings: `INTERNSHIP_MAX_PER_SUPERVISOR` (default 3) caps how many interns one supervisor guides.

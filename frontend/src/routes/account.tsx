@@ -145,6 +145,14 @@ function Signed({ user }: { user: Profile }) {
         <Button asChild variant="gold">
           <Link to="/invite">Invite friends</Link>
         </Button>
+        <Button asChild variant="outline">
+          <Link to="/account/internships">My internships</Link>
+        </Button>
+        {user.roles.includes("supervisor") && (
+          <Button asChild variant="outline">
+            <Link to="/supervisor">Supervisor view</Link>
+          </Button>
+        )}
         {user.roles.some((r) => ["admin", "editor", "support"].includes(r)) && (
           <Button asChild variant="outline">
             <Link to="/admin">Admin console</Link>

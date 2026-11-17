@@ -32,6 +32,13 @@ export const ADMIN_MODULES: readonly {
   },
   { key: "leads", label: "Leads", path: "/admin/leads", permission: "leads:read", group: "Growth" },
   {
+    key: "internships",
+    label: "Internships",
+    path: "/admin/internships",
+    permission: "internships:read",
+    group: "Growth",
+  },
+  {
     key: "referrals",
     label: "Referrals",
     path: "/admin/referrals",
