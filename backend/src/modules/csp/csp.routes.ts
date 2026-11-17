@@ -36,6 +36,8 @@ export function createCspRouter({ logger, limiter, dedupeMs = 10 * 60_000 }: Dep
   );
 
   // A malformed or oversized body is still just a 204 for the sender; it only costs us the parse.
+  // Express only treats a function as an error handler if it declares four parameters.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   router.use(((_err, _req, res, _next) => {
     res.status(204).end();
   }) as express.ErrorRequestHandler);

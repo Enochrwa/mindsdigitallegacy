@@ -37,3 +37,6 @@ jobs:
         run: bunx eslint . --max-warnings 0
       - run: bun run test
       - run: bun run build
+      # Performance budget (frontend/perf-budget.json): fails if the production bundle grows past it.
+      - name: Bundle size budget
+        run: bun run budget

@@ -26,8 +26,17 @@ const KEYWORDS = new Set([
   "trusted-types-policy",
 ]);
 
+/** Drops control characters (log-injection guard) and cuts the value to a short, fixed length. */
 const clip = (value: unknown): string =>
-  typeof value === "string" ? value.replace(/[\u0000-\u001f\u007f]/g, "").slice(0, MAX) : "";
+  typeof value === "string"
+    ? [...value]
+        .filter((ch) => {
+          const code = ch.charCodeAt(0);
+          return code > 31 && code !== 127;
+        })
+        .join("")
+        .slice(0, MAX)
+    : "";
 
 /** Keeps scheme, host and port of a URL. Non-URL keywords pass through; anything else becomes "other". */
 export function originOf(value: unknown): string {

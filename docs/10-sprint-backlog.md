@@ -71,13 +71,13 @@ promises of employment).
 | ID  | Story                                                                                                                                                             | P | Own | h |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | - | --- | - |
 | C1  | Live email: pick provider (doc 06), set SPF, DKIM, DMARC on the sender domain, send real verify and reset mails to Gmail, Outlook and one Rwandan mailbox; record results | M | A   | 3 |
-| C2  | Purge job for deleted accounts (scheduled, idempotent, audited) with retention rules from doc 07                                                                   | M | A   | 3 |
-| C3  | Confirm the Mongo integration CI job is green; extend integration tests to courses, referrals, sessions and access repositories                                    | M | A   | 3 |
-| C4  | CSP: add `POST /api/v1/csp-report` (rate-limited, size-capped, no personal data stored), review a week of reports, switch to enforce, plan nonces to remove `unsafe-inline` | M | A+B | 5 |
-| C5  | Playwright E2E: register, verify, sign in, enrol, play lesson, referral unlock; guardian flow; admin MFA setup and sign-in; run in CI against the in-memory dev server | M | B   | 5 |
-| C6  | axe accessibility checks in CI on the main routes (home, courses, lesson, auth, account, internships)                                                              | S | B   | 2 |
-| C7  | Performance budget in CI: bundle-size limit now, Lighthouse CI on a throttled mobile profile once staging exists                                                   | S | B   | 3 |
-| C8  | One format-only commit; remove the Prettier exclusion from frontend CI; keep one lockfile (bun, to match CI) and delete the other; fix the 7 lint warnings           | M | B   | 2 |
+| C2  | **Done (needs real-DB run).** Purge job for deleted accounts (scheduled, idempotent, audited) with retention rules from doc 07                                                                   | M | A   | 3 |
+| C3  | **Partly done.** Purge integration tests written; CI job now runs every `*.integration.test.ts`. Confirm the Mongo integration CI job is green; extend integration tests to courses, referrals, sessions and access repositories                                    | M | A   | 3 |
+| C4  | **Partly done.** Report endpoint and enforce switch built; enforcing and nonces remain. CSP: add `POST /api/v1/csp-report` (rate-limited, size-capped, no personal data stored), review a week of reports, switch to enforce, plan nonces to remove `unsafe-inline` | M | A+B | 5 |
+| C5  | **Scaffolded, unrun.** Playwright E2E: register, verify, sign in, enrol, play lesson, referral unlock; guardian flow; admin MFA setup and sign-in; run in CI against the in-memory dev server | M | B   | 5 |
+| C6  | **Scaffolded, unrun** (inside the E2E suite). axe accessibility checks in CI on the main routes (home, courses, lesson, auth, account, internships)                                                              | S | B   | 2 |
+| C7  | **Bundle budget done**; Lighthouse remains. Performance budget in CI: bundle-size limit now, Lighthouse CI on a throttled mobile profile once staging exists                                                   | S | B   | 3 |
+| C8  | **Done.** One format-only commit; remove the Prettier exclusion from frontend CI; keep one lockfile (bun, to match CI) and delete the other; fix the 7 lint warnings           | M | B   | 2 |
 | C9  | Real video IDs for the first course; verify unlisted embeds play on the staging domain; update ADR-0005 open question                                              | M | B   | 2 |
 
 **Acceptance highlights**
@@ -190,3 +190,19 @@ Targets marked "to calibrate" are placeholders; set them after the first cohort 
 
 Secondary sources (law-firm blogs, vendor posts) are indicative. Confirm legal and fee details with the RDB, the
 NCSA data protection office and a Rwandan lawyer before relying on them.
+
+## Sprint 5b progress log
+
+Updated 2026-11-16 on branch `feat/sprint-5b-closeout`.
+
+| Story | State | Evidence | Still needed |
+| --- | --- | --- | --- |
+| C1 Live email | Not started | n/a | Founder: provider, domain, SPF/DKIM/DMARC |
+| C2 Purge job | Built, unit-tested (6) | `modules/retention` | Run the 4 integration tests against MongoDB in CI |
+| C3 Mongo integration | Partly | CI job runs all integration files | Courses, referrals, sessions repository tests |
+| C4 CSP | Partly | Endpoint, 13 tests; live check logged a sanitised report | A week of reports, enforce, nonces |
+| C5 E2E | Scaffolded | Types and lint pass; helpers match backend TOTP | First CI run in a real browser |
+| C6 axe | Scaffolded | In `e2e/public.spec.ts` | First CI run; fix whatever it finds |
+| C7 Budget | Done | `bun run budget`; fails when limit tightened | Lighthouse after staging exists |
+| C8 Lint and lockfile | Done | Lint zero warnings; frozen bun install works | n/a |
+| C9 Real videos | Not started | n/a | Founder: record videos |

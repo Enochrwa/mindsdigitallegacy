@@ -68,8 +68,8 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci --ignore-scripts
-      # Only the integration file: the full suite already runs in the verify job.
-      - run: npx vitest run src/modules/users/mongo.integration.test.ts
+      # Only the integration files (named *.integration.test.ts): the full suite runs in the verify job.
+      - run: npx vitest run integration
 
   audit:
     name: Dependency audit (production)

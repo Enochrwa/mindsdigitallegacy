@@ -109,7 +109,24 @@ userId, courseId, lessonId (unique with userId), status `in_progress` \| `comple
 
 ## 7. Personal data and deletion
 
-Personal: `enrolments`, `lessonprogresses` (user-linked). Included in `GET /users/me/export`. Must be purged with the user after the grace period (the purge job is still to be built; tracked in the sprint plan).
+Personal: `enrolments`, `lessonprogresses` (user-linked). Included in `GET /users/me/export`. Purged with the user after the grace period by the purge job (`modules/retention`, Sprint 5b).
+
+### 7.1 Purge rules (what happens when an account is permanently removed)
+
+The job runs hourly in the API process (`ACCOUNT_PURGE_INTERVAL_MINUTES`) or from cron (`npm run purge:accounts`, `--dry` to preview). Grace period: `ACCOUNT_PURGE_GRACE_DAYS`, default 30 (**confirm the period with counsel**). It only ever touches rows that are soft-deleted, handles a batch at a time, is safe to run twice, and removes the user row last so a half-finished purge is retried.
+
+| Collection | On purge |
+| --- | --- |
+| `users` | Deleted (last) |
+| `sessions`, `authtokens` | Deleted |
+| `enrolments`, `lessonprogresses` | Deleted |
+| `entitlements`, `redemptions` | Deleted |
+| `referralcodes` | Deleted |
+| `referrals` where the person was the **invitee** | Deleted |
+| `referrals` where the person was the **referrer** | Kept: the row holds the invitee's data; the referrer id no longer resolves to anyone |
+| `referralevents` | Kept for funnel statistics; the person's ids are removed |
+| `auditevents` | Kept as the security record: ids only, never emails. One `system.account.purge` event is added per account |
+| `leads` | Not user-linked; removed by their own retention (`LEAD_RETENTION_DAYS`) |
 
 ## 8. Sprint 3 collections and changes
 
