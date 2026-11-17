@@ -24,6 +24,8 @@ import { createHttpMailer } from "./modules/auth/mailer.http.js";
 import { createLogMailer } from "./modules/auth/mailer.js";
 import { createMongoSessionRepository } from "./modules/sessions/sessions.mongo.js";
 import { createMongoUserRepository } from "./modules/users/users.mongo.js";
+import { createPurgeService, schedule } from "./modules/retention/purge.js";
+import { createMongoPurgeStore } from "./modules/retention/purge.mongo.js";
 
 const SHUTDOWN_GRACE_MS = 10_000;
 
@@ -38,6 +40,19 @@ async function main(): Promise<void> {
     logger.info("database connected");
   }
 
+  const audit = createMongoAuditLog();
+  const purge = createPurgeService({
+    store: createMongoPurgeStore(),
+    audit,
+    logger,
+    graceDays: env.ACCOUNT_PURGE_GRACE_DAYS,
+  });
+  // With no database there is nothing to purge. Set ACCOUNT_PURGE_INTERVAL_MINUTES=0 to run from cron.
+  const purgeTimer =
+    env.MONGODB_URI !== undefined && env.ACCOUNT_PURGE_INTERVAL_MINUTES > 0
+      ? schedule(() => purge.run(), env.ACCOUNT_PURGE_INTERVAL_MINUTES * 60_000, logger)
+      : undefined;
+
   const app = createApp({
     env,
     logger,
@@ -45,7 +60,7 @@ async function main(): Promise<void> {
     users: createMongoUserRepository(),
     sessions: createMongoSessionRepository(),
     authTokens: createMongoAuthTokenRepository(),
-    audit: createMongoAuditLog(),
+    audit,
     catalogue: createMongoCatalogueRepository(),
     catalogueAdmin: createMongoCatalogueAdminRepository(),
     leadAdmin: createMongoLeadAdminRepository(),
@@ -89,6 +104,7 @@ async function main(): Promise<void> {
     if (shuttingDown) return;
     shuttingDown = true;
     logger.info({ signal }, "shutting down");
+    purgeTimer?.stop();
     const force = setTimeout(() => {
       logger.error("forced shutdown after grace period");
       process.exit(1);
