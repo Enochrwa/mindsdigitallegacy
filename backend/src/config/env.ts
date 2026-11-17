@@ -71,6 +71,8 @@ const envSchema = z
     /** Encrypts staff authenticator secrets at rest. Required in production; generate with `openssl rand -base64 32`. */
     TOTP_ENCRYPTION_KEY: z.string().min(32).optional(),
     LEAD_RETENTION_DAYS: z.coerce.number().int().min(30).max(3650).default(730),
+    /** How many interns one supervisor may guide at once. Caps how many slots a posting may offer. */
+    INTERNSHIP_MAX_PER_SUPERVISOR: z.coerce.number().int().min(1).max(10).default(3),
     /** Per-client cap on browser CSP violation reports. */
     RATE_LIMIT_CSP_REPORTS_PER_MINUTE: z.coerce.number().int().min(1).max(600).default(30),
     /** Days between an account deletion request and permanent removal of its data. Confirm with counsel. */

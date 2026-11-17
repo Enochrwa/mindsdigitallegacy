@@ -15,6 +15,7 @@ import type {
   EnrolmentRepository,
   ProgressRepository,
 } from "../courses/courses.repository.js";
+import type { InternshipService } from "../internships/internships.service.js";
 import type { LeadAdminRepository } from "../leads/leads.admin.js";
 import type { ReferralRepository } from "../referrals/referrals.repository.js";
 import type { ReferralService } from "../referrals/referrals.service.js";
@@ -40,6 +41,7 @@ export interface AdminDeps {
   leads: LeadAdminRepository;
   referrals: ReferralRepository;
   referralService: ReferralService;
+  internships: InternshipService;
   access: AccessService;
   entitlements: EntitlementRepository;
   unlockCodes: UnlockCodeRepository;

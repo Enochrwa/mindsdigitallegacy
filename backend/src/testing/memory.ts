@@ -243,7 +243,9 @@ export function memoryAudit(): AuditLog & { events: AuditEvent[] } {
 }
 
 export interface SentMail {
-  kind: "verify" | "reset" | "guardian" | "existing";
+  kind: "verify" | "reset" | "guardian" | "existing" | "internship";
+  /** For internship mails: which update was sent. */
+  update?: string;
   to: string;
   token?: string;
 }
@@ -266,6 +268,10 @@ export function memoryMailer(): Mailer & { sent: SentMail[] } {
     },
     sendExistingAccountNotice(to) {
       sent.push({ kind: "existing", to });
+      return Promise.resolve();
+    },
+    sendInternshipUpdate(to, _name, _title, update) {
+      sent.push({ kind: "internship", to, update });
       return Promise.resolve();
     },
   };

@@ -35,6 +35,17 @@ import { createAdminRouter } from "./modules/admin/admin.routes.js";
 import { createSecretBox } from "./modules/admin/totp.js";
 import type { CatalogueAdminRepository } from "./modules/courses/courses.admin.js";
 import type { LeadAdminRepository } from "./modules/leads/leads.admin.js";
+import {
+  applicantApplicationDto,
+  applicantPlacementDto,
+} from "./modules/internships/internships.dto.js";
+import { createInternshipsRouter } from "./modules/internships/internships.routes.js";
+import { createInternshipService } from "./modules/internships/internships.service.js";
+import type {
+  ApplicationRepository,
+  PlacementRepository,
+  PostingRepository,
+} from "./modules/internships/internships.repository.js";
 import { createReferralsRouter } from "./modules/referrals/referrals.routes.js";
 import { createReferralService } from "./modules/referrals/referrals.service.js";
 import type { ReferralRepository } from "./modules/referrals/referrals.repository.js";
@@ -56,6 +67,9 @@ export interface AppDeps {
   catalogueAdmin: CatalogueAdminRepository;
   leadAdmin: LeadAdminRepository;
   referrals: ReferralRepository;
+  internshipPostings: PostingRepository;
+  internshipApplications: ApplicationRepository;
+  internshipPlacements: PlacementRepository;
   entitlements: EntitlementRepository;
   unlockCodes: UnlockCodeRepository;
   settings: SettingsRepository;
@@ -197,6 +211,26 @@ export function createApp(deps: AppDeps): Express {
       redeemLimiter: createLimiter({ windowMs: 15 * 60_000, limit: 10 }),
     }),
   );
+  const internships = createInternshipService({
+    postings: deps.internshipPostings,
+    applications: deps.internshipApplications,
+    placements: deps.internshipPlacements,
+    users: deps.users,
+    audit: deps.audit,
+    mailer: deps.mailer,
+    perSupervisor: env.INTERNSHIP_MAX_PER_SUPERVISOR,
+    now,
+  });
+  app.use(
+    "/api/v1",
+    createInternshipsRouter({
+      auth,
+      cookie,
+      internships,
+      applyLimiter: createLimiter({ windowMs: 60 * 60_000, limit: 10 }),
+      writeLimiter: createLimiter({ windowMs: 60_000, limit: env.RATE_LIMIT_LEARNING_PER_MINUTE }),
+    }),
+  );
   const strictLimiter = createLimiter({ windowMs: 15 * 60_000, limit: 20 });
   app.use(
     "/api/v1/admin",
@@ -213,6 +247,7 @@ export function createApp(deps: AppDeps): Express {
       leads: deps.leadAdmin,
       referrals: deps.referrals,
       referralService,
+      internships,
       access,
       entitlements: deps.entitlements,
       unlockCodes: deps.unlockCodes,
@@ -251,6 +286,19 @@ export function createApp(deps: AppDeps): Express {
       hasher: deps.hasher,
       cookie,
       exportLearning: (userId) => courses.exportLearning(userId),
+      exportInternships: async (userId) => {
+        const [apps, placed] = await Promise.all([
+          internships.myApplications(userId),
+          internships.myPlacements(userId),
+        ]);
+        // The applicant's own view: reviewer notes and scores are staff-only and never exported.
+        return {
+          applications: apps.map((r) => applicantApplicationDto(r.application, r.posting)),
+          placements: placed.map((r) =>
+            applicantPlacementDto(r.placement, r.posting, r.supervisor),
+          ),
+        };
+      },
       ...(deps.now === undefined ? {} : { now: deps.now }),
     }),
   );

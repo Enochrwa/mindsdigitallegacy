@@ -11,7 +11,18 @@ export interface Mailer {
   sendGuardianConsent(guardianEmail: string, learnerName: string, token: string): Promise<void>;
   /** Sent instead of a verification mail when someone registers an address that already has an account. */
   sendExistingAccountNotice(to: string): Promise<void>;
+  /** Fixed-text status mail about an internship application. Links to the signed-in page, never carries details. */
+  sendInternshipUpdate(
+    to: string,
+    name: string,
+    postingTitle: string,
+    kind: InternshipMail,
+  ): Promise<void>;
 }
+
+/** Programme updates an applicant receives. The text is fixed, so nothing a reviewer types is ever emailed. */
+export type InternshipMail =
+  "received" | "shortlisted" | "interview" | "offered" | "rejected" | "placed";
 
 export function createLogMailer(logger: Logger, webBaseUrl: string, production: boolean): Mailer {
   const emit = (kind: string, path?: string): Promise<void> => {
@@ -31,5 +42,7 @@ export function createLogMailer(logger: Logger, webBaseUrl: string, production: 
     sendGuardianConsent: (_to, _name, token) =>
       emit("guardian_consent", `/guardian-consent?token=${token}`),
     sendExistingAccountNotice: () => emit("existing_account"),
+    sendInternshipUpdate: (_to, _name, _title, kind) =>
+      emit(`internship_${kind}`, "/account/internships"),
   };
 }

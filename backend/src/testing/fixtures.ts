@@ -7,6 +7,7 @@ import { noBreachCheck } from "../core/security/breach.js";
 import type { BreachChecker } from "../core/security/breach.js";
 import { createPasswordHasher } from "../core/security/password.js";
 import { memoryGrowthDeps } from "./memory.growth.js";
+import { memoryInternshipDeps } from "./memory.internships.js";
 import { loadAcademyContentSync } from "../modules/courses/content.load.js";
 import {
   buildCatalogueData,
@@ -45,6 +46,7 @@ export function buildTestApp(options: Options = {}) {
     new Date("2026-11-01T00:00:00Z"),
   );
   const growth = memoryGrowthDeps(catalogueData);
+  const internshipDeps = memoryInternshipDeps();
   const repository: LeadRepository = options.repository ?? {
     create: (lead) => {
       stored.push(lead);
@@ -69,6 +71,7 @@ export function buildTestApp(options: Options = {}) {
     catalogueAdmin: growth.catalogueAdmin,
     leadAdmin: growth.leads,
     referrals: growth.referrals,
+    ...internshipDeps,
     entitlements: growth.entitlements,
     unlockCodes: growth.unlockCodes,
     settings: growth.settings,
@@ -92,6 +95,7 @@ export function buildTestApp(options: Options = {}) {
     enrolments: enrolmentRepo,
     progress: progressRepo,
     growth,
+    internships: internshipDeps,
     catalogueData,
   };
 }
