@@ -16,7 +16,7 @@ export function Logo({ onDark = false }: { onDark?: boolean }) {
       >
         Minds Digital
         <br />
-        <span className="text-accent">Legacy</span>
+        <span className={onDark ? "text-accent" : "text-gold-text"}>Legacy</span>
       </span>
     </Link>
   );

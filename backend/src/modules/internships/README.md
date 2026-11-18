@@ -5,19 +5,19 @@ Proposal anchor: section 4.3 (no guarantees, no placement without a supervisor, 
 
 ## Rules the code enforces (not just documents)
 
-| Rule | Where it lives | Test |
-| --- | --- | --- |
-| Applying never guarantees a place; the notice ships with every posting and every status text | `internships.dto.ts`, `lib/internships.ts` (frontend) | `internships.test.ts`, `internships.test.ts` (frontend) |
-| One application per person per posting; a double submit returns the first one | Unique index `{postingId, userId}`, `apply()` | "is idempotent" |
-| Only legal status moves, by the right actor | `MOVES` table in `internships.rules.ts` | exhaustive test over every from/to/actor pair |
-| Two reviewers (or two clicks) cannot apply the same move twice | Compare-and-set `transition()` (filter on current status) | "applies each move once", Mongo integration test |
-| No placement without: accepted offer, accepted agreement, verified guardian (if under 18), a supervisor on the posting with spare capacity, a free slot, sane dates | `checkPlacement()` | "placement checks", HTTP tests |
-| A posting can only be published with a supervisor and `slots <= supervisors x INTERNSHIP_MAX_PER_SUPERVISOR` | `assertCapacity()` | "cannot publish without a supervisor or beyond capacity" |
-| Under-16 accounts cannot apply; under-18 applicants must name a guardian; adults cannot | `checkEligibility()` | eligibility tests |
-| Reviewer notes and scores never reach the applicant, the export, emails, or audit details | Allow-list DTOs per audience | "never shows reviewer notes, scores or staff ids" |
-| Another person's application is a 404 for every action | `myApplication()` | "returns 404 for someone else's application" |
-| Emails carry fixed text only | `INTERNSHIP_COPY` in `mailTemplates.ts` | "emails the applicant fixed text only" |
-| Same application cannot be placed twice, even concurrently | CAS claim `accepted -> placed`, unique index on `applicationId` | "cannot place the same application twice" |
+| Rule                                                                                                                                                                | Where it lives                                                  | Test                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------- |
+| Applying never guarantees a place; the notice ships with every posting and every status text                                                                        | `internships.dto.ts`, `lib/internships.ts` (frontend)           | `internships.test.ts`, `internships.test.ts` (frontend)  |
+| One application per person per posting; a double submit returns the first one                                                                                       | Unique index `{postingId, userId}`, `apply()`                   | "is idempotent"                                          |
+| Only legal status moves, by the right actor                                                                                                                         | `MOVES` table in `internships.rules.ts`                         | exhaustive test over every from/to/actor pair            |
+| Two reviewers (or two clicks) cannot apply the same move twice                                                                                                      | Compare-and-set `transition()` (filter on current status)       | "applies each move once", Mongo integration test         |
+| No placement without: accepted offer, accepted agreement, verified guardian (if under 18), a supervisor on the posting with spare capacity, a free slot, sane dates | `checkPlacement()`                                              | "placement checks", HTTP tests                           |
+| A posting can only be published with a supervisor and `slots <= supervisors x INTERNSHIP_MAX_PER_SUPERVISOR`                                                        | `assertCapacity()`                                              | "cannot publish without a supervisor or beyond capacity" |
+| Under-16 accounts cannot apply; under-18 applicants must name a guardian; adults cannot                                                                             | `checkEligibility()`                                            | eligibility tests                                        |
+| Reviewer notes and scores never reach the applicant, the export, emails, or audit details                                                                           | Allow-list DTOs per audience                                    | "never shows reviewer notes, scores or staff ids"        |
+| Another person's application is a 404 for every action                                                                                                              | `myApplication()`                                               | "returns 404 for someone else's application"             |
+| Emails carry fixed text only                                                                                                                                        | `INTERNSHIP_COPY` in `mailTemplates.ts`                         | "emails the applicant fixed text only"                   |
+| Same application cannot be placed twice, even concurrently                                                                                                          | CAS claim `accepted -> placed`, unique index on `applicationId` | "cannot place the same application twice"                |
 
 ## Status machine
 
