@@ -17,6 +17,9 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false, // the in-memory API is one shared process; keep the order predictable
   workers: 1,
+  // The dev server compiles each page the first time it is opened, so the first visit is slow.
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
   retries: process.env["CI"] ? 1 : 0,
   forbidOnly: Boolean(process.env["CI"]),
   reporter: process.env["CI"] ? [["github"], ["html", { open: "never" }]] : "list",

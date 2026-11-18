@@ -427,6 +427,11 @@ export function exportUrl(kind: ExportKind, filters: Record<string, QueryValue> 
   return `${BASE_URL}/api/v1/admin/export/${kind}${qs(allowed)}`;
 }
 
+/** CSV of internship applications (needs the export and internship permissions; audited by the server). */
+export function internshipExportUrl(filters: Record<string, QueryValue> = {}): string {
+  return `${BASE_URL}/api/v1/admin/internships/applications/export.csv${qs(filters)}`;
+}
+
 export function isGateFailure(failure: ApiFailure): boolean {
   return (
     failure.reason === "rejected" &&
@@ -435,6 +440,25 @@ export function isGateFailure(failure: ApiFailure): boolean {
 }
 
 const CODE_TEXT: Record<string, string> = {
+  INVALID_TRANSITION: "That step is not allowed from the application's current status.",
+  STATE_CHANGED: "Someone else just changed this. Reload and try again.",
+  NO_SUPERVISOR: "Assign at least one supervisor before publishing.",
+  OVER_CAPACITY:
+    "There are more places than the assigned supervisors can guide. Add a supervisor or reduce the places.",
+  SUPERVISOR_FULL: "That supervisor already guides the maximum number of interns.",
+  NO_SLOTS: "All places for this internship are filled.",
+  GUARDIAN_NOT_VERIFIED: "Verify the parent or guardian before placing an applicant under 18.",
+  NOT_ACCEPTED: "The applicant has not accepted the offer yet.",
+  NO_AGREEMENT: "The intern agreement has not been accepted yet.",
+  SUPERVISOR_NOT_ON_POSTING: "That supervisor is not assigned to this internship.",
+  INVALID_SUPERVISOR: "Every supervisor must be an active account with the supervisor role.",
+  BAD_DATES: "The end date must be after the start date.",
+  SLOTS_BELOW_PLACED: "Places cannot be fewer than the interns already placed.",
+  CLOSE_DATE_PAST: "The closing date is already in the past.",
+  POSTING_CLOSED: "This internship is closed.",
+  ALREADY_ENDED: "This placement has already ended.",
+  NO_GUARDIAN: "This applicant has no guardian on record.",
+  INVALID_STATUS: "Staff cannot move an application to that status.",
   LAST_ADMIN: "There must always be at least one admin.",
   SLUG_TAKEN: "That web address name is already used. Choose another.",
   NOT_PUBLISHABLE: "This item cannot be published yet. See what is missing below.",
@@ -697,6 +721,20 @@ export const AUDIT_ACTIONS = [
   "admin.enrolment.access",
   "admin.settings.update",
   "admin.export",
+  "admin.internship.posting.create",
+  "admin.internship.posting.update",
+  "admin.internship.posting.publish",
+  "admin.internship.posting.close",
+  "admin.internship.application.transition",
+  "admin.internship.application.note",
+  "admin.internship.guardian.verify",
+  "admin.internship.placement.create",
+  "admin.internship.placement.end",
+  "admin.internship.placement.reassign",
+  "internship.apply",
+  "internship.withdraw",
+  "internship.accept",
+  "internship.feedback",
 ] as const;
 
 export const ENROLMENT_STATUSES = ["active", "completed", "withdrawn"] as const;

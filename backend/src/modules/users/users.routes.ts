@@ -22,6 +22,8 @@ interface Deps {
   cookie: SessionCookieConfig;
   /** Adds learning data to the self-service export. */
   exportLearning?: (userId: string) => Promise<unknown>;
+  /** Adds internship applications and placements (the applicant's own view) to the export. */
+  exportInternships?: (userId: string) => Promise<unknown>;
   now?: () => Date;
 }
 
@@ -51,6 +53,7 @@ export function createUsersRouter({
   hasher,
   cookie,
   exportLearning,
+  exportInternships,
   now = () => new Date(),
 }: Deps): Router {
   const router = Router();
@@ -106,6 +109,7 @@ export function createUsersRouter({
       exportedAt: now().toISOString(),
       account: { ...profileOf(user), createdAt: user.createdAt },
       learning: exportLearning === undefined ? undefined : await exportLearning(user.id),
+      internships: exportInternships === undefined ? undefined : await exportInternships(user.id),
     });
   });
 

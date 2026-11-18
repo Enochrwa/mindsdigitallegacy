@@ -3,6 +3,7 @@ import { createStaffGuards } from "./admin.context.js";
 import type { AdminDeps } from "./admin.context.js";
 import { createContentAdminRouter } from "./content.routes.js";
 import { createGrowthAdminRouter } from "./growth.routes.js";
+import { createInternshipsAdminRouter } from "./internships.routes.js";
 import { createMfaRouter } from "./mfa.routes.js";
 import { createSystemAdminRouter } from "./system.routes.js";
 import { createUsersAdminRouter } from "./users.routes.js";
@@ -16,5 +17,6 @@ export function createAdminRouter(deps: AdminDeps): Router {
   router.use(createUsersAdminRouter(deps, guards));
   router.use(createContentAdminRouter(deps, guards));
   router.use(createGrowthAdminRouter(deps, guards));
+  router.use(createInternshipsAdminRouter(deps, guards));
   return router;
 }

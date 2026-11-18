@@ -122,6 +122,7 @@ The job runs hourly in the API process (`ACCOUNT_PURGE_INTERVAL_MINUTES`) or fro
 | `enrolments`, `lessonprogresses` | Deleted |
 | `entitlements`, `redemptions` | Deleted |
 | `referralcodes` | Deleted |
+| `internshipapplications`, `internshipplacements` | Deleted, including reviewer notes and supervisor feedback about the person |
 | `referrals` where the person was the **invitee** | Deleted |
 | `referrals` where the person was the **referrer** | Kept: the row holds the invitee's data; the referrer id no longer resolves to anyone |
 | `referralevents` | Kept for funnel statistics; the person's ids are removed |
@@ -148,3 +149,14 @@ Changed: `users` (roles support/editor, `suspendedAt`, encrypted `totp`), `sessi
 - Instructors as a collection: replace the embedded array with refs.
 - Content revisions: store a snapshot per `contentVersion` if editorial history is needed.
 - Translations: a course per language linked by a shared `translationGroup` field.
+
+## 9. Internship collections (Sprint 4)
+
+| Collection | Holds | Notable indexes and rules |
+| --- | --- | --- |
+| `internshippostings` | Title, department, description, requirements, learning goals, mode, location, weeks, hours, pay terms, minimum age (16 or 18), slots, supervisor ids, status (`draft`, `published`, `closed`), open and close dates | Unique `slug`; slots may not exceed supervisors x per-supervisor limit when published |
+| `internshipapplications` | Applicant, statement, https links, availability, `under18`, guardian (name, relationship, contact, verification), status, `events[]` (history), `notes[]` (staff only), message to applicant, consent version, agreement acceptance | **Unique `{postingId, userId}`** (idempotent apply); status changes are compare-and-set |
+| `internshipplacements` | Application, posting, intern, supervisor, dates, status (`active`, `completed`, `ended_early`, `cancelled`), agreement version, `feedback[]` (with `visibleToIntern`), outcome summary | **Unique `applicationId`**; only an active placement can end or take feedback |
+
+Personal data: applications and placements are personal data. They are in the user export (applicant view, no
+notes), removed on account purge, and the guardian's contact details are kept only for under-18 applicants.

@@ -95,5 +95,11 @@ export function createHttpMailer(
         templates.guardianConsent(name, link("/guardian-consent", token)),
       ),
     sendExistingAccountNotice: (to) => deliver("existing_account", to, templates.existingAccount()),
+    sendInternshipUpdate: (to, name, title, kind) =>
+      deliver(
+        `internship_${kind}`,
+        to,
+        templates.internshipUpdate(name, title, kind, `${config.webBaseUrl}/account/internships`),
+      ),
   };
 }

@@ -49,6 +49,20 @@ export type AuditAction =
   | "admin.enrolment.access"
   | "admin.settings.update"
   | "admin.export"
+  | "internship.apply"
+  | "internship.withdraw"
+  | "internship.accept"
+  | "internship.feedback"
+  | "admin.internship.posting.create"
+  | "admin.internship.posting.update"
+  | "admin.internship.posting.publish"
+  | "admin.internship.posting.close"
+  | "admin.internship.application.transition"
+  | "admin.internship.application.note"
+  | "admin.internship.guardian.verify"
+  | "admin.internship.placement.create"
+  | "admin.internship.placement.end"
+  | "admin.internship.placement.reassign"
   | "system.account.purge";
 
 export interface AuditEvent {

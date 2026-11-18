@@ -132,7 +132,7 @@ export function LeadForm({
             className={`text-sm font-medium ${f.full || f.type === "textarea" ? "md:col-span-2" : ""}`}
           >
             {f.label}
-            {f.required && <span className="text-accent"> *</span>}
+            {f.required && <span className="text-gold-text"> *</span>}
             {f.type === "textarea" ? (
               <textarea rows={4} {...register(f.name)} className={base} />
             ) : f.type === "select" ? (
@@ -155,7 +155,7 @@ export function LeadForm({
         {needsAge && (
           <>
             <label className="text-sm font-medium">
-              Age group<span className="text-accent"> *</span>
+              Age group<span className="text-gold-text"> *</span>
               <select {...register("ageBracket")} className={base} defaultValue="">
                 <option value="">Select…</option>
                 <option value="16_plus">16 or older</option>
@@ -169,7 +169,7 @@ export function LeadForm({
             </label>
             {under16 && (
               <label className="text-sm font-medium">
-                Parent or guardian email or phone<span className="text-accent"> *</span>
+                Parent or guardian email or phone<span className="text-gold-text"> *</span>
                 <input type="text" {...register("guardianContact")} className={base} />
                 {errors["guardianContact"] && (
                   <span className="mt-1 block text-xs text-destructive">

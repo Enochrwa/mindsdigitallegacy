@@ -1,6 +1,7 @@
 import { Types, trusted } from "mongoose";
 import { EntitlementModel, RedemptionModel } from "../access/access.model.js";
 import { AuthTokenModel } from "../auth/authTokens.js";
+import { ApplicationModel, PlacementModel } from "../internships/internships.model.js";
 import { EnrolmentModel, ProgressModel } from "../courses/courses.model.js";
 import {
   ReferralCodeModel,
@@ -14,7 +15,7 @@ import type { PurgeCounts, PurgeStore } from "./purge.js";
 /**
  * What happens to each collection when an account is purged (keep in step with docs/07-data-model.md):
  *
- *  - sessions, auth tokens, enrolments, lesson progress, entitlements, code redemptions, the user's
+ *  - internship applications and placements (the person's own, including reviewer notes about them), sessions, auth tokens, enrolments, lesson progress, entitlements, code redemptions, the user's
  *    own referral code and the referral row where they were the invitee: deleted.
  *  - referral events: the funnel log stays for statistics, but the person's id is removed.
  *  - referral rows where they were the referrer: kept (they hold the invitee's data, not theirs); the
@@ -52,6 +53,12 @@ export function createMongoPurgeStore(): PurgeStore {
       counts["lessonProgress"] = (await ProgressModel.deleteMany({ userId: id })).deletedCount;
       counts["entitlements"] = (await EntitlementModel.deleteMany({ userId: id })).deletedCount;
       counts["codeRedemptions"] = (await RedemptionModel.deleteMany({ userId: id })).deletedCount;
+      counts["internshipApplications"] = (
+        await ApplicationModel.deleteMany({ userId: id })
+      ).deletedCount;
+      counts["internshipPlacements"] = (
+        await PlacementModel.deleteMany({ userId: id })
+      ).deletedCount;
       counts["referralCodes"] = (await ReferralCodeModel.deleteMany({ userId: id })).deletedCount;
       counts["referralsAsInvitee"] = (
         await ReferralModel.deleteMany({ inviteeId: id })

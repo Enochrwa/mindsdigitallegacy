@@ -7,6 +7,7 @@ import { loadAcademyContentSync } from "../modules/courses/content.load.js";
 import { createLogMailer } from "../modules/auth/mailer.js";
 import { createSecretBox } from "../modules/admin/totp.js";
 import { memoryGrowthDeps } from "./memory.growth.js";
+import { memoryInternshipDeps } from "./memory.internships.js";
 import {
   buildCatalogueData,
   memoryAudit,
@@ -37,6 +38,7 @@ const env = loadEnv({
 const logger = createLogger(env);
 const catalogueData = buildCatalogueData(loadAcademyContentSync(), new Date());
 const growth = memoryGrowthDeps(catalogueData);
+const internshipDeps = memoryInternshipDeps();
 const users = memoryUsers();
 const hasher = createPasswordHasher({ memoryKiB: 1024, passes: 1, parallelism: 1 });
 const secretBox = createSecretBox(env.TOTP_ENCRYPTION_KEY ?? DEV_TOTP_KEY);
@@ -73,6 +75,7 @@ const app = createApp({
   catalogueAdmin: growth.catalogueAdmin,
   leadAdmin: growth.leads,
   referrals: growth.referrals,
+  ...internshipDeps,
   entitlements: growth.entitlements,
   unlockCodes: growth.unlockCodes,
   settings: growth.settings,

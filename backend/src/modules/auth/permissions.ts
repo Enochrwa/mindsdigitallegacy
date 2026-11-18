@@ -24,6 +24,11 @@ export const PERMISSIONS = [
   "settings:manage",
   "audit:read",
   "export:data",
+  "internships:read",
+  "internships:write",
+  "internships:review",
+  "internships:place",
+  "internships:supervise",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -39,7 +44,11 @@ const BY_ROLE: Partial<Record<Role, readonly Permission[]>> = {
     "referrals:read",
     "referrals:review",
     "enrolments:read",
+    "internships:read",
+    "internships:review",
   ],
+  // Supervisors are not staff: no admin console, only their own interns (see modules/internships).
+  supervisor: ["internships:supervise"],
 };
 
 export function permissionsOf(roles: readonly Role[]): Set<Permission> {

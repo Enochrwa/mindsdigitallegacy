@@ -63,6 +63,8 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-gold-bright: var(--gold-bright);
+  --color-gold-text: var(--gold-text);
+  --color-success: var(--success);
   --font-sans: "Onest", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
   --color-rust: var(--rust);
@@ -97,11 +99,15 @@
   --accent: oklch(0.77 0.16 75);
   --accent-foreground: oklch(0.255 0.05 258);
   --gold-bright: oklch(0.83 0.16 80);
-  --destructive: oklch(0.577 0.245 27.325);
+  /* Dark enough to read as text on its own 5-15% tints (error notices, badges), above 4.5:1. */
+  --destructive: oklch(0.5 0.21 27.325);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.93 0.012 255);
   --input: oklch(0.93 0.012 255);
   --ring: oklch(0.77 0.16 75);
+  /* Text on light surfaces: the bright gold is only 2:1 there, this amber is above 5:1. */
+  --gold-text: oklch(0.52 0.12 70);
+  --success: oklch(0.45 0.12 150);
   --chart-1: oklch(0.29 0.09 258);
   --chart-2: oklch(0.77 0.16 75);
   --chart-3: oklch(0.35 0.1 257);
@@ -138,6 +144,8 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.551 0.027 264.364);
+  --gold-text: oklch(0.83 0.16 80);
+  --success: oklch(0.78 0.15 150);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -218,7 +226,7 @@
   gap: 0.55rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--gold-text);
   &::before {
     content: "";
     width: 0.6rem;
@@ -226,6 +234,12 @@
     background: currentColor;
     clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   }
+}
+
+/* On the dark navy surfaces the bright gold has plenty of contrast (7:1), so the lead-in keeps it there. */
+.bg-primary .eyebrow,
+.bg-secondary .eyebrow {
+  color: var(--accent);
 }
 
 /* The imigongo edge: a zigzag band used where one section meets the next. */

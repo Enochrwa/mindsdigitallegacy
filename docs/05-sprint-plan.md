@@ -29,7 +29,7 @@ Note: the backend needs Node 24 or newer (`engine-strict=true`). On Node 22, 83 
 | 1      | Accounts, consent, first form  | About 90% done       | Live email provider and SPF/DKIM/DMARC; real test mail; Mongo integration job confirmed green in CI; ~~purge job~~ (built, see doc 10); browser test of auth screens |
 | 2      | Academy MVP                    | About 90% done       | Real video IDs and unlisted-embed check on the real domain; CSP enforcement; nonces replacing `unsafe-inline`; throttled-3G timing; Mongo repository integration tests |
 | 3      | Referral loop and admin console| About 95% done       | A/B threshold winner (needs pilot data, so it moves to Sprint 7)                                                                                                  |
-| 4      | Internship pipeline            | **Not started**      | Whole sprint; only `modules/internships/README.md` exists                                                                                                         |
+| 4      | Internship pipeline            | **Built (2026-11-17)** | Review and merge; lawyer-approved agreement; run Mongo integration tests in CI; see doc 10 progress log                                                          |
 | 5      | Admin console and polish       | About 80% done       | Internship review (depends on Sprint 4); CI performance budget; axe in CI; Playwright E2E; Kinyarwanda; motion pass; format-only commit                            |
 | 6      | Hardening and launch           | Not started          | Whole sprint                                                                                                                                                      |
 

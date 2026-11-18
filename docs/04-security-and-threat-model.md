@@ -131,3 +131,25 @@ or GitHub Action; a stolen laptop; and a hosting or provider outage.
 3. No admin or user authentication yet; the only write endpoint is the public lead form.
 4. Production hosting, TLS, backups, and edge protection are decisions, not yet implementations.
 5. Frontend CSP and security headers are designed but not applied.
+
+## Internship programme threats (Sprint 4)
+
+New attack surface: an application form that takes free text and links from the public, staff screens that show
+that text, applicant records about young people, and a supervisor role outside the staff console.
+
+| Threat | What could go wrong | Control in the code | Evidence |
+| --- | --- | --- | --- |
+| Reading another applicant's data (IDOR) | Guessing application ids to read, withdraw or accept for someone else | Every applicant route filters by the signed-in user; mismatch is a 404, not a 403 | `internships.test.ts`: "returns 404 for someone else's application" |
+| Reviewer notes leaking | Private opinions or scores shown to the applicant, exported, emailed, or logged | Allow-list DTOs per audience; fixed-text emails; audit stores ids, never text | "never shows reviewer notes, scores or staff ids", "emails the applicant fixed text only", audit test |
+| Duplicate or racing actions | Double submit, two reviewers moving one application, placing one person twice, overfilling a posting | Unique indexes, compare-and-set status changes, claim-then-create placement, capacity checks | "is idempotent", "cannot place the same application twice", Mongo integration tests |
+| Skipping the process | Offering without review, placing without acceptance or a supervisor | Transition table by actor; `checkPlacement` | exhaustive state-machine test |
+| Child safety | An under-18 placed without a guardian; an under-16 applying | Minimum age per posting, guardian required and staff-verified before placement | eligibility and placement tests |
+| Malicious links and scripts in applications | `javascript:` or data URLs, credentials in URLs; stored script text rendered to staff | https-only links without credentials (client and server); React escapes text; links open with `noopener noreferrer nofollow` | `cleanLink` tests, strict zod schemas |
+| Mass assignment | Sending `status`, `userId` or `notes` in the apply body | Strict schemas reject unknown fields | "rejects unknown fields" |
+| Privilege confusion | Supervisor reaching staff data; intern writing feedback; support placing interns | Separate permissions; supervisor API checks ownership; staff routes need the second factor | "supervisor access", "applies each permission" |
+| Spam and abuse of the form | Mass applications, emails sent to victims | Per-IP apply limiter, one application per posting, verified accounts only, fixed-text email to the account's own address | rate limiter config, eligibility tests |
+| Spreadsheet formula injection | An applicant named `=HYPERLINK(...)` executing when staff open the CSV | Shared CSV writer neutralises leading formula characters; export is permissioned and audited | "exports applications as CSV" |
+| Data kept too long | Applicant data lives after the person asks for deletion | Account purge removes applications and placements; export includes the applicant's own view | purge rules (doc 07 section 7.1) |
+
+Known gaps (tracked in doc 10): supervisors have no second factor; the intern agreement text awaits legal review;
+Mongo repository tests run only where a test database is configured.

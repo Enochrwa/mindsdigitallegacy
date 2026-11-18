@@ -206,3 +206,37 @@ Updated 2026-11-16 on branch `feat/sprint-5b-closeout`.
 | C7 Budget | Done | `bun run budget`; fails when limit tightened | Lighthouse after staging exists |
 | C8 Lint and lockfile | Done | Lint zero warnings; frozen bun install works | n/a |
 | C9 Real videos | Not started | n/a | Founder: record videos |
+
+## Sprint 4 progress log
+
+Updated 2026-11-17 on branch `feat/sprint-4-internships`.
+
+| Story | State | Notes |
+| --- | --- | --- |
+| I1 Data model and rules | Done | Types, pure rules, three collections, state machine in `internships.rules.ts` |
+| I2 Posting admin API | Done | CRUD, publish (capacity rule), close, slugs, dates |
+| I3 Applications API | Done | Idempotent apply, withdraw, guardian rule, https-only links, strict validation |
+| I4 Review pipeline | Done | Compare-and-set transitions, notes with scores, message to applicant, audit |
+| I5 Placement rules | Done | Supervisor-on-posting, capacity, slots, guardian verification, agreement, dates |
+| I6 Status emails | Done (was stretch) | Fixed-text mails: received, shortlisted, interview, offered, rejected, placed |
+| I7 Frontend (public and applicant) | Done | Live postings, posting page, apply form, My internships with accept and withdraw |
+| I8 Admin console | Done | Postings, applications review dialog, placements, supervisor capacity, CSV export |
+| I9 Tests | Done | Backend 51 new tests; frontend 12; live smoke test of 31 steps against the real servers |
+
+Beyond the plan (added because the programme needs it):
+
+- Supervisor role with its own view and feedback (private or shared with the intern), average ratings
+- Guardian verification step for under-18 applicants, and a minimum age per posting
+- Capacity guard: a posting cannot publish with more places than its supervisors can guide
+- Applicant-visible timeline and a "message from our team" that staff choose to share
+- Placement lifecycle: end (completed, ended early, cancelled), supervisor reassignment, intern role added and removed
+- Internship data in the person's own export and in the account purge
+- CSV export (permissioned and audited, formula-injection safe)
+- Stats: offer rate, active interns, per-supervisor load
+
+Still open for Sprint 4 (not code):
+
+- Lawyer-approved agreement text (F5, F6): the in-app text is a labelled draft
+- Pay terms decision (F6): the posting form supports unpaid, stipend and paid
+- Run `internships.integration.test.ts` and the purge integration tests against MongoDB in CI
+- MFA for supervisors (they handle intern contact details)

@@ -24,6 +24,11 @@ import { createHttpMailer } from "./modules/auth/mailer.http.js";
 import { createLogMailer } from "./modules/auth/mailer.js";
 import { createMongoSessionRepository } from "./modules/sessions/sessions.mongo.js";
 import { createMongoUserRepository } from "./modules/users/users.mongo.js";
+import {
+  createMongoApplicationRepository,
+  createMongoPlacementRepository,
+  createMongoPostingRepository,
+} from "./modules/internships/internships.mongo.js";
 import { createPurgeService, schedule } from "./modules/retention/purge.js";
 import { createMongoPurgeStore } from "./modules/retention/purge.mongo.js";
 
@@ -65,6 +70,9 @@ async function main(): Promise<void> {
     catalogueAdmin: createMongoCatalogueAdminRepository(),
     leadAdmin: createMongoLeadAdminRepository(),
     referrals: createMongoReferralRepository(),
+    internshipPostings: createMongoPostingRepository(),
+    internshipApplications: createMongoApplicationRepository(),
+    internshipPlacements: createMongoPlacementRepository(),
     entitlements: createMongoEntitlementRepository(),
     unlockCodes: createMongoUnlockCodeRepository(),
     settings: createMongoSettingsRepository(),
