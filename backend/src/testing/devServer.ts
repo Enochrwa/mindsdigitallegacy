@@ -36,6 +36,13 @@ if (process.env["NODE_ENV"] === "production") {
 const env = loadEnv({
   NODE_ENV: "development",
   CORS_ORIGINS: process.env["CORS_ORIGINS"] ?? "http://localhost:3000",
+  // Optional: lets browser tests run on 127.0.0.1 so cookies and the sign-in round trip stay on one host.
+  ...(process.env["WEB_BASE_URL"] === undefined
+    ? {}
+    : { WEB_BASE_URL: process.env["WEB_BASE_URL"] }),
+  ...(process.env["API_PUBLIC_URL"] === undefined
+    ? {}
+    : { API_PUBLIC_URL: process.env["API_PUBLIC_URL"] }),
   RATE_LIMIT_AUTH_PER_15MIN: "1000",
 });
 const logger = createLogger(env);

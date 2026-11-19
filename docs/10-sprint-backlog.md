@@ -240,3 +240,18 @@ Still open for Sprint 4 (not code):
 - Pay terms decision (F6): the posting form supports unpaid, stipend and paid
 - Run `internships.integration.test.ts` and the purge integration tests against MongoDB in CI
 - MFA for supervisors (they handle intern contact details)
+
+## Social sign-in log
+
+Updated 2026-11-18 on branch `feat/social-sign-in`.
+
+| Item | State | Evidence |
+| --- | --- | --- |
+| Providers: Google, Microsoft, GitHub, Facebook, LinkedIn | Built | Adapters with 21 tests using real signed tokens and a fake network |
+| Safe flow (state, PKCE, nonce, no email merge, mailbox code, guardian rule) | Built | 34 flow tests including forged, replayed and takeover attempts |
+| Linking and disconnecting in My account; passwordless accounts can delete with the typed email | Built | Flow tests; frontend tests |
+| Finish-signing-up page; buttons on Sign in and Sign up | Built | Typecheck, lint, build; live 15-step run against the real servers |
+| Setup guide with console steps for every provider | Written | `docs/11-social-sign-in-setup.md` |
+| Real provider keys | **Not done (needs you)** | Follow doc 11; nothing was tested against real Google, Microsoft, GitHub, Facebook or LinkedIn |
+| Browser E2E for the social screens | Written, unrun | `frontend/e2e/social.spec.ts` (uses the demo providers) |
+| Privacy notice update naming the providers | Open | Lawyer review (sprint plan F5) |

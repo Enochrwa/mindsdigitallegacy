@@ -160,3 +160,12 @@ Changed: `users` (roles support/editor, `suspendedAt`, encrypted `totp`), `sessi
 
 Personal data: applications and placements are personal data. They are in the user export (applicant view, no
 notes), removed on account purge, and the guardian's contact details are kept only for under-18 applicants.
+
+## 10. Sign-in provider accounts (social sign-in)
+
+| Collection | Holds | Rules |
+| --- | --- | --- |
+| `oauthidentities` | `userId`, `provider`, `subject` (the provider's id), the `email` the provider showed, `lastUsedAt` | Unique `{provider, subject}` and `{userId, provider}`. Deleted on account purge. Listed in the person's data export (provider and email only) |
+
+A social-only account has an empty `passwordHash`. It cannot pass a password check, and can add a password later with "Forgot password".
+No provider access tokens or refresh tokens are stored: they are used once during sign-in and discarded.

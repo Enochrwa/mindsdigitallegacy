@@ -36,7 +36,13 @@ export default defineConfig({
       url: `${API}/api/v1/health`,
       reuseExistingServer: !process.env["CI"],
       timeout: 120_000,
-      env: { CORS_ORIGINS: WEB, LOG_LEVEL: "warn", HOST: "127.0.0.1" },
+      env: {
+        CORS_ORIGINS: WEB,
+        WEB_BASE_URL: WEB,
+        API_PUBLIC_URL: API,
+        LOG_LEVEL: "warn",
+        HOST: "127.0.0.1",
+      },
     },
     {
       command: "bun run dev --host 127.0.0.1",

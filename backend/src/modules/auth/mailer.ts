@@ -27,12 +27,12 @@ export type InternshipMail =
   "received" | "shortlisted" | "interview" | "offered" | "rejected" | "placed";
 
 export function createLogMailer(logger: Logger, webBaseUrl: string, production: boolean): Mailer {
-  const emit = (kind: string, path?: string): Promise<void> => {
+  const emit = (kind: string, path?: string, devOnlyCode?: string): Promise<void> => {
     if (production) {
       logger.warn({ kind }, "email not sent: no email provider configured");
     } else {
       logger.info(
-        { kind, link: path === undefined ? undefined : `${webBaseUrl}${path}` },
+        { kind, link: path === undefined ? undefined : `${webBaseUrl}${path}`, code: devOnlyCode },
         "dev email",
       );
     }
@@ -44,7 +44,8 @@ export function createLogMailer(logger: Logger, webBaseUrl: string, production: 
     sendGuardianConsent: (_to, _name, token) =>
       emit("guardian_consent", `/guardian-consent?token=${token}`),
     sendExistingAccountNotice: () => emit("existing_account"),
-    sendSignInCode: () => emit("signin_code"),
+    // Printed in development only, like the verification links, so the code step can be tried locally.
+    sendSignInCode: (_to, _name, code) => emit("signin_code", undefined, code),
     sendInternshipUpdate: (_to, _name, _title, kind) =>
       emit(`internship_${kind}`, "/account/internships"),
   };
