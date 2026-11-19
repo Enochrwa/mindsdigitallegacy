@@ -16,7 +16,8 @@ export const userSchema = new Schema(
   {
     email: { type: String, required: true, trim: true, lowercase: true, maxlength: 254 },
     emailVerifiedAt: { type: Date },
-    passwordHash: { type: String, required: true, select: false },
+    // Empty means "no password": the person signs in with a provider (Google, GitHub...) and may add one later.
+    passwordHash: { type: String, default: "", select: false },
     displayName: { type: String, required: true, trim: true, maxlength: 100 },
     phone: { type: String, trim: true, maxlength: 20 },
     roles: { type: [{ type: String, enum: ROLES }], default: ["learner"] },

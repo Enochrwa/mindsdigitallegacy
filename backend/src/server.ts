@@ -29,6 +29,9 @@ import {
   createMongoPlacementRepository,
   createMongoPostingRepository,
 } from "./modules/internships/internships.mongo.js";
+import { createMongoOAuthIdentityRepository } from "./modules/oauth/oauth.mongo.js";
+import { oauthSettings } from "./modules/oauth/oauth.config.js";
+import { createProviders } from "./modules/oauth/providers.js";
 import { createPurgeService, schedule } from "./modules/retention/purge.js";
 import { createMongoPurgeStore } from "./modules/retention/purge.mongo.js";
 
@@ -70,6 +73,8 @@ async function main(): Promise<void> {
     catalogueAdmin: createMongoCatalogueAdminRepository(),
     leadAdmin: createMongoLeadAdminRepository(),
     referrals: createMongoReferralRepository(),
+    oauthProviders: createProviders(oauthSettings(env)),
+    oauthIdentities: createMongoOAuthIdentityRepository(),
     internshipPostings: createMongoPostingRepository(),
     internshipApplications: createMongoApplicationRepository(),
     internshipPlacements: createMongoPlacementRepository(),

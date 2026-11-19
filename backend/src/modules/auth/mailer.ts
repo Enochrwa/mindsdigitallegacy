@@ -11,6 +11,8 @@ export interface Mailer {
   sendGuardianConsent(guardianEmail: string, learnerName: string, token: string): Promise<void>;
   /** Sent instead of a verification mail when someone registers an address that already has an account. */
   sendExistingAccountNotice(to: string): Promise<void>;
+  /** One-time code that proves the person controls the mailbox, for sign-in providers that do not vouch for it. */
+  sendSignInCode(to: string, name: string, code: string): Promise<void>;
   /** Fixed-text status mail about an internship application. Links to the signed-in page, never carries details. */
   sendInternshipUpdate(
     to: string,
@@ -42,6 +44,7 @@ export function createLogMailer(logger: Logger, webBaseUrl: string, production: 
     sendGuardianConsent: (_to, _name, token) =>
       emit("guardian_consent", `/guardian-consent?token=${token}`),
     sendExistingAccountNotice: () => emit("existing_account"),
+    sendSignInCode: () => emit("signin_code"),
     sendInternshipUpdate: (_to, _name, _title, kind) =>
       emit(`internship_${kind}`, "/account/internships"),
   };

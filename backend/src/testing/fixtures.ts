@@ -8,6 +8,8 @@ import type { BreachChecker } from "../core/security/breach.js";
 import { createPasswordHasher } from "../core/security/password.js";
 import { memoryGrowthDeps } from "./memory.growth.js";
 import { memoryInternshipDeps } from "./memory.internships.js";
+import { memoryOAuthIdentities } from "./memory.oauth.js";
+import type { ProviderAdapter, ProviderId } from "../modules/oauth/oauth.types.js";
 import { loadAcademyContentSync } from "../modules/courses/content.load.js";
 import {
   buildCatalogueData,
@@ -26,6 +28,8 @@ import {
 export const ALLOWED_ORIGIN = "https://app.example.rw";
 
 interface Options {
+  /** Sign-in providers switched on for the test. Empty by default. */
+  oauthProviders?: Map<ProviderId, ProviderAdapter>;
   env?: Record<string, string>;
   dbReady?: boolean;
   repository?: LeadRepository;
@@ -47,6 +51,7 @@ export function buildTestApp(options: Options = {}) {
   );
   const growth = memoryGrowthDeps(catalogueData);
   const internshipDeps = memoryInternshipDeps();
+  const oauthIdentities = memoryOAuthIdentities();
   const repository: LeadRepository = options.repository ?? {
     create: (lead) => {
       stored.push(lead);
@@ -72,6 +77,8 @@ export function buildTestApp(options: Options = {}) {
     leadAdmin: growth.leads,
     referrals: growth.referrals,
     ...internshipDeps,
+    oauthProviders: options.oauthProviders ?? new Map<ProviderId, ProviderAdapter>(),
+    oauthIdentities,
     entitlements: growth.entitlements,
     unlockCodes: growth.unlockCodes,
     settings: growth.settings,
@@ -96,6 +103,7 @@ export function buildTestApp(options: Options = {}) {
     progress: progressRepo,
     growth,
     internships: internshipDeps,
+    oauthIdentities,
     catalogueData,
   };
 }

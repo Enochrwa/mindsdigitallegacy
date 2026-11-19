@@ -63,6 +63,11 @@ export type AuditAction =
   | "admin.internship.placement.create"
   | "admin.internship.placement.end"
   | "admin.internship.placement.reassign"
+  | "auth.oauth.login"
+  | "auth.oauth.signup"
+  | "auth.oauth.link"
+  | "auth.oauth.unlink"
+  | "auth.oauth.failure"
   | "system.account.purge";
 
 export interface AuditEvent {
