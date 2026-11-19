@@ -50,6 +50,9 @@ export interface User {
   createdAt: Date;
 }
 
+/** Social-only accounts have an empty password hash and can never pass a password check. */
+export const hasPassword = (user: Pick<User, "passwordHash">): boolean => user.passwordHash !== "";
+
 export type NewUser = Omit<User, "id" | "createdAt" | "failedLogins">;
 
 /** Active = verified email, guardian consent when under 16, and not deleted. */

@@ -92,6 +92,13 @@ export const templates = {
       link,
       "If you do not know this person or do not agree, ignore this email and no account will be activated.",
     ),
+  signInCode: (name: string, code: string): Mail =>
+    build(
+      "Your MDL confirmation code",
+      `Hello ${name}. Your confirmation code is ${code}. Enter it on the page where you are finishing your sign-up. It works for 15 minutes.`,
+      undefined,
+      "If you did not try to sign up with this email address, ignore this message. Nobody can use the code without being on that page.",
+    ),
   existingAccount: (): Mail =>
     build(
       "About your registration",

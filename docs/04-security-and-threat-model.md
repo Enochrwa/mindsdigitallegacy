@@ -153,3 +153,23 @@ that text, applicant records about young people, and a supervisor role outside t
 
 Known gaps (tracked in doc 10): supervisors have no second factor; the intern agreement text awaits legal review;
 Mongo repository tests run only where a test database is configured.
+
+## Social sign-in threats
+
+| Threat | What could go wrong | Control in the code | Evidence |
+| --- | --- | --- | --- |
+| Login CSRF / authorization-code injection | An attacker makes a victim's browser finish the attacker's sign-in | Sealed state cookie bound to the browser, compared in constant time, 10-minute expiry, single use | `oauth.test.ts` "protection against forged and replayed callbacks" |
+| Account takeover by matching email | A look-alike provider account with the victim's email gets merged in | Never merge by email; link only by the signed-in person via POST | "account takeover by matching email" |
+| Linking CSRF | A website makes a victim attach the attacker's provider account | Link starts with an authenticated POST and the same session must finish it | "refuses to finish a link in a different session" |
+| Unverified provider emails ("nOAuth") | Microsoft or Facebook email claims are attacker-controlled | Never treated as verified; mailbox code required before the account exists | "providers that do not vouch for the email" |
+| Forged or replayed id_token | Fake token accepted | Signature checked against provider keys; audience, expiry, nonce, issuer (and tenant id for Microsoft) | `providers.test.ts` (unsigned, wrong key, wrong nonce, wrong tenant) |
+| Open redirect after sign-in | `next=https://evil` | Only same-site paths survive; everything else becomes `/account` | "only follows a same-site next page" |
+| Provider text injection | Script or markup in names and errors | Names cleaned and length-capped; only fixed error codes reach the page; no provider text logged | `cleanName` tests, callback tests |
+| Secret exposure | Client secret in URLs, logs or the browser | Secret only in server-to-server POST bodies; never in the authorize URL; nothing sensitive in logs | `providers.test.ts`, live log check |
+| Locked-out users | Removing the only sign-in method | The last method cannot be removed; passwordless delete needs the typed email | "disconnects a provider, but never the last way to sign in" |
+| Child safety bypass | Under-16 skipping the guardian step via a provider | Age group and guardian are required on the finish step; account inactive until guardian consents | "learners under 16" |
+| Brute-forcing the mailbox code | Guessing the 8-digit code | Code bound to the sealed sign-up and mailbox, 15-minute life, rate limited | mailbox-code tests |
+| Dependency risk | A new library | One zero-dependency library (`jose`), pinned to an exact version older than 14 days | `package.json` |
+
+Known gaps: the staff console second factor still applies after a social sign-in; there is no per-account lock for repeated
+wrong mailbox codes (the rate limiter and 15-minute life bound it).

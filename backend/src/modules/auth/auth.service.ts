@@ -7,7 +7,7 @@ import type { AuditAction, AuditLog, AuditMeta } from "../audit/audit.js";
 import { isStaff } from "./permissions.js";
 import type { SessionRepository } from "../sessions/sessions.types.js";
 import type { UserRepository } from "../users/users.repository.js";
-import { DuplicateEmailError, isActive } from "../users/users.types.js";
+import { DuplicateEmailError, hasPassword, isActive } from "../users/users.types.js";
 import type { User } from "../users/users.types.js";
 import type { AuthTokenRepository, TokenPurpose } from "./authTokens.js";
 import type { RegisterInput } from "./auth.schema.js";
@@ -262,11 +262,91 @@ export function createAuthService(deps: AuthDeps) {
       await safely(() => deps.hooks?.activated?.(userId));
     },
 
+    /**
+     * Opens a session for someone a sign-in provider has already identified (Google, GitHub...). The same
+     * "is this account usable" rules as a password sign-in apply: verified email, guardian consent, not
+     * suspended or deleted. Staff still pass the console's second factor afterwards.
+     */
+    async signInVerified(user: User, method: string, ctx: RequestContext): Promise<LoginResult> {
+      if (user.deletedAt !== undefined) throw invalidCredentials();
+      if (!isActive(user)) {
+        await record("auth.oauth.failure", ctx, "failure", user.id, {
+          reason: "inactive",
+          detail: method,
+        });
+        throw new AppError(
+          403,
+          "ACCOUNT_NOT_ACTIVE",
+          "Your account is not active yet. Check your email, or your guardian's confirmation.",
+        );
+      }
+      const session = await startSession(user, ctx);
+      await record("auth.oauth.login", ctx, "success", user.id, { detail: method });
+      return { user, ...session };
+    },
+
+    /**
+     * Creates an account for a person a provider identified and whose email is proven (by the provider or
+     * by a code sent to the mailbox). No password: they can add one later with "forgot password".
+     * Under-16s still need their guardian's confirmation before the account works.
+     */
+    async registerFromIdentity(
+      input: {
+        email: string;
+        displayName: string;
+        ageBracket: "under_16" | "16_plus";
+        guardianEmail?: string | undefined;
+        privacyNoticeVersion: string;
+        referralCode?: string | undefined;
+        method: string;
+      },
+      ctx: RequestContext,
+    ): Promise<User> {
+      const at = now();
+      let user: User;
+      try {
+        user = await users.create({
+          email: input.email,
+          passwordHash: "",
+          displayName: input.displayName,
+          roles: ["learner"],
+          ageBracket: input.ageBracket,
+          guardian: input.guardianEmail === undefined ? undefined : { email: input.guardianEmail },
+          consents: [{ type: "service", noticeVersion: input.privacyNoticeVersion, at }],
+          emailVerifiedAt: at,
+          phone: undefined,
+          lockedUntil: undefined,
+          deletedAt: undefined,
+        });
+      } catch (err) {
+        if (err instanceof DuplicateEmailError) {
+          throw new AppError(409, "ACCOUNT_EXISTS", "An account with this email already exists.");
+        }
+        throw err;
+      }
+      if (user.ageBracket === "under_16" && user.guardian !== undefined) {
+        await mailer.sendGuardianConsent(
+          user.guardian.email,
+          user.displayName,
+          await issueToken(user.id, "guardian_consent"),
+        );
+      }
+      await record("auth.oauth.signup", ctx, "success", user.id, { detail: input.method });
+      const code = input.referralCode;
+      if (code !== undefined && code !== "") {
+        await safely(() => deps.hooks?.registered?.(user, code, ctx));
+      }
+      if (isActive(user)) await safely(() => deps.hooks?.activated?.(user.id));
+      return user;
+    },
+
     async login(email: string, password: string, ctx: RequestContext): Promise<LoginResult> {
       const user = await users.findByEmail(email);
-      const stored =
-        user !== null && user.deletedAt === undefined ? user.passwordHash : await getDummyHash();
-      const passwordOk = await hasher.verify(password, stored);
+      // Accounts without a password (social sign-in only) are checked against a dummy hash like unknown
+      // addresses, so timing gives nothing away, and the result is forced to "wrong password".
+      const canUsePassword = user !== null && user.deletedAt === undefined && hasPassword(user);
+      const stored = canUsePassword ? user.passwordHash : await getDummyHash();
+      const passwordOk = (await hasher.verify(password, stored)) && canUsePassword;
       const at = now();
 
       if (user === null || user.deletedAt !== undefined) {

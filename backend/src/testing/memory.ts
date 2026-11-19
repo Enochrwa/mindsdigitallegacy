@@ -243,7 +243,9 @@ export function memoryAudit(): AuditLog & { events: AuditEvent[] } {
 }
 
 export interface SentMail {
-  kind: "verify" | "reset" | "guardian" | "existing" | "internship";
+  kind: "verify" | "reset" | "guardian" | "existing" | "internship" | "code";
+  /** For sign-in codes: the code that was sent. */
+  code?: string;
   /** For internship mails: which update was sent. */
   update?: string;
   to: string;
@@ -264,6 +266,10 @@ export function memoryMailer(): Mailer & { sent: SentMail[] } {
     },
     sendGuardianConsent(to, _name, token) {
       sent.push({ kind: "guardian", to, token });
+      return Promise.resolve();
+    },
+    sendSignInCode(to, _name, code) {
+      sent.push({ kind: "code", to, code });
       return Promise.resolve();
     },
     sendExistingAccountNotice(to) {

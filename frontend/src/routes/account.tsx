@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PasswordField } from "@/components/auth/PasswordField";
 import { Button } from "@/components/ui/button";
 import { AuthShell, Field, Notice } from "@/components/auth/AuthShell";
+import { ConnectedAccounts } from "@/components/auth/ConnectedAccounts";
 import { authHead, failureText, inputClass } from "@/components/auth/helpers";
 import { api } from "@/lib/api";
 import type { Profile } from "@/lib/api";
@@ -86,13 +87,20 @@ function Signed({ user }: { user: Profile }) {
   const deleteAccount = async () => {
     setBusy(true);
     setMessage(null);
-    const result = await api.users.deleteAccount(password);
+    const result = await api.users.deleteAccount(
+      user.hasPassword ? { password } : { confirmEmail: password },
+    );
     setBusy(false);
     if (result.ok) {
       clear();
       await navigate({ to: "/" });
     } else if (result.reason === "invalid_credentials") {
-      setMessage({ kind: "error", text: "That password is not correct." });
+      setMessage({
+        kind: "error",
+        text: user.hasPassword
+          ? "That password is not correct."
+          : "That is not the email address of this account.",
+      });
     } else {
       setMessage({ kind: "error", text: failureText(result.reason) });
     }
@@ -110,6 +118,9 @@ function Signed({ user }: { user: Profile }) {
           <dd className="font-medium">{user.email}</dd>
         </div>
       </dl>
+
+      <hr className="my-6 border-border" />
+      <ConnectedAccounts hasPassword={user.hasPassword} />
 
       <hr className="my-6 border-border" />
       <h2 className="font-bold text-primary">Messages from us</h2>
@@ -175,15 +186,30 @@ function Signed({ user }: { user: Profile }) {
       {confirmingDelete && (
         <div className="mt-6 space-y-3 rounded-md border border-destructive/30 p-4">
           <p className="text-sm">
-            This deactivates your account now and removes your data after a grace period. Enter your
-            password to confirm.
+            This deactivates your account now and removes your data after a grace period.{" "}
+            {user.hasPassword
+              ? "Enter your password to confirm."
+              : "Type the email address of this account to confirm."}
           </p>
-          <PasswordField
-            label="Password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          {user.hasPassword ? (
+            <PasswordField
+              label="Password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          ) : (
+            <label className="block text-sm font-medium">
+              Email address
+              <input
+                type="email"
+                autoComplete="off"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm"
+              />
+            </label>
+          )}
           <div className="flex gap-3">
             <Button
               variant="destructive"

@@ -6,12 +6,32 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { AuthShell, Field, Notice } from "@/components/auth/AuthShell";
+import { SocialButtons } from "@/components/auth/SocialButtons";
 import { authHead, failureText, inputClass } from "@/components/auth/helpers";
 import { api } from "@/lib/api";
+import { PROVIDER_LABEL, failureWording, isProviderId, safeNext } from "@/lib/oauth";
+import type { ProviderId } from "@/lib/oauth";
 import { useRefreshSession } from "@/lib/session";
+
+/** All optional, so every existing link to /login keeps working without them. */
+interface LoginSearch {
+  error?: string;
+  provider?: ProviderId;
+  next?: string;
+}
 
 export const Route = createFileRoute("/login")({
   head: authHead("Sign in"),
+  // Fixed, validated values only: `error` is a short code the API sent after a provider trip.
+  validateSearch: (s: Record<string, unknown>): LoginSearch => {
+    const error = s["error"];
+    const next = typeof s["next"] === "string" ? safeNext(s["next"]) : undefined;
+    return {
+      ...(typeof error === "string" && /^[a-z_]{1,30}$/.test(error) ? { error } : {}),
+      ...(isProviderId(s["provider"]) ? { provider: s["provider"] } : {}),
+      ...(next === undefined ? {} : { next }),
+    };
+  },
   component: LoginPage,
 });
 
@@ -22,6 +42,8 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 function LoginPage() {
+  const search = Route.useSearch();
+  const providerProblem = failureWording(search.error);
   const navigate = useNavigate();
   const refresh = useRefreshSession();
   const [error, setError] = useState<{ text: string; inactive: boolean } | null>(null);
@@ -63,6 +85,15 @@ function LoginPage() {
       text="Pick up your courses where you left off."
       progress={progress}
     >
+      {providerProblem !== null && (
+        <div className="mb-4">
+          <Notice kind="error">
+            {providerProblem}
+            {search.provider ? ` (${PROVIDER_LABEL[search.provider]})` : ""}
+          </Notice>
+        </div>
+      )}
+      <SocialButtons mode="signin" next={search.next} />
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Field label="Email" error={errors.email?.message}>
           <input type="email" autoComplete="email" {...register("email")} className={inputClass} />

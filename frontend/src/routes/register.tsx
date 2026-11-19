@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { AuthShell, Field, Notice } from "@/components/auth/AuthShell";
+import { SocialButtons } from "@/components/auth/SocialButtons";
 import { authHead, failureText, inputClass, problemMap } from "@/components/auth/helpers";
 import { PRIVACY_NOTICE_VERSION, api } from "@/lib/api";
 import { forgetCode, looksLikeCode, normaliseCode, recalledCode } from "@/lib/referrals";
@@ -155,6 +156,7 @@ function RegisterPage() {
       text="Free learning starts with a verified account."
       progress={progress}
     >
+      <SocialButtons mode="signup" />
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Field label="Full name" error={errors.displayName?.message}>
           <input autoComplete="name" {...register("displayName")} className={inputClass} />

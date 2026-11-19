@@ -73,6 +73,32 @@ const envSchema = z
     LEAD_RETENTION_DAYS: z.coerce.number().int().min(30).max(3650).default(730),
     /** How many interns one supervisor may guide at once. Caps how many slots a posting may offer. */
     INTERNSHIP_MAX_PER_SUPERVISOR: z.coerce.number().int().min(1).max(10).default(3),
+    /** Public address of THIS API (where providers send people back). Defaults to http://localhost:PORT for development. */
+    API_PUBLIC_URL: originSchema.optional(),
+    /** Seals the sign-in state and half-finished sign-ups in cookies. 32+ characters; `openssl rand -base64 32`. */
+    OAUTH_STATE_KEY: z.string().min(32).max(200).optional(),
+    OAUTH_GOOGLE_CLIENT_ID: z.string().min(1).max(300).optional(),
+    OAUTH_GOOGLE_CLIENT_SECRET: z.string().min(1).max(500).optional(),
+    OAUTH_MICROSOFT_CLIENT_ID: z.string().min(1).max(300).optional(),
+    OAUTH_MICROSOFT_CLIENT_SECRET: z.string().min(1).max(500).optional(),
+    OAUTH_GITHUB_CLIENT_ID: z.string().min(1).max(300).optional(),
+    OAUTH_GITHUB_CLIENT_SECRET: z.string().min(1).max(500).optional(),
+    OAUTH_FACEBOOK_CLIENT_ID: z.string().min(1).max(300).optional(),
+    OAUTH_FACEBOOK_CLIENT_SECRET: z.string().min(1).max(500).optional(),
+    OAUTH_LINKEDIN_CLIENT_ID: z.string().min(1).max(300).optional(),
+    OAUTH_LINKEDIN_CLIENT_SECRET: z.string().min(1).max(500).optional(),
+    /** "common" (work, school and personal), "organizations", "consumers", or one tenant id. */
+    OAUTH_MICROSOFT_TENANT: z
+      .string()
+      .regex(
+        /^(common|organizations|consumers|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
+      )
+      .default("common"),
+    /** Facebook Graph API version, for example v25.0. */
+    OAUTH_FACEBOOK_GRAPH_VERSION: z
+      .string()
+      .regex(/^v\d{1,2}\.\d$/)
+      .default("v25.0"),
     /** Per-client cap on browser CSP violation reports. */
     RATE_LIMIT_CSP_REPORTS_PER_MINUTE: z.coerce.number().int().min(1).max(600).default(30),
     /** Days between an account deletion request and permanent removal of its data. Confirm with counsel. */
@@ -81,7 +107,37 @@ const envSchema = z
     ACCOUNT_PURGE_INTERVAL_MINUTES: z.coerce.number().int().min(0).max(1440).default(60),
   })
   .superRefine((env, ctx) => {
+    // A provider needs both halves of its keys, or neither. Half-configured is always a mistake.
+    for (const name of ["GOOGLE", "MICROSOFT", "GITHUB", "FACEBOOK", "LINKEDIN"] as const) {
+      const id = env[`OAUTH_${name}_CLIENT_ID`];
+      const secret = env[`OAUTH_${name}_CLIENT_SECRET`];
+      if ((id === undefined) !== (secret === undefined)) {
+        ctx.addIssue({
+          code: "custom",
+          path: [`OAUTH_${name}_CLIENT_ID`],
+          message: `OAUTH_${name}_CLIENT_ID and OAUTH_${name}_CLIENT_SECRET must be set together`,
+        });
+      }
+    }
     if (env.NODE_ENV !== "production") return;
+    const anyProvider = (["GOOGLE", "MICROSOFT", "GITHUB", "FACEBOOK", "LINKEDIN"] as const).some(
+      (n) => env[`OAUTH_${n}_CLIENT_ID`] !== undefined,
+    );
+    if (anyProvider && !env.OAUTH_STATE_KEY) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["OAUTH_STATE_KEY"],
+        message: "required in production when a sign-in provider is enabled",
+      });
+    }
+    if (anyProvider && !env.API_PUBLIC_URL?.startsWith("https://")) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["API_PUBLIC_URL"],
+        message:
+          "must be set to the public https address of the API when a sign-in provider is enabled",
+      });
+    }
     if (!env.MONGODB_URI) {
       ctx.addIssue({ code: "custom", path: ["MONGODB_URI"], message: "required in production" });
     }

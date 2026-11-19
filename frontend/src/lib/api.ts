@@ -6,7 +6,7 @@
  *    accidentally render something the server should not have sent.
  */
 
-const BASE_URL: string = (import.meta.env["VITE_API_BASE_URL"] as string | undefined) ?? "";
+export const BASE_URL: string = (import.meta.env["VITE_API_BASE_URL"] as string | undefined) ?? "";
 const TIMEOUT_MS = 15_000;
 
 export const PRIVACY_NOTICE_VERSION = "2026-11";
@@ -124,6 +124,8 @@ export interface Profile {
   roles: string[];
   ageBracket: "under_16" | "16_plus";
   emailVerified: boolean;
+  /** False for accounts created with Google, GitHub... until they add a password. */
+  hasPassword: boolean;
   guardianConsentRecorded: boolean;
   consents: {
     type: "service" | "marketing";
@@ -163,6 +165,8 @@ export const api = {
         privacyNoticeVersion: PRIVACY_NOTICE_VERSION,
       }),
     exportData: () => request<unknown>("GET", "/users/me/export"),
-    deleteAccount: (password: string) => request<undefined>("DELETE", "/users/me", { password }),
+    /** Accounts with a password confirm with it; accounts without one confirm by typing their email address. */
+    deleteAccount: (proof: { password: string } | { confirmEmail: string }) =>
+      request<undefined>("DELETE", "/users/me", proof),
   },
 };

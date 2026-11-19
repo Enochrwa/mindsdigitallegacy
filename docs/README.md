@@ -10,6 +10,7 @@ Read in this order.
 | 04  | [Security and threat model](04-security-and-threat-model.md)     | What can go wrong, what stops it, what is verified, and what is still open                                                                  |
 | 05  | [Sprint plan](05-sprint-plan.md)                                 | Verified status, calendar, founder track, launch gate, risks, and what to cut first                                                         |
 | 10  | [Sprint backlog](10-sprint-backlog.md)                           | Story-level work for Sprints 4 to 7: estimates, acceptance criteria, repo review findings, growth rules                                     |
+| 11  | [Social sign-in setup](11-social-sign-in-setup.md)               | Step-by-step guide to get the keys for Google, Microsoft, GitHub, Facebook and LinkedIn, plus settings, tests and troubleshooting |
 | 07  | [Data model](07-data-model.md)                                   | Data dictionary: collections, fields, lifecycles, invariants, data-quality rules                                                            |
 | 08  | [Admin console, access and referrals](08-admin-and-referrals.md) | Staff roles, two-step verification, access model, referral rules, admin API                                                                 |
 | 09  | [Run it locally](09-local-setup.md)                              | Clone, configure, run and click through the product on your computer                                                                        |

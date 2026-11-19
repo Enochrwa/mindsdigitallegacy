@@ -35,6 +35,17 @@ export const consentUpdateSchema = z.strictObject({
   granted: z.boolean(),
   privacyNoticeVersion: z.string().trim().min(1).max(20),
 });
-export const deleteAccountSchema = z.strictObject({ password });
+/**
+ * Deleting an account needs proof it is really the owner: the password, or for accounts that have none
+ * (signed up with Google, GitHub...) typing the account's email address.
+ */
+export const deleteAccountSchema = z
+  .strictObject({
+    password: password.optional(),
+    confirmEmail: z.string().trim().max(254).optional(),
+  })
+  .refine((v) => v.password !== undefined || v.confirmEmail !== undefined, {
+    message: "Confirm with your password or your email address.",
+  });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

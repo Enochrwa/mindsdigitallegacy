@@ -40,6 +40,7 @@ import { Route as AdminReferralsRouteImport } from './routes/admin.referrals'
 import { Route as AdminSecurityRouteImport } from './routes/admin.security'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminUnlockCodesRouteImport } from './routes/admin.unlock-codes'
+import { Route as AuthCompleteRouteImport } from './routes/auth.complete'
 import { Route as CoursesIndexRouteImport } from './routes/courses.index'
 import { Route as InternshipsIndexRouteImport } from './routes/internships.index'
 import { Route as InternshipsSlugRouteImport } from './routes/internships.$slug'
@@ -209,6 +210,11 @@ const AdminUnlockCodesRoute = AdminUnlockCodesRouteImport.update({
   path: '/unlock-codes',
   getParentRoute: () => AdminRoute,
 } as any)
+const AuthCompleteRoute = AuthCompleteRouteImport.update({
+  id: '/auth/complete',
+  path: '/auth/complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursesIndexRoute = CoursesIndexRouteImport.update({
   id: '/courses/',
   path: '/courses/',
@@ -309,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/admin/security': typeof AdminSecurityRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/unlock-codes': typeof AdminUnlockCodesRoute
+  '/auth/complete': typeof AuthCompleteRoute
   '/internships/$slug': typeof InternshipsSlugRoute
   '/r/$code': typeof RCodeRoute
   '/admin/': typeof AdminIndexRoute
@@ -354,6 +361,7 @@ export interface FileRoutesByTo {
   '/admin/security': typeof AdminSecurityRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/unlock-codes': typeof AdminUnlockCodesRoute
+  '/auth/complete': typeof AuthCompleteRoute
   '/internships/$slug': typeof InternshipsSlugRoute
   '/r/$code': typeof RCodeRoute
   '/admin': typeof AdminIndexRoute
@@ -401,6 +409,7 @@ export interface FileRoutesById {
   '/admin/security': typeof AdminSecurityRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/unlock-codes': typeof AdminUnlockCodesRoute
+  '/auth/complete': typeof AuthCompleteRoute
   '/internships/$slug': typeof InternshipsSlugRoute
   '/r/$code': typeof RCodeRoute
   '/admin/': typeof AdminIndexRoute
@@ -449,6 +458,7 @@ export interface FileRouteTypes {
     | '/admin/security'
     | '/admin/settings'
     | '/admin/unlock-codes'
+    | '/auth/complete'
     | '/internships/$slug'
     | '/r/$code'
     | '/admin/'
@@ -494,6 +504,7 @@ export interface FileRouteTypes {
     | '/admin/security'
     | '/admin/settings'
     | '/admin/unlock-codes'
+    | '/auth/complete'
     | '/internships/$slug'
     | '/r/$code'
     | '/admin'
@@ -540,6 +551,7 @@ export interface FileRouteTypes {
     | '/admin/security'
     | '/admin/settings'
     | '/admin/unlock-codes'
+    | '/auth/complete'
     | '/internships/$slug'
     | '/r/$code'
     | '/admin/'
@@ -580,6 +592,7 @@ export interface RootRouteChildren {
   SupervisorRoute: typeof SupervisorRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   AccountInternshipsRoute: typeof AccountInternshipsRoute
+  AuthCompleteRoute: typeof AuthCompleteRoute
   InternshipsSlugRoute: typeof InternshipsSlugRoute
   RCodeRoute: typeof RCodeRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
@@ -807,6 +820,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUnlockCodesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/auth/complete': {
+      id: '/auth/complete'
+      path: '/auth/complete'
+      fullPath: '/auth/complete'
+      preLoaderRoute: typeof AuthCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/courses/': {
       id: '/courses/'
       path: '/courses'
@@ -963,6 +983,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupervisorRoute: SupervisorRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   AccountInternshipsRoute: AccountInternshipsRoute,
+  AuthCompleteRoute: AuthCompleteRoute,
   InternshipsSlugRoute: InternshipsSlugRoute,
   RCodeRoute: RCodeRoute,
   CoursesIndexRoute: CoursesIndexRoute,

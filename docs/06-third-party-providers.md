@@ -139,3 +139,16 @@ The API uses plain MongoDB through Mongoose, so moving between these needs only 
 - Hosting free-tier comparison (checked September 2026): <https://flaviocopes.com/hosting-free-tiers/>
 - Africloud Rwanda page: <https://africloud.com/rw>
 - Rwanda data localisation summary: <https://digitalpolicyalert.org/change/12074-data-localisation-requirement-in-law-no-0582021-relating-to-the-protection-of-personal-data-and-privacy>
+
+## Sign-in providers (Google, Microsoft, GitHub, Facebook, LinkedIn)
+
+| Provider | Used for | Data MDL receives | Cost | Notes |
+| --- | --- | --- | --- | --- |
+| Google | Sign in and sign up | Name, email (verified), provider id | Free | Publish the app (Audience) so everyone can sign in |
+| Microsoft | Sign in and sign up | Name, email (not verified by the provider), provider id | Free | Client secret **expires**: calendar reminder |
+| GitHub | Sign in and sign up | Name or username, verified primary email, numeric id | Free | One callback per app: one app per environment |
+| Facebook | Sign in and sign up | Name, email if shared (not verified), provider id | Free | Needs privacy and data-deletion links; app must be Live |
+| LinkedIn | Sign in and sign up | Name, email (verified), provider id | Free | App must belong to a Company Page |
+
+Keys and step-by-step set-up for each: [`11-social-sign-in-setup.md`](11-social-sign-in-setup.md).
+Each provider is an independent controller of its own data. Name them in the privacy notice (sprint plan F5).

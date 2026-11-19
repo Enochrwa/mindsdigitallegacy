@@ -95,6 +95,8 @@ export function createHttpMailer(
         templates.guardianConsent(name, link("/guardian-consent", token)),
       ),
     sendExistingAccountNotice: (to) => deliver("existing_account", to, templates.existingAccount()),
+    sendSignInCode: (to, name, code) =>
+      deliver("signin_code", to, templates.signInCode(name, code)),
     sendInternshipUpdate: (to, name, title, kind) =>
       deliver(
         `internship_${kind}`,

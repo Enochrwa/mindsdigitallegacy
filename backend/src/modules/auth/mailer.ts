@@ -11,6 +11,8 @@ export interface Mailer {
   sendGuardianConsent(guardianEmail: string, learnerName: string, token: string): Promise<void>;
   /** Sent instead of a verification mail when someone registers an address that already has an account. */
   sendExistingAccountNotice(to: string): Promise<void>;
+  /** One-time code that proves the person controls the mailbox, for sign-in providers that do not vouch for it. */
+  sendSignInCode(to: string, name: string, code: string): Promise<void>;
   /** Fixed-text status mail about an internship application. Links to the signed-in page, never carries details. */
   sendInternshipUpdate(
     to: string,
@@ -25,12 +27,12 @@ export type InternshipMail =
   "received" | "shortlisted" | "interview" | "offered" | "rejected" | "placed";
 
 export function createLogMailer(logger: Logger, webBaseUrl: string, production: boolean): Mailer {
-  const emit = (kind: string, path?: string): Promise<void> => {
+  const emit = (kind: string, path?: string, devOnlyCode?: string): Promise<void> => {
     if (production) {
       logger.warn({ kind }, "email not sent: no email provider configured");
     } else {
       logger.info(
-        { kind, link: path === undefined ? undefined : `${webBaseUrl}${path}` },
+        { kind, link: path === undefined ? undefined : `${webBaseUrl}${path}`, code: devOnlyCode },
         "dev email",
       );
     }
@@ -42,6 +44,8 @@ export function createLogMailer(logger: Logger, webBaseUrl: string, production: 
     sendGuardianConsent: (_to, _name, token) =>
       emit("guardian_consent", `/guardian-consent?token=${token}`),
     sendExistingAccountNotice: () => emit("existing_account"),
+    // Printed in development only, like the verification links, so the code step can be tried locally.
+    sendSignInCode: (_to, _name, code) => emit("signin_code", undefined, code),
     sendInternshipUpdate: (_to, _name, _title, kind) =>
       emit(`internship_${kind}`, "/account/internships"),
   };

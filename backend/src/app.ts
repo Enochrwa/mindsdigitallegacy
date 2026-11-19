@@ -18,6 +18,12 @@ import type { BreachChecker } from "./core/security/breach.js";
 import type { PasswordHasher } from "./core/security/password.js";
 import type { AuditLog } from "./modules/audit/audit.js";
 import { createAuthRouter } from "./modules/auth/auth.routes.js";
+import { apiPublicUrl, stateKey } from "./modules/oauth/oauth.config.js";
+import { createOAuthRouter } from "./modules/oauth/oauth.routes.js";
+import { createOAuthService } from "./modules/oauth/oauth.service.js";
+import type { OAuthIdentityRepository } from "./modules/oauth/oauth.repository.js";
+import type { ProviderAdapter, ProviderId } from "./modules/oauth/oauth.types.js";
+import { createSealer } from "./modules/oauth/seal.js";
 import { createAuthService } from "./modules/auth/auth.service.js";
 import type { AuthTokenRepository } from "./modules/auth/authTokens.js";
 import type { Mailer } from "./modules/auth/mailer.js";
@@ -67,6 +73,9 @@ export interface AppDeps {
   catalogueAdmin: CatalogueAdminRepository;
   leadAdmin: LeadAdminRepository;
   referrals: ReferralRepository;
+  /** Sign-in providers (Google, GitHub...) that are switched on, and where linked accounts are stored. */
+  oauthProviders: Map<ProviderId, ProviderAdapter>;
+  oauthIdentities: OAuthIdentityRepository;
   internshipPostings: PostingRepository;
   internshipApplications: ApplicationRepository;
   internshipPlacements: PlacementRepository;
@@ -190,13 +199,42 @@ export function createApp(deps: AppDeps): Express {
     breach: deps.breach,
     ...(deps.now === undefined ? {} : { now: deps.now }),
   });
+  const registrationOpen = async (): Promise<boolean> =>
+    (await deps.settings.get()).settings.registration.open;
+  const oauth = createOAuthService({
+    providers: deps.oauthProviders,
+    identities: deps.oauthIdentities,
+    users: deps.users,
+    auth,
+    audit: deps.audit,
+    mailer: deps.mailer,
+    sealer: createSealer(
+      stateKey(env),
+      deps.now === undefined ? undefined : () => deps.now?.().getTime() ?? Date.now(),
+    ),
+    apiPublicUrl: apiPublicUrl(env),
+    ...(deps.now === undefined ? {} : { now: deps.now }),
+  });
+  // Mounted before the email routes so "/auth/oauth/..." is never read as something else.
+  app.use(
+    "/api/v1/auth/oauth",
+    createOAuthRouter({
+      auth,
+      oauth,
+      cookie,
+      webBaseUrl: env.WEB_BASE_URL,
+      production,
+      limiter: createLimiter({ windowMs: 15 * 60_000, limit: env.RATE_LIMIT_AUTH_PER_15MIN * 3 }),
+      registrationOpen,
+    }),
+  );
   app.use(
     "/api/v1/auth",
     createAuthRouter({
       auth,
       cookie,
       limiter: createLimiter({ windowMs: 15 * 60_000, limit: env.RATE_LIMIT_AUTH_PER_15MIN }),
-      registrationOpen: async () => (await deps.settings.get()).settings.registration.open,
+      registrationOpen,
     }),
   );
   app.use(
@@ -286,6 +324,12 @@ export function createApp(deps: AppDeps): Express {
       hasher: deps.hasher,
       cookie,
       exportLearning: (userId) => courses.exportLearning(userId),
+      exportSignInMethods: async (userId) =>
+        (await oauth.list(userId)).identities.map((i) => ({
+          provider: i.provider,
+          email: i.email,
+          connectedAt: i.createdAt.toISOString(),
+        })),
       exportInternships: async (userId) => {
         const [apps, placed] = await Promise.all([
           internships.myApplications(userId),

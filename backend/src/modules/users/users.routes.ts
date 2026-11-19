@@ -11,6 +11,7 @@ import type { AuthService } from "../auth/auth.service.js";
 import { authorize } from "../auth/policy.js";
 import type { SessionRepository } from "../sessions/sessions.types.js";
 import type { UserRepository } from "./users.repository.js";
+import { hasPassword } from "./users.types.js";
 import type { User } from "./users.types.js";
 
 interface Deps {
@@ -24,6 +25,8 @@ interface Deps {
   exportLearning?: (userId: string) => Promise<unknown>;
   /** Adds internship applications and placements (the applicant's own view) to the export. */
   exportInternships?: (userId: string) => Promise<unknown>;
+  /** Adds the linked sign-in providers (which ones, and the email each showed). */
+  exportSignInMethods?: (userId: string) => Promise<unknown>;
   now?: () => Date;
 }
 
@@ -35,6 +38,7 @@ function profileOf(user: User) {
     roles: user.roles,
     ageBracket: user.ageBracket,
     emailVerified: user.emailVerifiedAt !== undefined,
+    hasPassword: hasPassword(user),
     guardianConsentRecorded: user.guardian?.consentAt !== undefined,
     consents: user.consents.map((c) => ({
       type: c.type,
@@ -54,6 +58,7 @@ export function createUsersRouter({
   cookie,
   exportLearning,
   exportInternships,
+  exportSignInMethods,
   now = () => new Date(),
 }: Deps): Router {
   const router = Router();
@@ -110,6 +115,8 @@ export function createUsersRouter({
       account: { ...profileOf(user), createdAt: user.createdAt },
       learning: exportLearning === undefined ? undefined : await exportLearning(user.id),
       internships: exportInternships === undefined ? undefined : await exportInternships(user.id),
+      signInMethods:
+        exportSignInMethods === undefined ? undefined : await exportSignInMethods(user.id),
     });
   });
 
@@ -121,7 +128,15 @@ export function createUsersRouter({
     const { user } = authLocals(res);
     guard(user, "profile:delete");
     const input = deleteAccountSchema.parse(req.body);
-    if (!(await hasher.verify(input.password, user.passwordHash))) {
+    if (hasPassword(user)) {
+      if (
+        input.password === undefined ||
+        !(await hasher.verify(input.password, user.passwordHash))
+      ) {
+        throw new AppError(401, "INVALID_CREDENTIALS", "Email or password is incorrect.");
+      }
+    } else if (input.confirmEmail?.toLowerCase() !== user.email.toLowerCase()) {
+      // No password to check: the signed-in session plus the typed address is the confirmation.
       throw new AppError(401, "INVALID_CREDENTIALS", "Email or password is incorrect.");
     }
     await users.softDelete(user.id, now());
