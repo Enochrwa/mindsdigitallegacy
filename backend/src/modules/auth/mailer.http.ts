@@ -97,6 +97,24 @@ export function createHttpMailer(
     sendExistingAccountNotice: (to) => deliver("existing_account", to, templates.existingAccount()),
     sendSignInCode: (to, name, code) =>
       deliver("signin_code", to, templates.signInCode(name, code)),
+    sendInternshipAlert: (to, name, title, slug) =>
+      deliver(
+        "internship_alert",
+        to,
+        templates.internshipAlert(name, title, `${config.webBaseUrl}/internships/${slug}`),
+      ),
+    sendInternshipReminder: (to, name, title, slug, days, kind) =>
+      deliver(
+        `internship_reminder_${kind}`,
+        to,
+        templates.internshipReminder(
+          name,
+          title,
+          days,
+          kind,
+          `${config.webBaseUrl}/internships/${slug}`,
+        ),
+      ),
     sendInternshipUpdate: (to, name, title, kind) =>
       deliver(
         `internship_${kind}`,

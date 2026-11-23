@@ -14,9 +14,13 @@ import {
   isOpenForApplications,
   maxSlots,
   RESERVED_SLUGS,
+  interviewProblem,
   slugify,
   STAFF_TARGETS,
+  validateAnswers,
 } from "./internships.rules.js";
+import { skillMatch } from "./internships.discovery.js";
+import type { DraftRepository, ProfileRepository } from "./internships.extras.types.js";
 import type { EligibilityProblem, PlacementProblem } from "./internships.rules.js";
 import type {
   ApplicationListQuery,
@@ -30,9 +34,12 @@ import { AGREEMENT_VERSION } from "./internships.types.js";
 import type {
   Application,
   ApplicationStatus,
+  InterviewDetails,
   Placement,
   PlacementStatus,
   Posting,
+  ScreeningAnswer,
+  ScreeningQuestion,
 } from "./internships.types.js";
 
 export interface InternshipServiceDeps {
@@ -44,6 +51,13 @@ export interface InternshipServiceDeps {
   mailer: Mailer;
   /** How many interns one supervisor may guide at the same time (proposal: limit intern numbers). */
   perSupervisor: number;
+  /** The reusable applicant profile and saved drafts (the "easier applying" features). Optional. */
+  profiles?: ProfileRepository;
+  drafts?: DraftRepository;
+  /** How many applications one person may have in play at once. Keeps applications considered, not sprayed. */
+  maxOpenApplications?: number;
+  /** Called after a posting goes live, for example to send alert emails. Failures never block publishing. */
+  onPublished?: (posting: Posting) => Promise<void>;
   now?: () => Date;
 }
 
@@ -54,6 +68,10 @@ export interface ApplyInput {
   under18: boolean;
   guardian?: { name: string; relationship: string; contact: string } | undefined;
   privacyNoticeVersion: string;
+  /** Answers to the posting's screening questions. */
+  answers: ScreeningAnswer[];
+  /** Attach the saved profile for reviewers. Defaults to true when the person has one. */
+  useProfile?: boolean | undefined;
 }
 
 export interface PostingInput {
@@ -72,6 +90,12 @@ export interface PostingInput {
   minAge: Posting["minAge"];
   slots: number;
   supervisorIds: string[];
+  skills: string[];
+  responsibilities: string[];
+  whoCanApply: string[];
+  perks: string[];
+  startsOn?: Date | undefined;
+  screeningQuestions: ScreeningQuestion[];
   opensAt?: Date | undefined;
   closesAt?: Date | undefined;
 }
@@ -79,6 +103,11 @@ export interface PostingInput {
 const ELIGIBILITY_ERRORS: Record<EligibilityProblem, AppError> = {
   NOT_ACTIVE: new AppError(403, "ACCOUNT_NOT_ACTIVE", "Verify your email address before applying."),
   TOO_YOUNG: new AppError(403, "TOO_YOUNG", "You do not meet the minimum age for this internship."),
+  TOO_MANY_OPEN: new AppError(
+    409,
+    "TOO_MANY_OPEN",
+    "You have several applications waiting for a decision. Withdraw one or wait for a reply before applying to more.",
+  ),
   POSTING_CLOSED: new AppError(
     409,
     "POSTING_CLOSED",
@@ -117,6 +146,17 @@ const PLACEMENT_ERRORS: Record<PlacementProblem, AppError> = {
   NO_SLOTS: new AppError(409, "NO_SLOTS", "All slots for this posting are filled."),
   BAD_DATES: new AppError(422, "BAD_DATES", "The end date must be after the start date."),
 };
+
+const interviewError = (code: "PAST" | "BAD_LINK" | "EMPTY_PLACE"): AppError =>
+  new AppError(
+    422,
+    "INVALID_INTERVIEW",
+    code === "PAST"
+      ? "The interview time must be in the future."
+      : code === "BAD_LINK"
+        ? "An online interview needs an https link."
+        : "Say where the interview takes place.",
+  );
 
 const conflict = (): AppError =>
   new AppError(
@@ -245,10 +285,38 @@ export function createInternshipService(deps: InternshipServiceDeps) {
       const problem = checkEligibility(
         user,
         posting,
-        { under18: input.under18, hasGuardian: input.guardian !== undefined },
+        {
+          under18: input.under18,
+          hasGuardian: input.guardian !== undefined,
+          ...(deps.maxOpenApplications === undefined
+            ? {}
+            : {
+                openCount: await applications.countOpenByUser(user.id),
+                maxOpen: deps.maxOpenApplications,
+              }),
+        },
         now(),
       );
       if (problem !== null) throw ELIGIBILITY_ERRORS[problem];
+
+      const checked = validateAnswers(posting.screeningQuestions, input.answers);
+      if (!checked.ok) {
+        throw new AppError(
+          422,
+          checked.problem.code,
+          checked.problem.code === "MISSING_ANSWER"
+            ? "Please answer every required question."
+            : "One of the answers is not valid.",
+          [{ path: `answers.${checked.problem.questionId}`, message: checked.problem.code }],
+        );
+      }
+
+      // The saved profile (if any) becomes a frozen copy for reviewers, and decides the skills match.
+      const profile =
+        input.useProfile === false || deps.profiles === undefined
+          ? null
+          : await deps.profiles.get(user.id);
+      const links = input.links.length > 0 ? input.links : (profile?.links ?? []).slice(0, 5);
 
       const at = now();
       try {
@@ -256,8 +324,8 @@ export function createInternshipService(deps: InternshipServiceDeps) {
           postingId: posting.id,
           userId: user.id,
           statement: input.statement,
-          links: input.links,
-          availableFrom: input.availableFrom,
+          links,
+          availableFrom: input.availableFrom ?? profile?.availableFrom,
           under18: input.under18,
           guardian: input.guardian,
           status: "submitted",
@@ -265,9 +333,26 @@ export function createInternshipService(deps: InternshipServiceDeps) {
           messageToApplicant: undefined,
           consentNoticeVersion: input.privacyNoticeVersion,
           consentAt: at,
+          answers: checked.answers,
+          profile:
+            profile === null
+              ? undefined
+              : {
+                  headline: profile.headline,
+                  educationLevel: profile.educationLevel,
+                  institution: profile.institution,
+                  field: profile.field,
+                  skills: profile.skills,
+                  about: profile.about,
+                },
+          matchPercent:
+            profile === null ? undefined : skillMatch(profile.skills, posting.skills).percent,
+          interview: undefined,
           agreementAcceptedAt: undefined,
           agreementVersion: undefined,
         });
+        // The draft has done its job.
+        await deps.drafts?.remove(user.id, posting.id);
         await record("internship.apply", user.id, ctx, {
           targetType: "application",
           targetId: application.id,
@@ -446,6 +531,8 @@ export function createInternshipService(deps: InternshipServiceDeps) {
       if (current.closesAt !== undefined && current.closesAt.getTime() <= now().getTime()) {
         throw new AppError(422, "CLOSE_DATE_PAST", "The closing date is already in the past.");
       }
+      // Decided before the update: some stores hand back the same object they then change.
+      const firstPublication = current.publishedAt === undefined;
       await mustSupervisors(current.supervisorIds);
       assertCapacity(current);
       const updated = await postings.update(
@@ -458,7 +545,55 @@ export function createInternshipService(deps: InternshipServiceDeps) {
         targetType: "posting",
         targetId: id,
       });
+      // First publication only: people with a matching alert hear about it. A failure here never blocks publishing.
+      if (firstPublication) {
+        try {
+          await deps.onPublished?.(updated);
+        } catch {
+          /* swallowed on purpose */
+        }
+      }
       return updated;
+    },
+
+    /** A copy as a fresh draft: same details, supervisors and questions, new title, no dates. Saves retyping each cohort. */
+    async duplicatePosting(actor: User, id: string, ctx: RequestContext): Promise<Posting> {
+      const source = await mustPosting(id);
+      const copy = await postings.create({
+        title: `${source.title.slice(0, 92)} (copy)`,
+        department: source.department,
+        summary: source.summary,
+        description: source.description,
+        requirements: [...source.requirements],
+        learningGoals: [...source.learningGoals],
+        mode: source.mode,
+        location: source.location,
+        durationWeeks: source.durationWeeks,
+        hoursPerWeek: source.hoursPerWeek,
+        compensation: source.compensation,
+        compensationNote: source.compensationNote,
+        minAge: source.minAge,
+        slots: source.slots,
+        skills: [...source.skills],
+        responsibilities: [...source.responsibilities],
+        whoCanApply: [...source.whoCanApply],
+        perks: [...source.perks],
+        screeningQuestions: source.screeningQuestions.map((q) => ({ ...q })),
+        supervisorIds: [...source.supervisorIds],
+        slug: await uniqueSlug(source.title),
+        status: "draft",
+        createdBy: actor.id,
+        startsOn: undefined,
+        opensAt: undefined,
+        closesAt: undefined,
+        publishedAt: undefined,
+      });
+      await record("admin.internship.posting.create", actor.id, ctx, {
+        targetType: "posting",
+        targetId: copy.id,
+        detail: `copy of ${id}`,
+      });
+      return copy;
     },
 
     async closePosting(actor: User, id: string, ctx: RequestContext): Promise<Posting> {
@@ -497,7 +632,11 @@ export function createInternshipService(deps: InternshipServiceDeps) {
       actor: User,
       id: string,
       to: ApplicationStatus,
-      opts: { note?: string | undefined; message?: string | undefined },
+      opts: {
+        note?: string | undefined;
+        message?: string | undefined;
+        interview?: InterviewDetails | undefined;
+      },
       ctx: RequestContext,
     ): Promise<Application> {
       if (!STAFF_TARGETS.includes(to)) {
@@ -515,14 +654,28 @@ export function createInternshipService(deps: InternshipServiceDeps) {
           `An application that is ${application.status} cannot become ${to}.`,
         );
       }
+      if (opts.interview !== undefined) {
+        if (to !== "interview") {
+          throw new AppError(
+            422,
+            "INVALID_INTERVIEW",
+            "Interview details only go with the interview step.",
+          );
+        }
+        const bad = interviewProblem(opts.interview, now());
+        if (bad !== null) throw interviewError(bad);
+      }
       const at = now();
-      const updated = await applications.transition(
+      let updated = await applications.transition(
         id,
         application.status,
         { at, by: actor.id, from: application.status, to },
         opts.message === undefined ? {} : { messageToApplicant: opts.message },
       );
       if (updated === null) throw conflict();
+      if (opts.interview !== undefined) {
+        updated = (await applications.setInterview(id, opts.interview, at)) ?? updated;
+      }
       if (opts.note !== undefined && opts.note !== "") {
         await applications.addNote(id, { at, by: actor.id, text: opts.note }, at);
       }
@@ -537,6 +690,56 @@ export function createInternshipService(deps: InternshipServiceDeps) {
       ]);
       await notify(applicant, posting?.title ?? "your application", to as InternshipMail);
       return updated;
+    },
+
+    /** Changes the interview time or place while the application is still at the interview step. */
+    async setInterview(
+      actor: User,
+      id: string,
+      interview: InterviewDetails,
+      ctx: RequestContext,
+    ): Promise<Application> {
+      const application = await mustApplication(id);
+      if (application.status !== "interview") {
+        throw new AppError(
+          409,
+          "INVALID_TRANSITION",
+          "Interview details only apply at the interview step.",
+        );
+      }
+      const bad = interviewProblem(interview, now());
+      if (bad !== null) throw interviewError(bad);
+      const updated = await applications.setInterview(id, interview, now());
+      if (updated === null) throw notFound();
+      await record("admin.internship.application.interview", actor.id, ctx, {
+        targetType: "application",
+        targetId: id,
+      });
+      return updated;
+    },
+
+    /**
+     * Applies one decision to many applications at once (for example shortlisting the ten best matches).
+     * Each is checked on its own against the state machine; one failure never stops the rest. At most 50.
+     */
+    async bulkTransition(
+      actor: User,
+      ids: string[],
+      to: ApplicationStatus,
+      opts: { message?: string | undefined },
+      ctx: RequestContext,
+    ): Promise<{ id: string; ok: boolean; code?: string }[]> {
+      const unique = [...new Set(ids)].slice(0, 50);
+      const results: { id: string; ok: boolean; code?: string }[] = [];
+      for (const id of unique) {
+        try {
+          await this.transition(actor, id, to, { message: opts.message }, ctx);
+          results.push({ id, ok: true });
+        } catch (err) {
+          results.push({ id, ok: false, code: err instanceof AppError ? err.code : "FAILED" });
+        }
+      }
+      return results;
     },
 
     async addNote(
@@ -793,6 +996,7 @@ export function createInternshipService(deps: InternshipServiceDeps) {
         this.supervisorsWithLoad(),
         placements.list({ status: "active", page: 1, pageSize: 1 }),
       ]);
+      const waiting = await applications.countWaiting(new Date(now().getTime() - 7 * 86_400_000));
       const total = Object.values(applicationCounts).reduce((n, v) => n + v, 0);
       const decided =
         applicationCounts.offered + applicationCounts.accepted + applicationCounts.placed;
@@ -802,6 +1006,8 @@ export function createInternshipService(deps: InternshipServiceDeps) {
         totalApplications: total,
         offerRate: total === 0 ? 0 : Math.round((decided / total) * 1000) / 10,
         activePlacements: activePlacements.total,
+        /** Applications still unread after a week: the queue to clear first. */
+        awaitingReviewOver7Days: waiting,
         supervisors: supervisors.map((s) => ({
           id: s.user.id,
           name: s.user.displayName,

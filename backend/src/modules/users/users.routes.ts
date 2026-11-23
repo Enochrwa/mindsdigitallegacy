@@ -27,6 +27,8 @@ interface Deps {
   exportInternships?: (userId: string) => Promise<unknown>;
   /** Adds the linked sign-in providers (which ones, and the email each showed). */
   exportSignInMethods?: (userId: string) => Promise<unknown>;
+  /** Adds the reusable internship profile, saved internships, alert and unsent drafts. */
+  exportInternshipExtras?: (userId: string) => Promise<unknown>;
   now?: () => Date;
 }
 
@@ -59,6 +61,7 @@ export function createUsersRouter({
   exportLearning,
   exportInternships,
   exportSignInMethods,
+  exportInternshipExtras,
   now = () => new Date(),
 }: Deps): Router {
   const router = Router();
@@ -115,6 +118,8 @@ export function createUsersRouter({
       account: { ...profileOf(user), createdAt: user.createdAt },
       learning: exportLearning === undefined ? undefined : await exportLearning(user.id),
       internships: exportInternships === undefined ? undefined : await exportInternships(user.id),
+      internshipExtras:
+        exportInternshipExtras === undefined ? undefined : await exportInternshipExtras(user.id),
       signInMethods:
         exportSignInMethods === undefined ? undefined : await exportSignInMethods(user.id),
     });

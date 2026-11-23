@@ -28,6 +28,11 @@ const newPosting = (over: Partial<NewPosting> = {}): NewPosting => ({
   compensationNote: "",
   minAge: 16,
   slots: 2,
+  skills: [],
+  responsibilities: [],
+  whoCanApply: [],
+  perks: [],
+  screeningQuestions: [],
   supervisorIds: [oid()],
   status: "published",
   createdBy: oid(),
@@ -44,6 +49,7 @@ const newApplication = (postingId: string, userId: string): NewApplication => ({
   events: [{ at, by: userId, from: null, to: "submitted" }],
   consentNoticeVersion: "2026-11",
   consentAt: at,
+  answers: [],
 });
 
 describe.skipIf(uri === undefined)("internships (integration)", () => {

@@ -71,6 +71,10 @@ const envSchema = z
     /** Encrypts staff authenticator secrets at rest. Required in production; generate with `openssl rand -base64 32`. */
     TOTP_ENCRYPTION_KEY: z.string().min(32).optional(),
     LEAD_RETENTION_DAYS: z.coerce.number().int().min(30).max(3650).default(730),
+    /** Applications one person may have in play at once. Keeps applications considered, not sprayed. */
+    INTERNSHIP_MAX_OPEN_APPLICATIONS: z.coerce.number().int().min(1).max(50).default(5),
+    /** Minutes between housekeeping runs (close postings past their deadline, send reminders). 0 turns it off. */
+    INTERNSHIP_AUTOMATION_INTERVAL_MINUTES: z.coerce.number().int().min(0).max(1440).default(60),
     /** How many interns one supervisor may guide at once. Caps how many slots a posting may offer. */
     INTERNSHIP_MAX_PER_SUPERVISOR: z.coerce.number().int().min(1).max(10).default(3),
     /** Public address of THIS API (where providers send people back). Defaults to http://localhost:PORT for development. */

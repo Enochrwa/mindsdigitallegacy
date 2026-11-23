@@ -1,5 +1,12 @@
 import { paginate } from "../core/page.js";
 import type {
+  ExtrasRepositories,
+  InternshipAlert,
+  InternshipDraft,
+  InternshipProfile,
+  InternshipSave,
+} from "../modules/internships/internships.extras.types.js";
+import type {
   ApplicationRepository,
   PlacementRepository,
   PostingRepository,
@@ -89,8 +96,47 @@ export function memoryApplications(): ApplicationRepository & { all: Application
         .filter((a) => query.postingId === undefined || a.postingId === query.postingId)
         .filter((a) => query.status === undefined || a.status === query.status)
         .filter((a) => query.userId === undefined || a.userId === query.userId)
-        .sort(newest);
+        .filter(
+          (a) =>
+            query.createdBefore === undefined ||
+            a.createdAt.getTime() < query.createdBefore.getTime(),
+        )
+        .sort((a, b) => {
+          if (query.sort === "oldest") return a.createdAt.getTime() - b.createdAt.getTime();
+          if (query.sort === "match") {
+            return (
+              (b.matchPercent ?? -1) - (a.matchPercent ?? -1) ||
+              a.createdAt.getTime() - b.createdAt.getTime()
+            );
+          }
+          return newest(a, b);
+        });
       return Promise.resolve(paginate(rows, query));
+    },
+    countsByPosting(ids) {
+      const out: Record<string, number> = {};
+      for (const id of ids) out[id] = all.filter((a) => a.postingId === id).length;
+      return Promise.resolve(out);
+    },
+    countOpenByUser: (userId) =>
+      Promise.resolve(
+        all.filter(
+          (a) =>
+            a.userId === userId &&
+            ["submitted", "shortlisted", "interview", "offered", "accepted"].includes(a.status),
+        ).length,
+      ),
+    countWaiting: (before) =>
+      Promise.resolve(
+        all.filter((a) => a.status === "submitted" && a.createdAt.getTime() < before.getTime())
+          .length,
+      ),
+    setInterview(id, interview, now) {
+      const a = all.find((x) => x.id === id);
+      if (a === undefined) return Promise.resolve(null);
+      a.interview = interview;
+      a.updatedAt = now;
+      return Promise.resolve(a);
     },
     transition(id, from, event, patch) {
       const a = all.find((x) => x.id === id);
@@ -175,6 +221,11 @@ export function memoryPlacements(): PlacementRepository & { all: Placement[] } {
       Promise.resolve(all.filter((p) => p.supervisorId === id && active(p)).length),
     countActiveByPosting: (id) =>
       Promise.resolve(all.filter((p) => p.postingId === id && active(p)).length),
+    activeCountsByPosting(ids) {
+      const out: Record<string, number> = {};
+      for (const id of ids) out[id] = all.filter((p) => p.postingId === id && active(p)).length;
+      return Promise.resolve(out);
+    },
     activeLoadBySupervisor() {
       const out: Record<string, number> = {};
       for (const p of all) if (active(p)) out[p.supervisorId] = (out[p.supervisorId] ?? 0) + 1;
@@ -206,9 +257,124 @@ export function memoryPlacements(): PlacementRepository & { all: Placement[] } {
   };
 }
 
+export function memoryExtras(): ExtrasRepositories & {
+  profileRows: InternshipProfile[];
+  draftRows: InternshipDraft[];
+  saveRows: InternshipSave[];
+  alertRows: InternshipAlert[];
+} {
+  const profileRows: InternshipProfile[] = [];
+  const draftRows: InternshipDraft[] = [];
+  const saveRows: InternshipSave[] = [];
+  const alertRows: InternshipAlert[] = [];
+  const drop = <T>(rows: T[], keep: (r: T) => boolean): number => {
+    let n = 0;
+    for (let i = rows.length - 1; i >= 0; i -= 1) {
+      const row = rows[i];
+      if (row !== undefined && !keep(row)) {
+        rows.splice(i, 1);
+        n += 1;
+      }
+    }
+    return n;
+  };
+  return {
+    profileRows,
+    draftRows,
+    saveRows,
+    alertRows,
+    profiles: {
+      get: (userId) => Promise.resolve(profileRows.find((p) => p.userId === userId) ?? null),
+      upsert(profile) {
+        drop(profileRows, (p) => p.userId !== profile.userId);
+        profileRows.push({ ...profile });
+        return Promise.resolve(profile);
+      },
+      remove: (userId) => Promise.resolve(drop(profileRows, (p) => p.userId !== userId) > 0),
+    },
+    drafts: {
+      get: (userId, postingId) =>
+        Promise.resolve(
+          draftRows.find((d) => d.userId === userId && d.postingId === postingId) ?? null,
+        ),
+      upsert(draft) {
+        const prev = draftRows.find(
+          (d) => d.userId === draft.userId && d.postingId === draft.postingId,
+        );
+        drop(draftRows, (d) => !(d.userId === draft.userId && d.postingId === draft.postingId));
+        const row: InternshipDraft = { ...draft, remindedAt: prev?.remindedAt };
+        draftRows.push(row);
+        return Promise.resolve(row);
+      },
+      remove: (userId, postingId) =>
+        Promise.resolve(
+          drop(draftRows, (d) => !(d.userId === userId && d.postingId === postingId)) > 0,
+        ),
+      listByUser: (userId) => Promise.resolve(draftRows.filter((d) => d.userId === userId)),
+      listForReminder: (ids) =>
+        Promise.resolve(
+          draftRows.filter((d) => ids.includes(d.postingId) && d.remindedAt === undefined),
+        ),
+      markReminded(userId, postingId, at) {
+        const d = draftRows.find((x) => x.userId === userId && x.postingId === postingId);
+        if (d !== undefined) d.remindedAt = at;
+        return Promise.resolve();
+      },
+    },
+    saves: {
+      add(userId, postingId, now) {
+        if (saveRows.some((s) => s.userId === userId && s.postingId === postingId))
+          return Promise.resolve(false);
+        saveRows.push({ userId, postingId, createdAt: now });
+        return Promise.resolve(true);
+      },
+      remove: (userId, postingId) =>
+        Promise.resolve(
+          drop(saveRows, (s) => !(s.userId === userId && s.postingId === postingId)) > 0,
+        ),
+      listByUser: (userId) =>
+        Promise.resolve(
+          saveRows
+            .filter((s) => s.userId === userId)
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+        ),
+      has: (userId, postingId) =>
+        Promise.resolve(saveRows.some((s) => s.userId === userId && s.postingId === postingId)),
+      listForReminder: (ids) =>
+        Promise.resolve(
+          saveRows.filter((s) => ids.includes(s.postingId) && s.remindedAt === undefined),
+        ),
+      markReminded(userId, postingId, at) {
+        const s = saveRows.find((x) => x.userId === userId && x.postingId === postingId);
+        if (s !== undefined) s.remindedAt = at;
+        return Promise.resolve();
+      },
+    },
+    alerts: {
+      get: (userId) => Promise.resolve(alertRows.find((a) => a.userId === userId) ?? null),
+      upsert(alert) {
+        drop(alertRows, (a) => a.userId !== alert.userId);
+        alertRows.push({ ...alert });
+        return Promise.resolve(alert);
+      },
+      remove: (userId) => Promise.resolve(drop(alertRows, (a) => a.userId !== userId) > 0),
+      listActive: (limit) => Promise.resolve(alertRows.filter((a) => a.active).slice(0, limit)),
+    },
+    removeAllForUser(userId) {
+      return Promise.resolve({
+        profile: drop(profileRows, (p) => p.userId !== userId),
+        drafts: drop(draftRows, (d) => d.userId !== userId),
+        saves: drop(saveRows, (s) => s.userId !== userId),
+        alerts: drop(alertRows, (a) => a.userId !== userId),
+      });
+    },
+  };
+}
+
 /** The three internship repositories, in memory, for tests and the dev server. */
 export function memoryInternshipDeps() {
   return {
+    internshipExtras: memoryExtras(),
     internshipPostings: memoryPostings(),
     internshipApplications: memoryApplications(),
     internshipPlacements: memoryPlacements(),

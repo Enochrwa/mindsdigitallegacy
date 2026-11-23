@@ -42,6 +42,18 @@ const toPosting = (d: any): Posting => ({
   compensationNote: d.compensationNote ?? "",
   minAge: d.minAge,
   slots: d.slots,
+  skills: d.skills ?? [],
+  responsibilities: d.responsibilities ?? [],
+  whoCanApply: d.whoCanApply ?? [],
+  perks: d.perks ?? [],
+  startsOn: d.startsOn ?? undefined,
+  screeningQuestions: (d.screeningQuestions ?? []).map((q: any) => ({
+    id: q.id,
+    label: q.label,
+    kind: q.kind,
+    required: q.required,
+    options: q.options ?? undefined,
+  })),
   supervisorIds: (d.supervisorIds ?? []).map(id),
   status: d.status,
   opensAt: d.opensAt ?? undefined,
@@ -89,6 +101,28 @@ const toApplication = (d: any): Application => ({
   messageToApplicant: d.messageToApplicant ?? undefined,
   consentNoticeVersion: d.consentNoticeVersion,
   consentAt: d.consentAt,
+  answers: (d.answers ?? []).map((a: any) => ({ questionId: a.questionId, answer: a.answer })),
+  profile:
+    d.profile === null || d.profile === undefined
+      ? undefined
+      : {
+          headline: d.profile.headline ?? "",
+          educationLevel: d.profile.educationLevel,
+          institution: d.profile.institution ?? "",
+          field: d.profile.field ?? "",
+          skills: d.profile.skills ?? [],
+          about: d.profile.about ?? "",
+        },
+  matchPercent: d.matchPercent ?? undefined,
+  interview:
+    d.interview === null || d.interview === undefined
+      ? undefined
+      : {
+          at: d.interview.at,
+          mode: d.interview.mode,
+          where: d.interview.where,
+          note: d.interview.note ?? undefined,
+        },
   agreementAcceptedAt: d.agreementAcceptedAt ?? undefined,
   agreementVersion: d.agreementVersion ?? undefined,
   createdAt: d.createdAt,
@@ -255,9 +289,17 @@ export function createMongoApplicationRepository(): ApplicationRepository {
         filter["userId"] = oid(query.userId);
       }
       if (query.status !== undefined) filter["status"] = query.status;
+      if (query.createdBefore !== undefined)
+        filter["createdAt"] = trusted({ $lt: query.createdBefore });
+      const order: Record<string, 1 | -1> =
+        query.sort === "oldest"
+          ? { createdAt: 1 }
+          : query.sort === "match"
+            ? { matchPercent: -1, createdAt: 1 }
+            : { createdAt: -1 };
       const [rows, total] = await Promise.all([
         ApplicationModel.find(filter)
-          .sort({ createdAt: -1 })
+          .sort(order)
           .skip((query.page - 1) * query.pageSize)
           .limit(query.pageSize)
           .lean(),
@@ -307,6 +349,38 @@ export function createMongoApplicationRepository(): ApplicationRepository {
           $push: { notes: { ...defined(note), by: oid(note.by) } },
           $set: { updatedAt: now },
         },
+        { new: true },
+      ).lean();
+      return d === null ? null : toApplication(d);
+    },
+    async countsByPosting(postingIds) {
+      const ids = postingIds.filter(valid).map(oid);
+      const rows = await ApplicationModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+        { $match: { postingId: { $in: ids } } },
+        { $group: { _id: "$postingId", n: { $sum: 1 } } },
+      ]);
+      const out: Record<string, number> = Object.fromEntries(postingIds.map((p) => [p, 0]));
+      for (const r of rows) out[id(r._id)] = r.n;
+      return out;
+    },
+    async countOpenByUser(userId) {
+      if (!valid(userId)) return 0;
+      return ApplicationModel.countDocuments({
+        userId: oid(userId),
+        status: trusted({ $in: ["submitted", "shortlisted", "interview", "offered", "accepted"] }),
+      });
+    },
+    async countWaiting(before) {
+      return ApplicationModel.countDocuments({
+        status: "submitted",
+        createdAt: trusted({ $lt: before }),
+      });
+    },
+    async setInterview(appId, interview, now) {
+      if (!valid(appId)) return null;
+      const d = await ApplicationModel.findByIdAndUpdate(
+        appId,
+        { $set: { interview: defined(interview), updatedAt: now } },
         { new: true },
       ).lean();
       return d === null ? null : toApplication(d);
@@ -401,6 +475,16 @@ export function createMongoPlacementRepository(): PlacementRepository {
     async countActiveByPosting(postingId) {
       if (!valid(postingId)) return 0;
       return PlacementModel.countDocuments({ postingId: oid(postingId), status: "active" });
+    },
+    async activeCountsByPosting(postingIds) {
+      const ids = postingIds.filter(valid).map(oid);
+      const rows = await PlacementModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+        { $match: { status: "active", postingId: { $in: ids } } },
+        { $group: { _id: "$postingId", n: { $sum: 1 } } },
+      ]);
+      const out: Record<string, number> = Object.fromEntries(postingIds.map((p) => [p, 0]));
+      for (const r of rows) out[id(r._id)] = r.n;
+      return out;
     },
     async activeLoadBySupervisor() {
       const rows = await PlacementModel.aggregate<{ _id: unknown; n: number }>([

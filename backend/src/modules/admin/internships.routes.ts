@@ -7,8 +7,10 @@ import {
 } from "../internships/internships.dto.js";
 import {
   applicationQuery,
+  bulkSchema,
   endPlacementSchema,
   idParam,
+  interviewSchema,
   noteSchema,
   placeSchema,
   placementQuery,
@@ -92,6 +94,21 @@ export function createInternshipsAdminRouter(deps: AdminDeps, guards: StaffGuard
     },
   );
 
+  /** A copy as a new draft, so the next cohort does not mean retyping everything. */
+  router.post(
+    "/internships/postings/:id/duplicate",
+    ...guards.with("internships:write"),
+    async (req, res) => {
+      const actor = actorOf(deps, req, res);
+      const copy = await svc.duplicatePosting(
+        actor.user,
+        idParam.parse(req.params["id"]),
+        actor.ctx,
+      );
+      res.status(201).json({ posting: adminPostingDto(copy, await namesOf(copy.supervisorIds)) });
+    },
+  );
+
   router.post(
     "/internships/postings/:id/publish",
     ...guards.with("internships:write"),
@@ -122,8 +139,17 @@ export function createInternshipsAdminRouter(deps: AdminDeps, guards: StaffGuard
 
   // ------------------------------------------------------------ applications
   router.get("/internships/applications", ...guards.with("internships:read"), async (req, res) => {
-    const query = applicationQuery.parse(req.query);
-    const page = await svc.listApplications(query);
+    const { waitingDays, ...parsed } = applicationQuery.parse(req.query);
+    const page = await svc.listApplications({
+      ...parsed,
+      // "Waiting more than N days" only makes sense for applications nobody has opened yet.
+      ...(waitingDays === undefined
+        ? {}
+        : {
+            status: "submitted" as const,
+            createdBefore: new Date(deps.now().getTime() - waitingDays * 86_400_000),
+          }),
+    });
     const [postings, applicants] = await Promise.all([
       Promise.all(
         [...new Set(page.items.map((a) => a.postingId))].map((id) =>
@@ -214,7 +240,50 @@ export function createInternshipsAdminRouter(deps: AdminDeps, guards: StaffGuard
         actor.user,
         idParam.parse(req.params["id"]),
         body.to as ApplicationStatus,
-        { note: body.note, message: body.message },
+        {
+          note: body.note,
+          message: body.message,
+          interview: body.interview === undefined ? undefined : { ...body.interview },
+        },
+        actor.ctx,
+      );
+      const { applicant, posting } = await svc.getApplication(updated.id);
+      res.json({ application: adminApplicationDto(updated, applicant, posting) });
+    },
+  );
+
+  /** One decision for many applications (for example shortlisting the best matches). Each is checked on its own. */
+  router.post(
+    "/internships/applications/bulk-transition",
+    ...guards.with("internships:review"),
+    async (req, res) => {
+      const actor = actorOf(deps, req, res);
+      const body = bulkSchema.parse(req.body);
+      const results = await svc.bulkTransition(
+        actor.user,
+        body.ids,
+        body.to as ApplicationStatus,
+        { message: body.message },
+        actor.ctx,
+      );
+      res.json({
+        results,
+        done: results.filter((r) => r.ok).length,
+        failed: results.filter((r) => !r.ok).length,
+      });
+    },
+  );
+
+  router.put(
+    "/internships/applications/:id/interview",
+    ...guards.with("internships:review"),
+    async (req, res) => {
+      const actor = actorOf(deps, req, res);
+      const body = interviewSchema.parse(req.body);
+      const updated = await svc.setInterview(
+        actor.user,
+        idParam.parse(req.params["id"]),
+        { ...body },
         actor.ctx,
       );
       const { applicant, posting } = await svc.getApplication(updated.id);

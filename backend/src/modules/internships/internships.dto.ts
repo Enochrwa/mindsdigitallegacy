@@ -1,7 +1,8 @@
 import type { User } from "../users/users.types.js";
 import { AGREEMENT_VERSION } from "./internships.types.js";
 import { canMove, canWithdraw } from "./internships.rules.js";
-import type { Application, Placement, Posting } from "./internships.types.js";
+import type { PostingView } from "./internships.extras.service.js";
+import type { Application, InterviewDetails, Placement, Posting } from "./internships.types.js";
 
 /**
  * Explicit allow-lists, one per audience. A field that is not named here is never sent, so adding a
@@ -29,6 +30,19 @@ export function publicPostingDto(p: Posting) {
     compensationNote: p.compensationNote,
     minAge: p.minAge,
     slots: p.slots,
+    skills: p.skills,
+    responsibilities: p.responsibilities,
+    whoCanApply: p.whoCanApply,
+    perks: p.perks,
+    startsOn: iso(p.startsOn),
+    // Shown BEFORE applying, so nobody is surprised by the questions.
+    screeningQuestions: p.screeningQuestions.map((q) => ({
+      id: q.id,
+      label: q.label,
+      kind: q.kind,
+      required: q.required,
+      options: q.options,
+    })),
     opensAt: iso(p.opensAt),
     closesAt: iso(p.closesAt),
     /** The programme promise, shown next to every posting. */
@@ -76,6 +90,9 @@ export function applicantApplicationDto(a: Application, posting: Posting | null)
             verified: a.guardian.verifiedAt !== undefined,
           },
     messageToApplicant: a.messageToApplicant,
+    answers: labelledAnswers(a, posting),
+    matchPercent: a.matchPercent,
+    interview: interviewDto(a.interview),
     timeline: a.events.map((e) => ({ at: e.at.toISOString(), status: e.to })),
     agreementAcceptedAt: iso(a.agreementAcceptedAt),
     canWithdraw: canWithdraw(a.status),
@@ -140,6 +157,10 @@ export function adminApplicationDto(
             verifiedAt: iso(a.guardian.verifiedAt),
           },
     messageToApplicant: a.messageToApplicant,
+    answers: labelledAnswers(a, posting),
+    profile: a.profile,
+    matchPercent: a.matchPercent,
+    interview: interviewDto(a.interview),
     notes: a.notes.map((n) => ({ at: n.at.toISOString(), by: n.by, text: n.text, score: n.score })),
     averageScore:
       a.notes.filter((n) => n.score !== undefined).length === 0
@@ -210,3 +231,30 @@ export function supervisorPlacementDto(p: Placement, posting: Posting | null, in
       })),
   };
 }
+
+/** A posting with the facts a card or page shows next to it: freshness, deadline, competition, match, saved. */
+export function postingViewDto(v: PostingView) {
+  return {
+    ...publicPostingDto(v.posting),
+    facts: v.facts,
+    applicants: v.competition.applicants,
+    placesOpen: v.competition.placesOpen,
+    match: v.match,
+    saved: v.saved,
+  };
+}
+
+const interviewDto = (i: InterviewDetails | undefined) =>
+  i === undefined
+    ? undefined
+    : { at: i.at.toISOString(), mode: i.mode, where: i.where, note: i.note };
+
+/** The applicant's own answers, labelled with the question text, in the posting's order. */
+const labelledAnswers = (a: Application, p: Posting | null) =>
+  a.answers.map((x) => ({
+    questionId: x.questionId,
+    question: p?.screeningQuestions.find((q) => q.id === x.questionId)?.label ?? x.questionId,
+    answer: x.answer,
+  }));
+
+export { interviewDto, labelledAnswers };

@@ -4,6 +4,7 @@ import type {
   ApplicationEvent,
   ApplicationStatus,
   Department,
+  InterviewDetails,
   Placement,
   PlacementStatus,
   Posting,
@@ -44,6 +45,10 @@ export interface ApplicationListQuery extends PageRequest {
   postingId?: string | undefined;
   status?: ApplicationStatus | undefined;
   userId?: string | undefined;
+  /** `match` puts the best skill match first (then oldest), `oldest` puts the longest waiting first. */
+  sort?: "newest" | "oldest" | "match" | undefined;
+  /** Only applications created before this moment (for "waiting more than 7 days"). */
+  createdBefore?: Date | undefined;
 }
 
 export interface ApplicationPatch {
@@ -75,6 +80,13 @@ export interface ApplicationRepository {
   patch(id: string, patch: ApplicationPatch, now: Date): Promise<Application | null>;
   addNote(id: string, note: ReviewNote, now: Date): Promise<Application | null>;
   countByStatus(postingId?: string): Promise<Record<ApplicationStatus, number>>;
+  /** How many people have applied to each posting (any status), for the competition signal on cards. */
+  countsByPosting(postingIds: string[]): Promise<Record<string, number>>;
+  /** Applications still in play for one person: submitted, shortlisted, interview, offered or accepted. */
+  countOpenByUser(userId: string): Promise<number>;
+  /** Applications in `submitted` older than `before`: reviews that are waiting too long. */
+  countWaiting(before: Date): Promise<number>;
+  setInterview(id: string, interview: InterviewDetails, now: Date): Promise<Application | null>;
 }
 
 export type NewPlacement = Omit<
@@ -99,6 +111,8 @@ export interface PlacementRepository {
   /** Placements currently running for one supervisor (their load). */
   countActiveBySupervisor(supervisorId: string): Promise<number>;
   countActiveByPosting(postingId: string): Promise<number>;
+  /** Running placements per posting, so cards can say how many places are still open. */
+  activeCountsByPosting(postingIds: string[]): Promise<Record<string, number>>;
   activeLoadBySupervisor(): Promise<Record<string, number>>;
   setSupervisor(id: string, supervisorId: string, now: Date): Promise<Placement | null>;
   /** Only an active placement can end. Returns null if it already ended. */

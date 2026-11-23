@@ -46,6 +46,8 @@ import {
   applicantPlacementDto,
 } from "./modules/internships/internships.dto.js";
 import { createInternshipsRouter } from "./modules/internships/internships.routes.js";
+import { createExtrasService } from "./modules/internships/internships.extras.service.js";
+import type { ExtrasRepositories } from "./modules/internships/internships.extras.types.js";
 import { createInternshipService } from "./modules/internships/internships.service.js";
 import type {
   ApplicationRepository,
@@ -76,6 +78,7 @@ export interface AppDeps {
   /** Sign-in providers (Google, GitHub...) that are switched on, and where linked accounts are stored. */
   oauthProviders: Map<ProviderId, ProviderAdapter>;
   oauthIdentities: OAuthIdentityRepository;
+  internshipExtras: ExtrasRepositories;
   internshipPostings: PostingRepository;
   internshipApplications: ApplicationRepository;
   internshipPlacements: PlacementRepository;
@@ -249,6 +252,17 @@ export function createApp(deps: AppDeps): Express {
       redeemLimiter: createLimiter({ windowMs: 15 * 60_000, limit: 10 }),
     }),
   );
+  const internshipExtras = createExtrasService({
+    postings: deps.internshipPostings,
+    applications: deps.internshipApplications,
+    placements: deps.internshipPlacements,
+    users: deps.users,
+    extras: deps.internshipExtras,
+    audit: deps.audit,
+    mailer: deps.mailer,
+    maxOpenApplications: env.INTERNSHIP_MAX_OPEN_APPLICATIONS,
+    now,
+  });
   const internships = createInternshipService({
     postings: deps.internshipPostings,
     applications: deps.internshipApplications,
@@ -257,6 +271,13 @@ export function createApp(deps: AppDeps): Express {
     audit: deps.audit,
     mailer: deps.mailer,
     perSupervisor: env.INTERNSHIP_MAX_PER_SUPERVISOR,
+    profiles: deps.internshipExtras.profiles,
+    drafts: deps.internshipExtras.drafts,
+    maxOpenApplications: env.INTERNSHIP_MAX_OPEN_APPLICATIONS,
+    // When a posting first goes live, people whose alert matches it are emailed.
+    onPublished: async (posting) => {
+      await internshipExtras.notifyAlerts(posting);
+    },
     now,
   });
   app.use(
@@ -265,6 +286,7 @@ export function createApp(deps: AppDeps): Express {
       auth,
       cookie,
       internships,
+      extras: internshipExtras,
       applyLimiter: createLimiter({ windowMs: 60 * 60_000, limit: 10 }),
       writeLimiter: createLimiter({ windowMs: 60_000, limit: env.RATE_LIMIT_LEARNING_PER_MINUTE }),
     }),
@@ -324,6 +346,25 @@ export function createApp(deps: AppDeps): Express {
       hasher: deps.hasher,
       cookie,
       exportLearning: (userId) => courses.exportLearning(userId),
+      exportInternshipExtras: async (userId) => {
+        const e = deps.internshipExtras;
+        const [profile, saved, alert, drafts] = await Promise.all([
+          e.profiles.get(userId),
+          e.saves.listByUser(userId),
+          e.alerts.get(userId),
+          e.drafts.listByUser(userId),
+        ]);
+        return {
+          profile,
+          savedInternshipIds: saved.map((s) => s.postingId),
+          alert,
+          unsentDrafts: drafts.map((d) => ({
+            postingId: d.postingId,
+            statement: d.statement,
+            updatedAt: d.updatedAt,
+          })),
+        };
+      },
       exportSignInMethods: async (userId) =>
         (await oauth.list(userId)).identities.map((i) => ({
           provider: i.provider,

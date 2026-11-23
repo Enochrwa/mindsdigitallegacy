@@ -62,6 +62,30 @@ const INTERNSHIP_COPY: Record<string, { subject: string; body: string }> = {
 };
 
 export const templates = {
+  internshipAlert: (name: string, title: string, link: string): Mail =>
+    build(
+      `New internship: ${title}`,
+      `Hello ${name}. A new internship matches your alert: ${title}. Open it to read the details and see whether you can apply.`,
+      link,
+      "You get this because you turned on internship alerts in My internships. You can turn them off there at any time.",
+    ),
+  internshipReminder: (
+    name: string,
+    title: string,
+    days: number,
+    kind: "saved" | "draft",
+    link: string,
+  ): Mail =>
+    build(
+      kind === "draft" ? `Finish your application: ${title}` : `Closing soon: ${title}`,
+      `Hello ${name}. ${
+        kind === "draft"
+          ? "You started an application that is not sent yet."
+          : "An internship you saved is about to close."
+      } ${title} closes ${days <= 0 ? "today" : days === 1 ? "tomorrow" : `in ${String(days)} days`}.`,
+      link,
+      "We send this once. You can manage saved internships and alerts in My internships.",
+    ),
   internshipUpdate: (name: string, title: string, kind: string, link: string): Mail => {
     const copy = INTERNSHIP_COPY[kind] ?? INTERNSHIP_COPY["received"];
     return build(

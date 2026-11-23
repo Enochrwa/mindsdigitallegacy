@@ -48,6 +48,47 @@ export type PlacementStatus = (typeof PLACEMENT_STATUSES)[number];
 /** Version of the intern agreement text the applicant accepts. Bump it when the lawyer-approved text changes. */
 export const AGREEMENT_VERSION = "2026-11-draft";
 
+/** One question an applicant answers when applying (like Internshala's assessment or LinkedIn's screening questions). */
+export interface ScreeningQuestion {
+  /** Short stable key: letters, digits and underscore. Answers refer to it. */
+  id: string;
+  label: string;
+  kind: "text" | "yes_no" | "choice";
+  required: boolean;
+  /** For `choice`: 2 to 6 options. */
+  options?: string[] | undefined;
+}
+
+export interface ScreeningAnswer {
+  questionId: string;
+  answer: string;
+}
+
+export const EDUCATION_LEVELS = ["secondary", "tvet", "university", "graduate", "other"] as const;
+export type EducationLevel = (typeof EDUCATION_LEVELS)[number];
+
+/** What a reviewer sees of the applicant's saved profile, frozen at the moment of applying. */
+export interface ProfileSnapshot {
+  headline: string;
+  educationLevel: EducationLevel;
+  institution: string;
+  field: string;
+  skills: string[];
+  about: string;
+}
+
+export const INTERVIEW_MODES = ["onsite", "online", "phone"] as const;
+export type InterviewMode = (typeof INTERVIEW_MODES)[number];
+
+/** Shown to the applicant (and offered as a calendar file) when staff invite them to interview. */
+export interface InterviewDetails {
+  at: Date;
+  mode: InterviewMode;
+  /** An address for `onsite`, an https link for `online`, a number to call for `phone`. */
+  where: string;
+  note?: string | undefined;
+}
+
 export interface Posting {
   id: string;
   slug: string;
@@ -66,6 +107,17 @@ export interface Posting {
   /** Applicants must be at least this old (16 or 18). Under-16 learners can never apply. */
   minAge: 16 | 18;
   slots: number;
+  /** Skills that help for this role. Shown as tags and compared with the applicant's saved skills. */
+  skills: string[];
+  /** What the intern does day to day. */
+  responsibilities: string[];
+  /** Extra eligibility lines shown under "Who can apply". */
+  whoCanApply: string[];
+  /** What the intern gets besides the work (certificate, reference letter, mentoring...). */
+  perks: string[];
+  /** Earliest start date, if fixed. */
+  startsOn?: Date | undefined;
+  screeningQuestions: ScreeningQuestion[];
   /** Named supervisors for this posting. Slots can never exceed supervisors x the per-supervisor limit. */
   supervisorIds: string[];
   status: PostingStatus;
@@ -119,6 +171,12 @@ export interface Application {
   messageToApplicant?: string | undefined;
   consentNoticeVersion: string;
   consentAt: Date;
+  answers: ScreeningAnswer[];
+  /** The applicant's saved profile as it was when they applied. Absent when they applied without one. */
+  profile?: ProfileSnapshot | undefined;
+  /** 0 to 100: how many of the posting's skills the applicant lists. Used to sort for reviewers. */
+  matchPercent?: number | undefined;
+  interview?: InterviewDetails | undefined;
   agreementAcceptedAt?: Date | undefined;
   agreementVersion?: string | undefined;
   createdAt: Date;

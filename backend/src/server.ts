@@ -32,6 +32,8 @@ import {
 import { createMongoOAuthIdentityRepository } from "./modules/oauth/oauth.mongo.js";
 import { oauthSettings } from "./modules/oauth/oauth.config.js";
 import { createProviders } from "./modules/oauth/providers.js";
+import { createMongoExtras } from "./modules/internships/internships.extras.mongo.js";
+import { createExtrasService } from "./modules/internships/internships.extras.service.js";
 import { createPurgeService, schedule } from "./modules/retention/purge.js";
 import { createMongoPurgeStore } from "./modules/retention/purge.mongo.js";
 
@@ -61,6 +63,40 @@ async function main(): Promise<void> {
       ? schedule(() => purge.run(), env.ACCOUNT_PURGE_INTERVAL_MINUTES * 60_000, logger)
       : undefined;
 
+  const mailer =
+    env.EMAIL_PROVIDER === "log" || env.EMAIL_API_KEY === undefined || env.EMAIL_FROM === undefined
+      ? createLogMailer(logger, env.WEB_BASE_URL, env.NODE_ENV === "production")
+      : createHttpMailer(
+          {
+            provider: env.EMAIL_PROVIDER,
+            apiKey: env.EMAIL_API_KEY,
+            fromEmail: env.EMAIL_FROM,
+            fromName: env.EMAIL_FROM_NAME,
+            webBaseUrl: env.WEB_BASE_URL,
+          },
+          logger,
+        );
+
+  // Housekeeping for internships: close postings past their deadline, remind people once about closing ones.
+  const housekeeping = createExtrasService({
+    postings: createMongoPostingRepository(),
+    applications: createMongoApplicationRepository(),
+    placements: createMongoPlacementRepository(),
+    users: createMongoUserRepository(),
+    extras: createMongoExtras(),
+    audit,
+    mailer,
+    maxOpenApplications: env.INTERNSHIP_MAX_OPEN_APPLICATIONS,
+  });
+  const housekeepingTimer =
+    env.MONGODB_URI !== undefined && env.INTERNSHIP_AUTOMATION_INTERVAL_MINUTES > 0
+      ? schedule(
+          () => housekeeping.runAutomation(),
+          env.INTERNSHIP_AUTOMATION_INTERVAL_MINUTES * 60_000,
+          logger,
+        )
+      : undefined;
+
   const app = createApp({
     env,
     logger,
@@ -75,6 +111,7 @@ async function main(): Promise<void> {
     referrals: createMongoReferralRepository(),
     oauthProviders: createProviders(oauthSettings(env)),
     oauthIdentities: createMongoOAuthIdentityRepository(),
+    internshipExtras: createMongoExtras(),
     internshipPostings: createMongoPostingRepository(),
     internshipApplications: createMongoApplicationRepository(),
     internshipPlacements: createMongoPlacementRepository(),
@@ -83,21 +120,7 @@ async function main(): Promise<void> {
     settings: createMongoSettingsRepository(),
     enrolments: createMongoEnrolmentRepository(),
     progress: createMongoProgressRepository(),
-    mailer:
-      env.EMAIL_PROVIDER === "log" ||
-      env.EMAIL_API_KEY === undefined ||
-      env.EMAIL_FROM === undefined
-        ? createLogMailer(logger, env.WEB_BASE_URL, env.NODE_ENV === "production")
-        : createHttpMailer(
-            {
-              provider: env.EMAIL_PROVIDER,
-              apiKey: env.EMAIL_API_KEY,
-              fromEmail: env.EMAIL_FROM,
-              fromName: env.EMAIL_FROM_NAME,
-              webBaseUrl: env.WEB_BASE_URL,
-            },
-            logger,
-          ),
+    mailer,
     breach: env.PASSWORD_BREACH_CHECK ? createHibpChecker(logger) : noBreachCheck,
     hasher: createPasswordHasher(),
     isDbReady,
@@ -118,6 +141,7 @@ async function main(): Promise<void> {
     shuttingDown = true;
     logger.info({ signal }, "shutting down");
     purgeTimer?.stop();
+    housekeepingTimer?.stop();
     const force = setTimeout(() => {
       logger.error("forced shutdown after grace period");
       process.exit(1);

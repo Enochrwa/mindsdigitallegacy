@@ -3,6 +3,8 @@ import {
   APPLICATION_STATUSES,
   COMPENSATION,
   DEPARTMENTS,
+  EDUCATION_LEVELS,
+  INTERVIEW_MODES,
   PLACEMENT_STATUSES,
   POSTING_STATUSES,
   WORK_MODES,
@@ -10,6 +12,17 @@ import {
 
 const OPTS = { versionKey: false, strict: "throw", timestamps: true } as const;
 const SUB = { _id: false, strict: "throw" } as const;
+
+const screeningQuestionSchema = new Schema(
+  {
+    id: { type: String, required: true, maxlength: 20 },
+    label: { type: String, required: true, maxlength: 200 },
+    kind: { type: String, enum: ["text", "yes_no", "choice"], required: true },
+    required: { type: Boolean, required: true },
+    options: { type: [String], default: undefined },
+  },
+  SUB,
+);
 
 const postingSchema = new Schema(
   {
@@ -28,6 +41,12 @@ const postingSchema = new Schema(
     compensationNote: { type: String, default: "", maxlength: 300 },
     minAge: { type: Number, enum: [16, 18], required: true },
     slots: { type: Number, required: true, min: 1, max: 20 },
+    skills: { type: [String], default: [] },
+    responsibilities: { type: [String], default: [] },
+    whoCanApply: { type: [String], default: [] },
+    perks: { type: [String], default: [] },
+    startsOn: { type: Date },
+    screeningQuestions: { type: [screeningQuestionSchema], default: [] },
     supervisorIds: { type: [Schema.Types.ObjectId], default: [] },
     status: { type: String, enum: POSTING_STATUSES, required: true },
     opensAt: { type: Date },
@@ -71,6 +90,34 @@ const guardianSchema = new Schema(
   SUB,
 );
 
+const answerSchema = new Schema(
+  {
+    questionId: { type: String, required: true, maxlength: 20 },
+    answer: { type: String, required: true, maxlength: 500 },
+  },
+  SUB,
+);
+const profileSnapshotSchema = new Schema(
+  {
+    headline: { type: String, maxlength: 100, default: "" },
+    educationLevel: { type: String, enum: EDUCATION_LEVELS, required: true },
+    institution: { type: String, maxlength: 120, default: "" },
+    field: { type: String, maxlength: 120, default: "" },
+    skills: { type: [String], default: [] },
+    about: { type: String, maxlength: 1000, default: "" },
+  },
+  SUB,
+);
+const interviewSchema = new Schema(
+  {
+    at: { type: Date, required: true },
+    mode: { type: String, enum: INTERVIEW_MODES, required: true },
+    where: { type: String, required: true, maxlength: 200 },
+    note: { type: String, maxlength: 300 },
+  },
+  SUB,
+);
+
 const applicationSchema = new Schema(
   {
     postingId: { type: Schema.Types.ObjectId, required: true },
@@ -86,6 +133,10 @@ const applicationSchema = new Schema(
     messageToApplicant: { type: String, maxlength: 500 },
     consentNoticeVersion: { type: String, required: true, maxlength: 40 },
     consentAt: { type: Date, required: true },
+    answers: { type: [answerSchema], default: [] },
+    profile: { type: profileSnapshotSchema },
+    matchPercent: { type: Number, min: 0, max: 100 },
+    interview: { type: interviewSchema },
     agreementAcceptedAt: { type: Date },
     agreementVersion: { type: String, maxlength: 40 },
   },

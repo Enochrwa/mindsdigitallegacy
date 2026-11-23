@@ -14,6 +14,17 @@ export interface Mailer {
   /** One-time code that proves the person controls the mailbox, for sign-in providers that do not vouch for it. */
   sendSignInCode(to: string, name: string, code: string): Promise<void>;
   /** Fixed-text status mail about an internship application. Links to the signed-in page, never carries details. */
+  /** A new internship matches the person's alert. Links to the public page. */
+  sendInternshipAlert(to: string, name: string, postingTitle: string, slug: string): Promise<void>;
+  /** A saved or half-finished application is about to close. */
+  sendInternshipReminder(
+    to: string,
+    name: string,
+    postingTitle: string,
+    slug: string,
+    daysLeft: number,
+    kind: "saved" | "draft",
+  ): Promise<void>;
   sendInternshipUpdate(
     to: string,
     name: string,
@@ -46,6 +57,10 @@ export function createLogMailer(logger: Logger, webBaseUrl: string, production: 
     sendExistingAccountNotice: () => emit("existing_account"),
     // Printed in development only, like the verification links, so the code step can be tried locally.
     sendSignInCode: (_to, _name, code) => emit("signin_code", undefined, code),
+    sendInternshipAlert: (_to, _name, _title, slug) =>
+      emit("internship_alert", `/internships/${slug}`),
+    sendInternshipReminder: (_to, _name, _title, slug, _days, kind) =>
+      emit(`internship_reminder_${kind}`, `/internships/${slug}`),
     sendInternshipUpdate: (_to, _name, _title, kind) =>
       emit(`internship_${kind}`, "/account/internships"),
   };

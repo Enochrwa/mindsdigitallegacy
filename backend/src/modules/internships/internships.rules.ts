@@ -1,5 +1,12 @@
 import type { User } from "../users/users.types.js";
-import type { Application, ApplicationStatus, Posting } from "./internships.types.js";
+import type {
+  Application,
+  ApplicationStatus,
+  InterviewDetails,
+  Posting,
+  ScreeningAnswer,
+  ScreeningQuestion,
+} from "./internships.types.js";
 
 /**
  * The pure rules of the programme: no database, no clock of its own. Everything the service decides
@@ -58,7 +65,12 @@ export const maxSlots = (supervisors: number, perSupervisor: number): number =>
   supervisors * perSupervisor;
 
 export type EligibilityProblem =
-  "NOT_ACTIVE" | "TOO_YOUNG" | "POSTING_CLOSED" | "GUARDIAN_REQUIRED" | "GUARDIAN_NOT_ALLOWED";
+  | "NOT_ACTIVE"
+  | "TOO_YOUNG"
+  | "POSTING_CLOSED"
+  | "GUARDIAN_REQUIRED"
+  | "GUARDIAN_NOT_ALLOWED"
+  | "TOO_MANY_OPEN";
 
 /**
  * Who may apply. Under-16 learners never can (their account itself needs guardian consent). A posting
@@ -67,7 +79,7 @@ export type EligibilityProblem =
 export function checkEligibility(
   user: Pick<User, "ageBracket" | "emailVerifiedAt" | "deletedAt" | "suspendedAt" | "guardian">,
   posting: Posting,
-  input: { under18: boolean; hasGuardian: boolean },
+  input: { under18: boolean; hasGuardian: boolean; openCount?: number; maxOpen?: number },
   now: Date,
 ): EligibilityProblem | null {
   if (
@@ -80,6 +92,8 @@ export function checkEligibility(
   if (user.ageBracket === "under_16") return "TOO_YOUNG";
   if (!isOpenForApplications(posting, now)) return "POSTING_CLOSED";
   if (posting.minAge === 18 && input.under18) return "TOO_YOUNG";
+  if (input.maxOpen !== undefined && (input.openCount ?? 0) >= input.maxOpen)
+    return "TOO_MANY_OPEN";
   if (input.under18 && !input.hasGuardian) return "GUARDIAN_REQUIRED";
   if (!input.under18 && input.hasGuardian) return "GUARDIAN_NOT_ALLOWED";
   return null;
@@ -136,4 +150,70 @@ export const slugify = (title: string): string =>
     .slice(0, 60);
 
 /** Slugs that would collide with fixed routes. */
-export const RESERVED_SLUGS = new Set(["applications", "placements", "me"]);
+export const RESERVED_SLUGS = new Set([
+  "applications",
+  "placements",
+  "me",
+  "saved",
+  "profile",
+  "alerts",
+]);
+
+// ------------------------------------------------------------ screening answers
+
+export type AnswerProblem =
+  | { code: "UNKNOWN_QUESTION"; questionId: string }
+  | { code: "DUPLICATE_ANSWER"; questionId: string }
+  | { code: "MISSING_ANSWER"; questionId: string }
+  | { code: "BAD_ANSWER"; questionId: string };
+
+/**
+ * Checks what an applicant answered against the posting's questions, and returns the cleaned answers.
+ * Only the posting's own questions are accepted, once each; required ones must be answered; a yes/no
+ * answer must be "yes" or "no"; a choice must be one of the options; text is trimmed and at most 500 characters.
+ */
+export function validateAnswers(
+  questions: readonly ScreeningQuestion[],
+  given: readonly ScreeningAnswer[],
+): { ok: true; answers: ScreeningAnswer[] } | { ok: false; problem: AnswerProblem } {
+  const byId = new Map(questions.map((q) => [q.id, q]));
+  const seen = new Set<string>();
+  const clean: ScreeningAnswer[] = [];
+  for (const a of given) {
+    const q = byId.get(a.questionId);
+    if (q === undefined)
+      return { ok: false, problem: { code: "UNKNOWN_QUESTION", questionId: a.questionId } };
+    if (seen.has(q.id))
+      return { ok: false, problem: { code: "DUPLICATE_ANSWER", questionId: q.id } };
+    seen.add(q.id);
+    const text = a.answer.trim();
+    if (text === "") continue; // an empty answer counts as not answered
+    const valid =
+      q.kind === "text"
+        ? text.length <= 500
+        : q.kind === "yes_no"
+          ? text === "yes" || text === "no"
+          : (q.options ?? []).includes(text);
+    if (!valid) return { ok: false, problem: { code: "BAD_ANSWER", questionId: q.id } };
+    clean.push({ questionId: q.id, answer: text });
+  }
+  for (const q of questions) {
+    if (q.required && !clean.some((a) => a.questionId === q.id)) {
+      return { ok: false, problem: { code: "MISSING_ANSWER", questionId: q.id } };
+    }
+  }
+  return { ok: true, answers: clean };
+}
+
+// -------------------------------------------------------------------- interview
+
+/** An interview must be in the future and its place must fit its kind (an https link when online). */
+export function interviewProblem(
+  i: InterviewDetails,
+  now: Date,
+): "PAST" | "BAD_LINK" | "EMPTY_PLACE" | null {
+  if (i.at.getTime() <= now.getTime()) return "PAST";
+  if (i.where.trim() === "") return "EMPTY_PLACE";
+  if (i.mode === "online" && cleanLink(i.where) === null) return "BAD_LINK";
+  return null;
+}

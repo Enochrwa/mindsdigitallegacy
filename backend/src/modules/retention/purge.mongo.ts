@@ -1,6 +1,7 @@
 import { Types, trusted } from "mongoose";
 import { EntitlementModel, RedemptionModel } from "../access/access.model.js";
 import { AuthTokenModel } from "../auth/authTokens.js";
+import { createMongoExtras } from "../internships/internships.extras.mongo.js";
 import { OAuthIdentityModel } from "../oauth/oauth.model.js";
 import { ApplicationModel, PlacementModel } from "../internships/internships.model.js";
 import { EnrolmentModel, ProgressModel } from "../courses/courses.model.js";
@@ -60,6 +61,9 @@ export function createMongoPurgeStore(): PurgeStore {
       counts["internshipPlacements"] = (
         await PlacementModel.deleteMany({ userId: id })
       ).deletedCount;
+      for (const [name, n] of Object.entries(await createMongoExtras().removeAllForUser(userId))) {
+        counts[`internship_${name}`] = n;
+      }
       counts["signInIdentities"] = (
         await OAuthIdentityModel.deleteMany({ userId: id })
       ).deletedCount;
