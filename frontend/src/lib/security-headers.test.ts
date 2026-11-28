@@ -36,8 +36,10 @@ describe("security headers", () => {
     expect(headers["Reporting-Endpoints"]).toBe('csp="https://api.example.rw/api/v1/csp-report"');
   });
 
-  it("omits reporting when no API origin is configured", () => {
-    expect(buildCsp(undefined)).not.toContain("report-");
-    expect(securityHeaders(undefined)["Reporting-Endpoints"]).toBeUndefined();
+  it("reports to the same origin when the site forwards /api to the API (no separate API address)", () => {
+    expect(buildCsp(undefined)).toContain("report-uri /api/v1/csp-report");
+    expect(buildCsp(undefined)).toContain("report-to csp");
+    expect(securityHeaders(undefined)["Reporting-Endpoints"]).toBe('csp="/api/v1/csp-report"');
+    expect(buildCsp(undefined)).toContain("connect-src 'self'");
   });
 });

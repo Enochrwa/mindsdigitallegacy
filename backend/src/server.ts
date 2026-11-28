@@ -103,6 +103,14 @@ async function main(): Promise<void> {
     isDbReady,
   });
 
+  // Say plainly which mode this is, and warn about the one production setting that silently weakens security.
+  const production = env.NODE_ENV === "production";
+  logger.info({ mode: env.NODE_ENV, production }, "starting api");
+  if (production && env.TRUST_PROXY === 0) {
+    logger.warn(
+      "TRUST_PROXY is 0 in production. Behind a proxy (Render, Vercel) every visitor will look like the same address, so rate limits and audit IPs will be wrong. Set TRUST_PROXY to the number of proxies in front of the API.",
+    );
+  }
   const server = app.listen(env.PORT, env.HOST, () => {
     logger.info({ host: env.HOST, port: env.PORT, nodeEnv: env.NODE_ENV }, "api listening");
   });

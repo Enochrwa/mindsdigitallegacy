@@ -6,6 +6,24 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
 import viteReact from "@vitejs/plugin-react";
 
+/**
+ * Where the production build is meant to run, chosen from the environment so nothing needs editing per host:
+ *  - on Vercel (it sets VERCEL=1) the "vercel" preset, which produces the server function and static files Vercel serves;
+ *  - anywhere else the Cloudflare module preset recorded in ADR-0007;
+ *  - NITRO_PRESET overrides both (for example "node-server" for a plain Node host).
+ * The dev server (`vite dev`) never uses any of this.
+ */
+const BUILD_PRESET =
+  process.env["NITRO_PRESET"] ?? (process.env["VERCEL"] ? "vercel" : "cloudflare-module");
+
+/**
+ * Optional same-origin API proxy. When API_PROXY_TARGET is set at build time (for example the Render address),
+ * every request to `/api/...` on the website is forwarded to the API. The browser then only ever talks to the
+ * website's own address, so the session cookie is first-party and sign-in works in every browser (a cookie set by a
+ * different site, such as onrender.com while the site is on vercel.app, is blocked or dropped by many browsers).
+ */
+const API_PROXY_TARGET = (process.env["API_PROXY_TARGET"] ?? "").replace(/\/+$/, "");
+
 // Explicit plugin order matters: tanstackStart before nitro before react.
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");
@@ -48,8 +66,17 @@ export default defineConfig(({ command, mode }) => {
           client: { files: ["**/server/**"], specifiers: ["server-only"] },
         },
       }),
-      // Build only. Cloudflare module preset is the default target (decision recorded in ADR-0007).
-      ...(command === "build" ? [nitro({ preset: "cloudflare-module" })] : []),
+      // Build only (see BUILD_PRESET above). Cloudflare stays the default target (ADR-0007); Vercel is detected.
+      ...(command === "build"
+        ? [
+            nitro({
+              preset: BUILD_PRESET,
+              ...(API_PROXY_TARGET === ""
+                ? {}
+                : { routeRules: { "/api/**": { proxy: `${API_PROXY_TARGET}/api/**` } } }),
+            }),
+          ]
+        : []),
       viteReact(),
     ],
   };

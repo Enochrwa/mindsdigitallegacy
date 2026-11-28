@@ -1,0 +1,49 @@
+name: Sync deployment repositories
+
+# Keeps github.com/Enochrwa/MDLBackend (Render) and MDLFrontend (Vercel) identical to backend/ and frontend/.
+# Needs one repository secret, DEPLOY_SYNC_TOKEN: a fine-grained personal access token with
+# "Contents: Read and write" on MDLBackend and MDLFrontend only. Until it exists this workflow warns and stops.
+
+on:
+  push:
+    branches: [main]
+    paths: ["backend/**", "frontend/**", "scripts/sync-deploy-repos.sh", ".github/workflows/sync-deploy-repos.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-deploy-repos
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Mirror backend and frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check the token exists
+        id: token
+        env:
+          DEPLOY_SYNC_TOKEN: ${{ secrets.DEPLOY_SYNC_TOKEN }}
+        run: |
+          if [ -z "$DEPLOY_SYNC_TOKEN" ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Deployment repositories not synced::Add the DEPLOY_SYNC_TOKEN secret (Settings > Secrets and variables > Actions). See docs/12-deployment.md section 8."
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Push the difference to MDLBackend and MDLFrontend
+        if: steps.token.outputs.present == 'true'
+        env:
+          DEPLOY_SYNC_TOKEN: ${{ secrets.DEPLOY_SYNC_TOKEN }}
+        run: scripts/sync-deploy-repos.sh --push
+      - name: Verify nothing differs afterwards
+        if: steps.token.outputs.present == 'true'
+        env:
+          DEPLOY_SYNC_TOKEN: ${{ secrets.DEPLOY_SYNC_TOKEN }}
+        run: scripts/sync-deploy-repos.sh --check

@@ -6,7 +6,15 @@
  *    accidentally render something the server should not have sent.
  */
 
-export const BASE_URL: string = (import.meta.env["VITE_API_BASE_URL"] as string | undefined) ?? "";
+import { API_BASE_URL, describeSetup, setupWarnings } from "./env";
+
+export const BASE_URL: string = API_BASE_URL;
+
+// Tell whoever opens the browser console which mode this is, and warn about setups that fail in real browsers.
+if (typeof window !== "undefined") {
+  if (import.meta.env.DEV) console.info(`[mdl] ${describeSetup(window.location.origin)}`);
+  for (const w of setupWarnings(window.location.origin)) console.warn(`[mdl] ${w}`);
+}
 const TIMEOUT_MS = 15_000;
 
 export const PRIVACY_NOTICE_VERSION = "2026-11";
