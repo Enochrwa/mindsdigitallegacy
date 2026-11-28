@@ -1,0 +1,47 @@
+# Render blueprint for the MDL API. OPTIONAL: if the service already exists, copy these settings by hand
+# (docs/12-deployment.md lists every value). Applying a blueprint creates a NEW service.
+services:
+  - type: web
+    name: mdl-backend
+    runtime: node
+    region: frankfurt # closest Render region to Rwanda
+    plan: free # free services sleep after 15 minutes idle; the first request then takes about a minute
+    branch: main
+    autoDeploy: true
+    # Render sets NODE_ENV=production while building, and npm then skips dev dependencies, which the TypeScript
+    # build needs. --include=dev makes that explicit. --ignore-scripts: install scripts are a supply-chain risk.
+    buildCommand: npm ci --include=dev --ignore-scripts && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      # Render injects PORT itself; the API listens on it. HOST defaults to 0.0.0.0 in production.
+      - key: LOG_LEVEL
+        value: info
+      # Proxies in front of the API: Render (1) plus the website's /api forwarder on Vercel (1).
+      - key: TRUST_PROXY
+        value: "2"
+      # The website's public address. Because the website forwards /api to this service, the browser,
+      # the sign-in cookie and sign-in provider callbacks all use the website's address.
+      - key: WEB_BASE_URL
+        value: https://mindsdigitallegacy-sigma.vercel.app
+      - key: CORS_ORIGINS
+        value: https://mindsdigitallegacy-sigma.vercel.app
+      - key: API_PUBLIC_URL
+        value: https://mindsdigitallegacy-sigma.vercel.app
+      # Secrets: Render asks for these when the blueprint is applied, and never stores them in git.
+      - key: MONGODB_URI
+        sync: false
+      - key: TOTP_ENCRYPTION_KEY
+        generateValue: true
+      - key: OAUTH_STATE_KEY
+        generateValue: true
+      - key: EMAIL_PROVIDER
+        sync: false
+      - key: EMAIL_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false

@@ -30,7 +30,8 @@ const originSchema = z
 const envSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-    HOST: z.string().min(1).default("127.0.0.1"),
+    /** Interface to listen on. Default: 127.0.0.1 in development, 0.0.0.0 in production (hosts such as Render must reach it). */
+    HOST: z.string().min(1).optional(),
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     LOG_LEVEL: z
       .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
@@ -174,7 +175,8 @@ const envSchema = z
     }
   });
 
-export type Env = z.infer<typeof envSchema>;
+/** HOST is always a real address once loaded: see loadEnv. */
+export type Env = Omit<z.infer<typeof envSchema>, "HOST"> & { HOST: string };
 
 export class ConfigError extends Error {
   constructor(readonly problems: string[]) {
@@ -194,5 +196,9 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
       result.error.issues.map((issue) => `${issue.path.join(".") || "(env)"}: ${issue.message}`),
     );
   }
-  return result.data;
+  // The listening interface depends on the mode: private on a laptop, open to the platform's proxy in production.
+  return {
+    ...result.data,
+    HOST: result.data.HOST ?? (result.data.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1"),
+  };
 }

@@ -64,6 +64,8 @@ production (see section 5).
 > The session cookie belongs to the API address, so the website and the API must share the same site (for example
 > `mindsdigitallegacy.com` and `api.mindsdigitallegacy.com`). This is already how MDL is designed.
 
+> **When the website forwards `/api` to the API (the Vercel + Render setup in docs/12), use the *website's* address as `API_PUBLIC_URL`** and in every provider's redirect address, for example `https://mindsdigitallegacy-sigma.vercel.app/api/v1/auth/oauth/google/callback`. The sign-in cookie then belongs to the website.
+
 ## 3. Switch it on: the settings
 
 Set these on the **API** (never in the website). A provider appears on the site only when **both** its id and secret are set.

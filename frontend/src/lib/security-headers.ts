@@ -31,7 +31,9 @@ export function buildCsp(apiOrigin: string | undefined): string {
     "form-action 'self'",
     "frame-ancestors 'none'",
     // `report-uri` for browsers without the Reporting API; `report-to` for those with it.
-    ...(apiOrigin ? [`report-uri ${apiOrigin}${REPORT_PATH}`, "report-to csp"] : []),
+    // Same-origin (empty apiOrigin) when the site forwards /api to the API: the path alone is correct then.
+    `report-uri ${apiOrigin ?? ""}${REPORT_PATH}`,
+    "report-to csp",
   ].join("; ");
 }
 
@@ -42,7 +44,7 @@ export function securityHeaders(
   return {
     [enforce ? "Content-Security-Policy" : "Content-Security-Policy-Report-Only"]:
       buildCsp(apiOrigin),
-    ...(apiOrigin ? { "Reporting-Endpoints": `csp="${apiOrigin}${REPORT_PATH}"` } : {}),
+    "Reporting-Endpoints": `csp="${apiOrigin ?? ""}${REPORT_PATH}"`,
     // Not "no-referrer": the YouTube embed needs an origin. Token pages set a stricter meta policy themselves.
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "X-Content-Type-Options": "nosniff",
